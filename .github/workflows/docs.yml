@@ -40,7 +40,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ~/.local
-        key: poetry-${{ runner.os }}-${{ matrix.python-version }}-${{ env.POETRY_VERSION }}
+        key: poetry-${{ runner.os }}-${{ env.POETRY_VERSION }}
 
     - name: Install poetry
       if: steps.cache-poetry.outputs.cache-hit != 'true'

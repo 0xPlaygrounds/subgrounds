@@ -1,0 +1,74 @@
+/* Sidebar stuff */
+.sidebar-drawer {
+    width: 15em !important;
+    background-attachment: fixed;
+    box-shadow: 5px 0px 10px -4px rgba(0, 0, 0, 0.25);
+}
+
+.sidebar-tree .toctree-l1>.current {
+    color: var(--color-brand-primary);
+}
+
+body:not([data-theme=light]) h1,
+body:not([data-theme=light]) .gradient-text,
+body:not([data-theme=light]) .sidebar-brand-text {
+    background: linear-gradient(90deg, #54DDF8 0%, #0083CF 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Card CSS */
+.sd-card {
+    border: 0px solid transparent !important;
+}
+
+[data-theme=light] .sd-card {
+    box-shadow: -4px -4px 18px -2px #E2FDF1, 4px 5px 15px rgba(0, 0, 0, 0.15) !important;
+    border-radius: 10px !important;
+    transition: background-color 300ms;
+}
+
+[data-theme=light] .sd-card:hover {
+    background: #E7FAFE !important;
+}
+
+body:not([data-theme=light]) .sd-card {
+    box-shadow: 0px 2px 0px #54DDF8 !important;
+    border-radius: 10px !important;
+    transition: background-color 300ms;
+}
+
+body:not([data-theme=light]) .sd-card:hover {
+    background: #121621 !important;
+}
+
+/* code block colors */
+body:not([data-theme=light]) .highlight {
+    background: #191F2E;
+    box-shadow: inset 0px -3px 5px -3px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme=light] .highlight {
+    background: #B7F0FB;
+    box-shadow: inset 0px -3px 5px -3px rgba(0, 0, 0, 0.15);
+}
+
+/* Hack to get code-block strings to look decent in light mode */
+[data-theme=light] .highlight .s1 {
+    color: #0A40BD;
+}
+
+/* Copy Buttons for code blocks */
+.highlight button.copybtn {
+    background: transparent;
+}
+
+/* Next and Previous page coloring */
+body:not([data-theme=light]) .page-info>.context {
+    color: var(--color-foreground-muted);
+}
+
+body:not([data-theme=light]) .page-info>.title {
+    color: var(--color-foreground-primary);
+}

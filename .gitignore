@@ -15,3 +15,5 @@ scratch/
 !README.md
 !docs/*.md
 !tests/schemas/*.json
+
+.DS_Store

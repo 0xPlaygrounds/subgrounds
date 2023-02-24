@@ -1,4 +1,4 @@
-# Advanced topics
+# Advanced Topics
 
 ## Pagination
 By default, Subgrounds handles GraphQL query pagination automatically. That is, if a query selects more than 1000 entities using the `first` argument (1000 being The Graph's limit to the `first` argument), then Subgrounds will automatically split the query into multiple queries that each query at most 1000 entities.

@@ -356,7 +356,7 @@ class SchemaMeta(BaseModel):
         return None
 
     # @validator("type_map", "types", always=True, pre=True)
-    @root_validator
+    @root_validator(allow_reuse=True)
     def type_map_generator(cls, values):
         # print(values)
         # print(v)

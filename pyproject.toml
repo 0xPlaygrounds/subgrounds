@@ -3,7 +3,7 @@ name = "subgrounds"
 version = "1.0.3"
 description = "A Pythonic data access layer for applications querying data from The Graph Network."
 authors = []
-repository = "https://github.com/Protean-Labs/subgrounds"
+repository = "https://github.com/0xPlaygrounds/subgrounds"
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -17,26 +17,154 @@ pydantic = "^1.10.2"
 [tool.poetry.extras]
 dash = ["dash"]
 
-[tool.poetry.dev-dependencies]
+# https://python-poetry.org/docs/managing-dependencies/#dependency-groups
+[tool.poetry.group.dev.dependencies]
+black = "^22.3.0"
+deepdiff = "^6.2.1"  # used for debugging data structures
+flake8 = "^4.0.1"
+ipykernel = "^6.13.0"
+isort = "^5.10.1"
 mypy = "^0.950"
 nose2 = "^0.11.0"
-flake8 = "^4.0.1"
 pylint = "^2.13.8"
-ipykernel = "^6.13.0"
-mudkip = "^0.5.3"
-myst-nb = "0.13.2"
 pytest = "^7.1.2"
-black = "^22.3.0"
-isort = "^5.10.1"
 pytest-mock = "^3.8.2"
+python-semantic-release = "^7.33.1"
 
+# This is all pinned to avoid our docs "changing"
+# We employ some custom CSS for our branding, we don't want that
+#  to alter if our docs theme decides to change the html tags
+[tool.poetry.group.docs.dependencies]
+furo = "2022.12.7"
+mudkip = "0.8.0"
+sphinx_design = "0.3.0"
+sphinxext-opengraph = "0.8.1"
+sphinx-copybutton = "0.5.1"
+sphinx-thebe = "0.2.1"
+sphinxcontrib-repl = "0.4.1"
 
-[tool.poetry.group.dev.dependencies]
-deepdiff = "^6.2.1"
+[tool.poe.tasks]
+format = { shell = "isort .; black ."}
+check = { shell = "isort . --check; black . --check"}
+develop = { shell = "mudkip develop" }
+generate-api-docs = { shell = "sphinx-apidoc --output docs/api subgrounds --separate --force" }
 
 [tool.mudkip]
-title = "subgrounds"
-preset = "rtd"
+preset = "furo"
+
+[tool.mudkip.override]
+html_title = "Subgrounds"
+html_favicon = "_assets/pg_icon.png"
+html_static_path = ["_static", "_assets"]
+templates_path = ["_templates"]
+html_css_files = [
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css",
+    "custom.css",
+    "fonts.css",
+]
+html_show_copyright = false
+html_show_sphinx = false
+
+pygments_style = "tango"
+pygments_dark_style = "material"
+
+extensions = [
+    "sphinx_design",        # enables fancy design, like cards, etc
+    "sphinxext.opengraph",  # provides social media cards + ranking info
+    "sphinx_copybutton",    # adds copy buttons to raw code blocks
+    # "sphinx_thebe",       # transforms code cells into executable notebook cells
+    "sphinxcontrib.repl",   # auto evaluates code-blocks w/ `repl`
+]
+myst_enable_extensions = ["substitution", "colon_fence"]
+suppress_warnings = ["myst.header"]
+
+nitpicky = false
+
+# Open Graph Metadata (https://ogp.me/)
+ogp_site_url = "https://subgrounds.io/"
+ogp_description_length = 300
+ogp_type = "article"
+
+ogp_enable_meta_description = true
+
+# [tool.mudkip.override.thebe_config]
+# repository_url = "https://github.com/0xPlaygrounds/jupyter-stacks-subgrounds"
+# repository_branch = "master"  # TODO -> main
+# codemirror-theme = "ayu-mirage"
+
+[tool.mudkip.override.html_theme_options.light_css_variables]
+color-foreground-primary = "#040019"
+color-foreground-secondary = "black"
+
+color-background-primary = "#CFF5FC"
+color-background-secondary = "#B4DCE4"
+
+color-background-border = "#B5DCE4"
+
+color-header-text = "#191F2E"
+
+color-sidebar-caption-text = "#0083CF"
+color-sidebar-background = "#B4DCE4"
+color-sidebar-search-background--focus = "var(--color-sidebar-item-background--hover)"
+
+# sd-color-shadow = "#040019"
+
+color-brand-primary = "#191F2E"
+color-brand-content = "#040019"
+
+font-stack = "Sofia Pro Light, sans-serif"
+
+[tool.mudkip.override.html_theme_options.dark_css_variables]
+color-foreground-primary = "#F4F4F4"
+color-foreground-secondary = "#CCCCCC"
+color-foreground-muted = "#A9ACAC"
+
+color-background-primary = "#040019"
+color-background-secondary = "#131720"
+
+color-header-text = "#54DDF8"
+
+color-sidebar-link-text--top-level = "var(--color-foreground-muted)"
+color-sidebar-caption-text = "var(--color-foreground-primary)"
+
+color-sidebar-background = "linear-gradient(180deg, #131720 36.39%, #1A263D 100%)"
+color-sidebar-item-background--current = "transparent"
+color-sidebar-search-background--focus = "var(--color-sidebar-item-background--hover)"
+
+color-brand-primary = "#54DDF8"
+color-brand-content = "#0083CF"
+
+sd-color-card-background = "#191F2E"
+sd-color-card-border-hover = "#54DDF8"
+# sd-color-shadow = "#54DDF8"
+
+font-stack = "Sofia Pro Light, sans-serif"
+
+[[tool.mudkip.override.html_theme_options.footer_icons]]
+name = "GitHub"
+url = "https://github.com/0xPlaygrounds/subgrounds"
+html = ""
+class = "fa-brands fa-github fa-xl"
+
+[[tool.mudkip.override.html_theme_options.footer_icons]]
+name = "Discord"
+url = "https://discord.gg/v4r4zhBAh2"
+html = ""
+class = "fa-brands fa-discord fa-xl"
+
+[[tool.mudkip.override.html_theme_options.footer_icons]]
+name = "Twitter"
+url = "https://twitter.com/Playgrounds0x"
+html = ""
+class = "fa-brands fa-twitter fa-xl"
+
+[tool.semantic_release]
+branch = "main"
+upload_to_pypi = true
+version_variable = ["subgrounds/__init__.py:__version__"]
+version_toml = "pyproject.toml:tool.poetry.version"
+major_on_zero = false
+build_command = "poetry build"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

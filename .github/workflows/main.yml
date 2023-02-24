@@ -4,19 +4,17 @@ on:
   pull_request:
     branches: [ main ]
     paths:
-      - ".github/workflows/main.yml"
-      - "subgrounds"
-      - "tests"
-      - "examples"
+      - "subgrounds/**"
+      - "tests/**"
+      - "examples/**"
       - "pyproject.toml"
 
   push:
     branches: [ main ]
     paths:
-      - ".github/workflows/main.yml"
-      - "subgrounds"
-      - "tests"
-      - "examples"
+      - "subgrounds/**"
+      - "tests/**"
+      - "examples/**"
       - "pyproject.toml"
 
 env:

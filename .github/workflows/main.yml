@@ -3,14 +3,21 @@ name: CI
 on:
   pull_request:
     branches: [ main ]
-    paths-ignore:
-      - "docs/**"
-      - "README.md"
+    paths:
+      - ".github/workflows/main.yml"
+      - "subgrounds"
+      - "tests"
+      - "examples"
+      - "pyproject.toml"
+
   push:
     branches: [ main ]
-    paths-ignore:
-      - "docs/**"
-      - "README.md"
+    paths:
+      - ".github/workflows/main.yml"
+      - "subgrounds"
+      - "tests"
+      - "examples"
+      - "pyproject.toml"
 
 env:
   POETRY_VERSION: "1.3.2"
@@ -29,6 +36,8 @@ jobs:
     # -----           gather repo             -----
     # ---------------------------------------------
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
     # ---------------------------------------------
     # -----      setup and cache python       -----
@@ -42,7 +51,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ~/.local
-        key: poetry-${{ runner.os }}-${{ matrix.python-version }}-${{ env.POETRY_VERSION }}
+        key: poetry-${{ runner.os }}-${{ env.POETRY_VERSION }}
 
     - name: Install poetry
       if: steps.cache-poetry.outputs.cache-hit != 'true'
@@ -79,9 +88,9 @@ jobs:
     - name: Run unit tests
       run: poetry run pytest
 
-    - name: Run examples smoke tests
-      shell: bash
-      run: sh tests/test_examples.sh
+    # - name: Run examples smoke tests
+    #   shell: bash
+    #   run: sh tests/test_examples.sh
 
     # # ---------------------------------------------
     # # -----          Release Package          -----

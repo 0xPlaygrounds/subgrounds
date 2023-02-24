@@ -50,6 +50,7 @@ develop = { shell = "mudkip develop" }
 generate-api-docs = { shell = "sphinx-apidoc --output docs/api subgrounds --separate --force" }
 
 [tool.mudkip]
+base_url = "https://subgrounds.io"
 preset = "furo"
 
 [tool.mudkip.override]

@@ -40,32 +40,28 @@ Subgrounds also comes bundled with some handy `dash` wrappers. To use those wrap
 >>> from subgrounds import Subgrounds
 
 >>> sg = Subgrounds()
->>> aave_v2 = sg.load_subgraph('https://api.thegraph.com/subgraphs/name/aave/protocol-v2')
 
->>> aave_v2.Borrow.adjusted_amount = aave_v2.Borrow.amount / 10 ** aave_v2.Borrow.reserve.decimals
+>>> # Load
+>>> aave_v2 = sg.load_subgraph('https://api.thegraph.com/subgraphs/name/messari/aave-v2-ethereum')
 
->>> last10_borrows = aave_v2.Query.borrows(
-...   orderBy=aave_v2.Borrow.timestamp,
-...   orderDirection='desc',
-...   first=10
-... )
+>>> # Construct the query
+>>> latest = aave_v2.Query.markets(
+  orderBy=aave_v2.Market.totalValueLockedUSD,
+  orderDirection='desc',
+  first=5,
+)
 
+>>> # Return query to a dataframe
 >>> sg.query_df([
-...   last10_borrows.reserve.symbol, 
-...   last10_borrows.timestamp,
-...   last10_borrows.adjusted_amount
-... ])
-  borrows_reserve_symbol  borrows_timestamp  borrows_adjusted_amount
-0                   USDT         1677268751             3.050000e+03
-1                    DAI         1677268679             6.500000e+01
-2                   USDC         1677268427             6.801157e+03
-3                   BUSD         1677268067             6.000000e+02
-4                   USDC         1677267983             5.534885e+06
-5                   USDC         1677267719             7.000000e+02
-6                   USDC         1677265859             1.000000e+03
-7                AmmWBTC         1677265667             1.394740e-03
-8                    DAI         1677264899             7.740000e+04
-9                   WETH         1677264803             1.279919e+04
+  latest.name,
+  latest.totalValueLockedUSD,
+])
+                  markets_name  markets_totalValueLockedUSD
+0  Aave interest bearing STETH                 1.522178e+09
+1   Aave interest bearing WETH                 1.221299e+09
+2   Aave interest bearing USDC                 8.140547e+08
+3   Aave interest bearing WBTC                 6.615692e+08
+4   Aave interest bearing USDT                 3.734017e+08
 ```
 <!-- end simple-example -->
 

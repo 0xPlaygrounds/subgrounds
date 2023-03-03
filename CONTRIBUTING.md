@@ -19,11 +19,23 @@ We also use a `poetry` plugin called `poethepoet` to aid in managing our frequen
 $ poetry self add 'poethepoet[poetry_plugin]'
 ```
 
-If you wish to note use `poe`, you'll need to either run the commands manually with `poetry run` preceding, or you can explictly run `poetry shell` to launch a shell inside the virtual environment.
+<details>
+<summary>Alternative to using <code>poe</code></summary>
+<br>
+
+If you wish not use `poe`, you'll have to run the following and checkout the commands listed in the `pyproject.toml` under `[tool.poe.tasks]`.
+
+This will run `<my-command>` inside a virtual environment (`poetry shell` will explictly keep you inside one until you run `deactivate`)
 
 ```bash
 $ poetry shell
+$ <my-command>
+$ deactivate
+# or
+$ poetry run <my-command>
 ```
+</details>
+
 
 ## Testing
 ```bash

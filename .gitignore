@@ -13,6 +13,7 @@ subgrounds.egg-info/
 scratch/
 
 !README.md
+!CONTRIBUTING.md
 !docs/*.md
 !tests/schemas/*.json
 

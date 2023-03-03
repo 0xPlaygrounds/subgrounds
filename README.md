@@ -20,10 +20,10 @@ A Pythonic data access layer for applications querying data from The Graph Netwo
 <!-- end elevator-pitch -->
 
 ## Docs
-- [**Subgrounds Docs**](https://subgrounds.io): User guide and API documentation (WIP)
+- [**Subgrounds Docs**](http://docs.playgrounds.network/): User guide and API documentation (WIP)
 - [**MetricsDAO Subgrounds Workshop**](https://docs.metricsdao.xyz/get-involved/workshops/2022-03-30+-subgrounds-workshop-series): Subgrounds workshop series hosted by MetricsDAO 
 - [**Examples**](https://github.com/0xPlaygrounds/subgrounds/tree/main/examples): A list of examples showcasing Subgrounds integration with Dash and Plotly
-- [**Community projects**](https://subgrounds.io/examples/): An ever growing list of projects created by our community members
+- [**Community projects**](http://docs.playgrounds.network//examples/): An ever growing list of projects created by our community members
 
 ## Installation
 > Subgrounds **requires** atleast Python 3.10+
@@ -55,25 +55,24 @@ Subgrounds also comes bundled with some handy `dash` wrappers. To use those wrap
 ...   last10_borrows.timestamp,
 ...   last10_borrows.adjusted_amount
 ... ])
+  borrows_reserve_symbol  borrows_timestamp  borrows_adjusted_amount
+0                   USDT         1677268751             3.050000e+03
+1                    DAI         1677268679             6.500000e+01
+2                   USDC         1677268427             6.801157e+03
+3                   BUSD         1677268067             6.000000e+02
+4                   USDC         1677267983             5.534885e+06
+5                   USDC         1677267719             7.000000e+02
+6                   USDC         1677265859             1.000000e+03
+7                AmmWBTC         1677265667             1.394740e-03
+8                    DAI         1677264899             7.740000e+04
+9                   WETH         1677264803             1.279919e+04
 ```
-| borrows_reserve_symbol | borrows_timestamp | borrows_adjusted_amount |
-| ---------------------- | ----------------- | ----------------------- |
-| USDT                   | 1643300294        | 500000.0                |
-| DAI                    | 1643299575        | 6000.0                  |
-| USDT                   | 1643298921        | 900000.0                |
-| USDT                   | 1643297685        | 500000.0                |
-| USDC                   | 1643296256        | 50000.0                 |
-| PAX                    | 1643295342        | 4150.0                  |
-| USDT                   | 1643294783        | 9000.0                  |
-| DAI                    | 1643293451        | 45585.9                 |
-| UNI                    | 1643289600        | 50000.0                 |
-| USDT                   | 1643289117        | 14000.0                 |
 <!-- end simple-example -->
 
 
 ## About Us
 Playgrounds Analytics was started by web3 data enthusiasts to build open source tooling for The Graph Network as part of its grants program. 
-Playgrounds Analytics are a data solutions company leveraging The Graph to provide serverless on-chain data infrastructures and services for data teams, analysts, and engineers. Checkout us out [here](https://www.playgrounds.network/) to learn more!
+Playgrounds Analytics are a data solutions company leveraging The Graph to provide serverless on-chain data infrastructures and services for data teams, analysts, and engineers. Checkout us out [here](https://playgrounds.network/) to learn more!
 
 
 

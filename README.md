@@ -12,10 +12,10 @@
 <!-- start elevator-pitch -->
 A Pythonic data access layer for applications querying data from The Graph Network.
 
-## Design goals
-- **Simple**: Easy to use toplevel API
-- **Automated**: Schema introspection and class generation, type checking and pagination is all handled automatically
-- **Schema-Driven**: Queries are built with `FieldPaths` while transformations are defined with `SyntheticFields`, as opposed to raw GraphQL and transforming raw data
+## Features
+- **Simple**: Leverage a Pythonic API to easily build queries and transformations without the need for raw GraphQL manipulation.
+- **Automated**: Automatically handle pagination and schema introspection for effortless data retrieval.
+- **Powerful**: Create sophisticated queries using the `SyntheticFields` transformation system.
 
 <!-- end elevator-pitch -->
 

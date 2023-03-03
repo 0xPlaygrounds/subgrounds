@@ -7,7 +7,9 @@ authors = [
     "0xMochan <mochan@playgrounds.network>",
 ]
 repository = "https://github.com/0xPlaygrounds/subgrounds"
+
 readme = "README.md"
+keywords = ["graph", "subgrounds", "graphql", "subgraph"]
 
 [tool.poetry.dependencies]
 python = "^3.10"

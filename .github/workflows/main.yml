@@ -90,18 +90,18 @@ jobs:
     #   shell: bash
     #   run: sh tests/test_examples.sh
 
-    # # ---------------------------------------------
-    # # -----          Release Package          -----
-    # # ---------------------------------------------
-    # - name: Release
-    #   if: |
-    #     github.repository == '0xPlaygrounds/subgrounds'
-    #     && github.event_name == 'push'
-    #     && github.ref == 'refs/heads/main'
-    #   env:
-    #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #     PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
-    #   run: |
-    #     git config --global user.name "github-actions"
-    #     git config --global user.email "action@github.com"
-    #     poetry run semantic-release publish -v DEBUG -D commit_author="github-actions <action@github.com>"
+    # ---------------------------------------------
+    # -----          Release Package          -----
+    # ---------------------------------------------
+    - name: Release
+      if: |
+        github.repository == '0xPlaygrounds/subgrounds'
+        && github.event_name == 'push'
+        && github.ref == 'refs/heads/main'
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "action@github.com"
+        poetry run semantic-release publish -v DEBUG -D commit_author="github-actions <action@github.com>"

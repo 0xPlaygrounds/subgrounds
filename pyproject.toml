@@ -47,6 +47,7 @@ sphinxcontrib-repl = "0.4.1"
 format = { shell = "isort .; black ."}
 check = { shell = "isort . --check; black . --check"}
 develop = { shell = "mudkip develop" }
+test = { shell = "pytest" }
 generate-api-docs = { shell = "sphinx-apidoc --output docs/api subgrounds --separate --force" }
 
 [tool.mudkip]

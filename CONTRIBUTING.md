@@ -38,8 +38,11 @@ $ poetry run <my-command>
 
 
 ## Testing
+
+We use `pytest` to ensure our code doesn't regress in behavior with fixes and new features. Make sure to continously run tests alongside writing new ones as you add more features to the code base.
+
 ```bash
-$ pytest
+$ poe test
 ```
 
 ## Code Style

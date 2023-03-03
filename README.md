@@ -10,7 +10,7 @@
 
 
 <!-- start elevator-pitch -->
-A Pythonic data access layer for applications querying data from The Graph Network.
+An intuitive python library for interfacing with Subgraphs.
 
 ## Features
 - **Simple**: Leverage a Pythonic API to easily build queries and transformations without the need for raw GraphQL manipulation.
@@ -19,11 +19,11 @@ A Pythonic data access layer for applications querying data from The Graph Netwo
 
 <!-- end elevator-pitch -->
 
-## Docs
-- [**Subgrounds Docs**](http://docs.playgrounds.network/): User guide and API documentation (WIP)
-- [**MetricsDAO Subgrounds Workshop**](https://docs.metricsdao.xyz/get-involved/workshops/2022-03-30+-subgrounds-workshop-series): Subgrounds workshop series hosted by MetricsDAO 
+## Resources
+- [**Subgrounds Docs**](http://docs.playgrounds.network/): User guide and API documentation
 - [**Examples**](https://github.com/0xPlaygrounds/subgrounds/tree/main/examples): A list of examples showcasing Subgrounds integration with Dash and Plotly
 - [**Community projects**](http://docs.playgrounds.network//examples/): An ever growing list of projects created by our community members
+- [**MetricsDAO Subgrounds Workshop**](https://docs.metricsdao.xyz/get-involved/workshops/2022-03-30+-subgrounds-workshop-series): Subgrounds workshop series hosted by MetricsDAO 
 
 ## Installation
 > Subgrounds **requires** atleast Python 3.10+

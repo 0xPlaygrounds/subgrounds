@@ -1,0 +1,526 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+<meta property="og:title" content="API Documentation" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://subgrounds.io/modules/" />
+<meta property="og:site_name" content="subgrounds" />
+<meta property="og:description" content="These docs are directly generated from our source code docstrings. subgrounds package- Subpackages- subgrounds.pagination package- Submodules, Module contents., subgrounds.subgraph package- Submodules, Module contents.., Submodules- subgrounds.client module- get_schema(), query()., subgrounds.das..." />
+<meta property="og:image" content="https://subgrounds.io/_images/social_previews/summary_modules_73985bc3.png" />
+<meta property="og:image:alt" content="These docs are directly generated from our source code docstrings. subgrounds package- Subpackages- subgrounds.pagination package- Submodules, Module content..." />
+<meta name="description" content="These docs are directly generated from our source code docstrings. subgrounds package- Subpackages- subgrounds.pagination package- Submodules, Module contents., subgrounds.subgraph package- Submodules, Module contents.., Submodules- subgrounds.client module- get_schema(), query()., subgrounds.das..." />
+<link rel="index" title="Index" href="../genindex/" /><link rel="search" title="Search" href="../search/" /><link rel="next" title="subgrounds package" href="../api/subgrounds/" /><link rel="prev" title="Examples" href="../examples/" />
+        <link rel="canonical" href="https://subgrounds.io/modules.html" />
+
+    <link rel="shortcut icon" href="../_static/pg_icon.png"/><!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
+        <title>API Documentation - Subgrounds</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/fonts.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mudkip_furo.css" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-foreground-primary: #040019;
+  --color-foreground-secondary: black;
+  --color-background-primary: #CFF5FC;
+  --color-background-secondary: #B4DCE4;
+  --color-background-border: #B5DCE4;
+  --color-header-text: #191F2E;
+  --color-sidebar-caption-text: #0083CF;
+  --color-sidebar-background: #B4DCE4;
+  --color-sidebar-search-background--focus: var(--color-sidebar-item-background--hover);
+  --color-brand-primary: #191F2E;
+  --color-brand-content: #040019;
+  --font-stack: Sofia Pro Light, sans-serif;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-foreground-primary: #F4F4F4;
+  --color-foreground-secondary: #CCCCCC;
+  --color-foreground-muted: #A9ACAC;
+  --color-background-primary: #040019;
+  --color-background-secondary: #131720;
+  --color-header-text: #54DDF8;
+  --color-sidebar-link-text--top-level: var(--color-foreground-muted);
+  --color-sidebar-caption-text: var(--color-foreground-primary);
+  --color-sidebar-background: linear-gradient(180deg, #131720 36.39%, #1A263D 100%);
+  --color-sidebar-item-background--current: transparent;
+  --color-sidebar-search-background--focus: var(--color-sidebar-item-background--hover);
+  --color-brand-primary: #54DDF8;
+  --color-brand-content: #0083CF;
+  --sd-color-card-background: #191F2E;
+  --sd-color-card-border-hover: #54DDF8;
+  --font-stack: Sofia Pro Light, sans-serif;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-foreground-primary: #F4F4F4;
+  --color-foreground-secondary: #CCCCCC;
+  --color-foreground-muted: #A9ACAC;
+  --color-background-primary: #040019;
+  --color-background-secondary: #131720;
+  --color-header-text: #54DDF8;
+  --color-sidebar-link-text--top-level: var(--color-foreground-muted);
+  --color-sidebar-caption-text: var(--color-foreground-primary);
+  --color-sidebar-background: linear-gradient(180deg, #131720 36.39%, #1A263D 100%);
+  --color-sidebar-item-background--current: transparent;
+  --color-sidebar-search-background--focus: var(--color-sidebar-item-background--hover);
+  --color-brand-primary: #54DDF8;
+  --color-brand-content: #0083CF;
+  --sd-color-card-background: #191F2E;
+  --sd-color-card-border-hover: #54DDF8;
+  --font-stack: Sofia Pro Light, sans-serif;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../"><div class="brand">Subgrounds</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../">
+  
+  
+  <span class="sidebar-brand-text">Subgrounds</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search/" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basics/">Subgrounds Basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../advanced/">Advanced Topics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../troubleshooting/">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a></li>
+<li class="toctree-l1 current has-children current-page"><a class="current reference internal" href="#">API Reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api/subgrounds/">subgrounds package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api/subgrounds.pagination/">subgrounds.pagination package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.pagination.pagination/">subgrounds.pagination.pagination module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.pagination.preprocess/">subgrounds.pagination.preprocess module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.pagination.strategies/">subgrounds.pagination.strategies module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.pagination.utils/">subgrounds.pagination.utils module</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../api/subgrounds.subgraph/">subgrounds.subgraph package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle child pages in navigation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.subgraph.fieldpath/">subgrounds.subgraph.fieldpath module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.subgraph.filter/">subgrounds.subgraph.filter module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.subgraph.object/">subgrounds.subgraph.object module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.subgraph.subgraph/">subgrounds.subgraph.subgraph module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/subgrounds.client/">subgrounds.client module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/subgrounds.dash_wrappers/">subgrounds.dash_wrappers module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/subgrounds.dataframe_utils/">subgrounds.dataframe_utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/">subgrounds.plotly_wrappers module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/subgrounds.query/">subgrounds.query module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/subgrounds.schema/">subgrounds.schema module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/subgrounds.subgrounds/">subgrounds.subgrounds module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/subgrounds.transform/">subgrounds.transform module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../api/subgrounds.utils/">subgrounds.utils module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing/">Contributing</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section id="api-documentation">
+<h1>API Documentation<a class="headerlink" href="#api-documentation" title="Permalink to this heading">#</a></h1>
+<p>These docs are directly generated from our source code docstrings.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/subgrounds/">subgrounds package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/subgrounds/#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/subgrounds.pagination/">subgrounds.pagination package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.pagination/#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.pagination/#module-subgrounds.pagination">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/subgrounds.subgraph/">subgrounds.subgraph package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.subgraph/#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.subgraph/#module-subgrounds.subgraph">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/subgrounds/#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/subgrounds.client/">subgrounds.client module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.client/#subgrounds.client.get_schema"><code class="docutils literal notranslate"><span class="pre">get_schema()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.client/#subgrounds.client.query"><code class="docutils literal notranslate"><span class="pre">query()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/subgrounds.dash_wrappers/">subgrounds.dash_wrappers module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.dash_wrappers/#subgrounds.dash_wrappers.Refreshable"><code class="docutils literal notranslate"><span class="pre">Refreshable</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.dash_wrappers/#subgrounds.dash_wrappers.Graph"><code class="docutils literal notranslate"><span class="pre">Graph</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.dash_wrappers/#subgrounds.dash_wrappers.DataTable"><code class="docutils literal notranslate"><span class="pre">DataTable</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.dash_wrappers/#subgrounds.dash_wrappers.AutoUpdate"><code class="docutils literal notranslate"><span class="pre">AutoUpdate</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/subgrounds.dataframe_utils/">subgrounds.dataframe_utils module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.dataframe_utils/#subgrounds.dataframe_utils.gen_columns"><code class="docutils literal notranslate"><span class="pre">gen_columns()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.dataframe_utils/#subgrounds.dataframe_utils.fmt_cols"><code class="docutils literal notranslate"><span class="pre">fmt_cols()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.dataframe_utils/#subgrounds.dataframe_utils.DataFrameColumns"><code class="docutils literal notranslate"><span class="pre">DataFrameColumns</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.dataframe_utils/#subgrounds.dataframe_utils.columns_of_selections"><code class="docutils literal notranslate"><span class="pre">columns_of_selections()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.dataframe_utils/#subgrounds.dataframe_utils.df_of_json"><code class="docutils literal notranslate"><span class="pre">df_of_json()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/">subgrounds.plotly_wrappers module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.TraceWrapper"><code class="docutils literal notranslate"><span class="pre">TraceWrapper</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Scatter"><code class="docutils literal notranslate"><span class="pre">Scatter</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Pie"><code class="docutils literal notranslate"><span class="pre">Pie</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Bar"><code class="docutils literal notranslate"><span class="pre">Bar</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Heatmap"><code class="docutils literal notranslate"><span class="pre">Heatmap</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Contour"><code class="docutils literal notranslate"><span class="pre">Contour</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Table"><code class="docutils literal notranslate"><span class="pre">Table</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Box"><code class="docutils literal notranslate"><span class="pre">Box</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Violin"><code class="docutils literal notranslate"><span class="pre">Violin</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Histogram"><code class="docutils literal notranslate"><span class="pre">Histogram</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Histogram2d"><code class="docutils literal notranslate"><span class="pre">Histogram2d</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Histogram2dContour"><code class="docutils literal notranslate"><span class="pre">Histogram2dContour</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Ohlc"><code class="docutils literal notranslate"><span class="pre">Ohlc</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Candlestick"><code class="docutils literal notranslate"><span class="pre">Candlestick</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Waterfall"><code class="docutils literal notranslate"><span class="pre">Waterfall</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Funnel"><code class="docutils literal notranslate"><span class="pre">Funnel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Indicator"><code class="docutils literal notranslate"><span class="pre">Indicator</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Scatter3d"><code class="docutils literal notranslate"><span class="pre">Scatter3d</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Surface"><code class="docutils literal notranslate"><span class="pre">Surface</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Scattergeo"><code class="docutils literal notranslate"><span class="pre">Scattergeo</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Choropleth"><code class="docutils literal notranslate"><span class="pre">Choropleth</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Scattermapbox"><code class="docutils literal notranslate"><span class="pre">Scattermapbox</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Choroplethmapbox"><code class="docutils literal notranslate"><span class="pre">Choroplethmapbox</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Densitymapbox"><code class="docutils literal notranslate"><span class="pre">Densitymapbox</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Scatterpolar"><code class="docutils literal notranslate"><span class="pre">Scatterpolar</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Barpolar"><code class="docutils literal notranslate"><span class="pre">Barpolar</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Sunburst"><code class="docutils literal notranslate"><span class="pre">Sunburst</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Treemap"><code class="docutils literal notranslate"><span class="pre">Treemap</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Icicle"><code class="docutils literal notranslate"><span class="pre">Icicle</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Sankey"><code class="docutils literal notranslate"><span class="pre">Sankey</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Parcoords"><code class="docutils literal notranslate"><span class="pre">Parcoords</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Parcats"><code class="docutils literal notranslate"><span class="pre">Parcats</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Carpet"><code class="docutils literal notranslate"><span class="pre">Carpet</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Scattercarpet"><code class="docutils literal notranslate"><span class="pre">Scattercarpet</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Contourcarpet"><code class="docutils literal notranslate"><span class="pre">Contourcarpet</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.plotly_wrappers/#subgrounds.plotly_wrappers.Figure"><code class="docutils literal notranslate"><span class="pre">Figure</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/subgrounds.query/">subgrounds.query module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.query/#subgrounds.query.InputValue"><code class="docutils literal notranslate"><span class="pre">InputValue</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.query/#subgrounds.query.VariableDefinition"><code class="docutils literal notranslate"><span class="pre">VariableDefinition</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.query/#subgrounds.query.Argument"><code class="docutils literal notranslate"><span class="pre">Argument</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.query/#subgrounds.query.Selection"><code class="docutils literal notranslate"><span class="pre">Selection</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.query/#subgrounds.query.Query"><code class="docutils literal notranslate"><span class="pre">Query</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.query/#subgrounds.query.Fragment"><code class="docutils literal notranslate"><span class="pre">Fragment</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.query/#subgrounds.query.Document"><code class="docutils literal notranslate"><span class="pre">Document</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.query/#subgrounds.query.DataRequest"><code class="docutils literal notranslate"><span class="pre">DataRequest</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.query/#subgrounds.query.selections_of_object"><code class="docutils literal notranslate"><span class="pre">selections_of_object()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.query/#subgrounds.query.input_value_of_argument"><code class="docutils literal notranslate"><span class="pre">input_value_of_argument()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.query/#subgrounds.query.arguments_of_field_args"><code class="docutils literal notranslate"><span class="pre">arguments_of_field_args()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/subgrounds.schema/">subgrounds.schema module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.schema/#subgrounds.schema.BaseModel"><code class="docutils literal notranslate"><span class="pre">BaseModel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.schema/#subgrounds.schema.TypeRef"><code class="docutils literal notranslate"><span class="pre">TypeRef</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.schema/#subgrounds.schema.TypeMeta"><code class="docutils literal notranslate"><span class="pre">TypeMeta</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.schema/#subgrounds.schema.SchemaMeta"><code class="docutils literal notranslate"><span class="pre">SchemaMeta</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/subgrounds.subgrounds/">subgrounds.subgrounds module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.subgrounds/#subgrounds.subgrounds.store_schema"><code class="docutils literal notranslate"><span class="pre">store_schema()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.subgrounds/#subgrounds.subgrounds.load_schema"><code class="docutils literal notranslate"><span class="pre">load_schema()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.subgrounds/#subgrounds.subgrounds.subgraph_slug"><code class="docutils literal notranslate"><span class="pre">subgraph_slug()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.subgrounds/#subgrounds.subgrounds.Subgrounds"><code class="docutils literal notranslate"><span class="pre">Subgrounds</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/subgrounds.transform/">subgrounds.transform module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.transform/#subgrounds.transform.select_data"><code class="docutils literal notranslate"><span class="pre">select_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.transform/#subgrounds.transform.RequestTransform"><code class="docutils literal notranslate"><span class="pre">RequestTransform</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.transform/#subgrounds.transform.DocumentTransform"><code class="docutils literal notranslate"><span class="pre">DocumentTransform</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.transform/#subgrounds.transform.TypeTransform"><code class="docutils literal notranslate"><span class="pre">TypeTransform</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.transform/#subgrounds.transform.LocalSyntheticField"><code class="docutils literal notranslate"><span class="pre">LocalSyntheticField</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.transform/#subgrounds.transform.SplitTransform"><code class="docutils literal notranslate"><span class="pre">SplitTransform</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../api/subgrounds.utils/">subgrounds.utils module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.utils/#subgrounds.utils.flatten"><code class="docutils literal notranslate"><span class="pre">flatten()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.utils/#subgrounds.utils.identity"><code class="docutils literal notranslate"><span class="pre">identity()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.utils/#subgrounds.utils.fst"><code class="docutils literal notranslate"><span class="pre">fst()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.utils/#subgrounds.utils.snd"><code class="docutils literal notranslate"><span class="pre">snd()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.utils/#subgrounds.utils.intersection"><code class="docutils literal notranslate"><span class="pre">intersection()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.utils/#subgrounds.utils.rel_complement"><code class="docutils literal notranslate"><span class="pre">rel_complement()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.utils/#subgrounds.utils.sym_diff"><code class="docutils literal notranslate"><span class="pre">sym_diff()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.utils/#subgrounds.utils.union"><code class="docutils literal notranslate"><span class="pre">union()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.utils/#subgrounds.utils.filter_none"><code class="docutils literal notranslate"><span class="pre">filter_none()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.utils/#subgrounds.utils.loop_generator"><code class="docutils literal notranslate"><span class="pre">loop_generator()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.utils/#subgrounds.utils.repeat"><code class="docutils literal notranslate"><span class="pre">repeat()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.utils/#subgrounds.utils.extract_data"><code class="docutils literal notranslate"><span class="pre">extract_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.utils/#subgrounds.utils.flatten_dict"><code class="docutils literal notranslate"><span class="pre">flatten_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds.utils/#subgrounds.utils.contains_list"><code class="docutils literal notranslate"><span class="pre">contains_list()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api/subgrounds/#module-subgrounds">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../api/subgrounds/#subgrounds.Subgrounds"><code class="docutils literal notranslate"><span class="pre">Subgrounds</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds/#subgrounds.Subgrounds.global_transforms"><code class="docutils literal notranslate"><span class="pre">Subgrounds.global_transforms</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds/#subgrounds.Subgrounds.subgraphs"><code class="docutils literal notranslate"><span class="pre">Subgrounds.subgraphs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds/#subgrounds.Subgrounds.load"><code class="docutils literal notranslate"><span class="pre">Subgrounds.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds/#subgrounds.Subgrounds.load_subgraph"><code class="docutils literal notranslate"><span class="pre">Subgrounds.load_subgraph()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds/#subgrounds.Subgrounds.load_api"><code class="docutils literal notranslate"><span class="pre">Subgrounds.load_api()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds/#subgrounds.Subgrounds.mk_request"><code class="docutils literal notranslate"><span class="pre">Subgrounds.mk_request()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds/#subgrounds.Subgrounds.execute"><code class="docutils literal notranslate"><span class="pre">Subgrounds.execute()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds/#subgrounds.Subgrounds.execute_iter"><code class="docutils literal notranslate"><span class="pre">Subgrounds.execute_iter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds/#subgrounds.Subgrounds.query_json"><code class="docutils literal notranslate"><span class="pre">Subgrounds.query_json()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds/#subgrounds.Subgrounds.query_json_iter"><code class="docutils literal notranslate"><span class="pre">Subgrounds.query_json_iter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds/#subgrounds.Subgrounds.query_df"><code class="docutils literal notranslate"><span class="pre">Subgrounds.query_df()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds/#subgrounds.Subgrounds.query_df_iter"><code class="docutils literal notranslate"><span class="pre">Subgrounds.query_df_iter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds/#subgrounds.Subgrounds.query"><code class="docutils literal notranslate"><span class="pre">Subgrounds.query()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../api/subgrounds/#subgrounds.Subgrounds.query_iter"><code class="docutils literal notranslate"><span class="pre">Subgrounds.query_iter()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="../api/subgrounds/">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">subgrounds package</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../examples/">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Examples</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            Made with 
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link fa-brands fa-github fa-xl" href="https://github.com/0xPlaygrounds/subgrounds" aria-label="GitHub"></a>
+              <a class="muted-link fa-brands fa-discord fa-xl" href="https://discord.gg/v4r4zhBAh2" aria-label="Discord"></a>
+              <a class="muted-link fa-brands fa-twitter fa-xl" href="https://twitter.com/Playgrounds0x" aria-label="Twitter"></a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/scripts/furo.js"></script>
+    <script src="../_static/scripts/furo.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js"></script>
+    <script src="../_static/design-tabs.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../_static/design-tabs.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({startOnLoad:true});</script>
+    </body>
+</html>

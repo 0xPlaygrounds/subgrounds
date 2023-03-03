@@ -1,4 +1,5 @@
-""" Utility module for Subgrounds
+"""
+Utility module for Subgrounds
 """
 
 from itertools import filterfalse

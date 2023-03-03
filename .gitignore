@@ -1,7 +1,6 @@
 /*.py
 notes/
 *.json
-*.md
 __pycache__/
 dist/
 docs/build
@@ -12,9 +11,6 @@ subgrounds.egg-info/
 *.log
 scratch/
 
-!README.md
-!CONTRIBUTING.md
-!docs/*.md
 !tests/schemas/*.json
 
 .DS_Store

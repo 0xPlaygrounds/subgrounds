@@ -39,16 +39,26 @@ $ poetry run <my-command>
 
 ## Testing
 
-We use `pytest` to ensure our code doesn't regress in behavior with fixes and new features. Make sure to continously run tests alongside writing new ones as you add more features to the code base.
+We use `pytest` to ensure our code doesn't regress in behavior with fixes and new features. Make sure to continously run tests alongside writing new ones as you add more features to the codebase.
 
 ```bash
 $ poe test
 ```
 
 ## Code Style
-> ⚠️ TODO -> Use Black
+
+We use [black](https://github.com/psf/black) and [ruff](https://github.com/charliermarsh/ruff) to maintain our code style.
+
+- Black provides us an opinionated set of style conventions which helps keep the code consistent.
+- Ruff is a bleeding edge `flake8` replacement which helps us lint our code efficiently and effectively.
+
+This library also leverages python typing via the pyright project. We leverage the type-safety via the official [Python Vscode Extension](https://marketplace.visualstudio.com/items?itemName=ms-python.python).
+
+All PRs should be type-checked and adhere to the `black` and `ruff` style conventions.
+
+> Note: We recently moved towards using tools like `black` to help us maintain our codebase. However, our codebase is *still* adapting so there might be several rough edges (hense why we don't enforce linting in our CI yet). If you would like to help us improve these edges, feel free to make a PR!
 
 ```bash
-$ poe format
+$ poe format  # doesn't run `ruff check --fix` yet
 $ poe check
 ```

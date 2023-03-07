@@ -1,16 +1,17 @@
-/*.py
-notes/
-*.json
 __pycache__/
+notes/
 dist/
-docs/build
+scratch/
+subgrounds.egg-info/
+*.json
 *.ipynb
+*.log
 .coverage
 .python-version
-subgrounds.egg-info/
-*.log
-scratch/
-
 !tests/schemas/*.json
 
+# top-level python scripts
+/*.py
+
+# apple
 .DS_Store

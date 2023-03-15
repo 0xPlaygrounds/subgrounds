@@ -1144,7 +1144,7 @@ class Query:
   def map(
     self,
     map_f: Callable[[Selection], Selection],
-    priority: Literal['self'] | Literal['children']
+    priority: Literal['self'] | Literal['children'] = "self"
   ) -> Query:
     """ Applies the function ``map_f`` to each ``Selection`` in the current 
     ``Query`` and returns a new ``Query`` object containing the resulting ``Selections``.

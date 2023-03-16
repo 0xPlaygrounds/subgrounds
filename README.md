@@ -67,8 +67,7 @@ Subgrounds also comes bundled with some handy `dash` wrappers. To use those wrap
 
 
 ## About Us
-Playgrounds Analytics was started by web3 data enthusiasts to build open source tooling for The Graph Network as part of its grants program. 
-Playgrounds Analytics are a data solutions company leveraging The Graph to provide serverless on-chain data infrastructures and services for data teams, analysts, and engineers. Checkout us out [here](https://playgrounds.network/) to learn more!
+Playgrounds Analytics is a data solutions company providing serverless on-chain data infrastructures and services for data teams, analysts, and engineers. Checkout us out [here](https://playgrounds.network/) to learn more!
 
 
 

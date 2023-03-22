@@ -33,12 +33,12 @@
 
 
 ## v1.0.2 (2022-10-30)
-# Fix
+### Fix
 - Update `SchemaMeta` to `Pydantic` model for extra validation
 
 ## v1.0.1 (2022-08-08)
 
-# Fix
+### Fix
 - Schema cache directory path
 - `where` filter getting dropped during pagination
 

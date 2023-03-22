@@ -58,6 +58,9 @@ jobs:
       with:
         version: ${{ env.POETRY_VERSION }}
         virtualenvs-in-project: true
+    
+    - name: Install Poe the Poet
+      run: poetry self add poethepoet[poetry_plugin]
 
     - name: Cache venv
       id: cache-venv

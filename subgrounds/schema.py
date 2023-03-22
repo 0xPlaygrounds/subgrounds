@@ -5,14 +5,15 @@ are used to represent GraphQL schemas in Subgrounds using an AST-like approach.
 """
 
 from __future__ import annotations
-from abc import ABC, abstractmethod
-from typing import Annotated, Any, Literal, Optional
+
 import warnings
-from pydantic import BaseModel as PydanticBaseModel, Field, validator, root_validator
+from typing import Annotated, Literal
 
-from pipe import where, map
+from pipe import map, where
+from pydantic import BaseModel as PydanticBaseModel
+from pydantic import Field, root_validator
 
-warnings.simplefilter('default')
+warnings.simplefilter("default")
 
 
 class BaseModel(PydanticBaseModel):
@@ -22,8 +23,7 @@ class BaseModel(PydanticBaseModel):
 
 class TypeRef:
     class T(BaseModel):
-        """ Base class of all types of type references.
-        """
+        """Base class of all types of type references."""
 
         @property
         def name(self) -> str:
@@ -109,24 +109,24 @@ class TypeRef:
             case TypeRef.Named(name=name):
                 return name
             case TypeRef.NonNull(inner=t):
-                return f'{TypeRef.graphql(t)}!'
+                return f"{TypeRef.graphql(t)}!"
             case TypeRef.List(inner=t):
-                return f'[{TypeRef.graphql(t)}]'
+                return f"[{TypeRef.graphql(t)}]"
 
         assert False
 
 
 TypeRef_ListOrNonNull = Annotated[
-    TypeRef.List
-    | TypeRef.NonNull,
-    Field(discriminator="kind")
+    TypeRef.List | TypeRef.NonNull, Field(discriminator="kind")
 ]
 
 TypeRef_T = TypeRef_ListOrNonNull | TypeRef.Named
 
+
 class TypeMeta:
     class T(BaseModel):
-        """ Base class of all GraphQL schema types."""
+        """Base class of all GraphQL schema types."""
+
         name: str
         description: str | None
 
@@ -135,12 +135,14 @@ class TypeMeta:
             return False
 
     class ArgumentMeta(T):
-        """ Class representing a field argument definition."""
+        """Class representing a field argument definition."""
+
         type_: TypeRef_T = Field(alias="type")
         default_value: str | None = Field(alias="defaultValue")
 
     class FieldMeta(T):
-        """ Class representing an object field definition."""
+        """Class representing an object field definition."""
+
         arguments: list[TypeMeta.ArgumentMeta] = Field(alias="args")
         type_: TypeRef_T = Field(alias="type")
 
@@ -154,39 +156,38 @@ class TypeMeta:
         def type_of_arg(self: TypeMeta.FieldMeta, argname: str) -> TypeRef.T:
             try:
                 return next(
-                self.arguments
-                | where(lambda argmeta: argmeta.name == argname)
-                | map(lambda arg: arg.type_)
+                    self.arguments
+                    | where(lambda argmeta: argmeta.name == argname)
+                    | map(lambda arg: arg.type_)
                 )
             except StopIteration:
-                raise Exception(f'TypeMeta.FieldMeta.type_of_arg: no argument named {argname} for field {self.name}')
+                raise Exception(
+                    f"TypeMeta.FieldMeta.type_of_arg: no argument named {argname} for field {self.name}"
+                )
 
     class ScalarMeta(T):
         kind: Literal["SCALAR"] = "SCALAR"
         """ Class representing an scalar definition."""
 
     class ObjectMeta(T):
-        """ Class representing an object definition."""
+        """Class representing an object definition."""
+
         kind: Literal["OBJECT"] = "OBJECT"
         fields: list[TypeMeta.FieldMeta]
         interfaces_: list[dict] = Field(alias="interfaces", default_factory=list)
-
 
         # interfaces: list[str] = Field(default_factory=list)
 
         @property
         def interfaces(self) -> list[str]:
-            return list(
-                self.interfaces_
-                | map(lambda intf: intf["name"])
-            )
+            return list(self.interfaces_ | map(lambda intf: intf["name"]))
 
         @property
         def is_object(self) -> bool:
             return True
 
         def field(self: TypeMeta.ObjectMeta, fname: str) -> TypeMeta.FieldMeta:
-            """ Returns the field definition of object :attr:`self` with name :attr:`fname`, if any.
+            """Returns the field definition of object :attr:`self` with name :attr:`fname`, if any.
 
             Args:
                 self (TypeMeta.ObjectMeta): The object type
@@ -198,16 +199,16 @@ class TypeMeta:
             Returns:
                 TypeMeta.FieldMeta: The field definition
             """
+
             try:
-                return next(
-                    self.fields
-                    | where(lambda fmeta: fmeta.name == fname)
-                )
+                return next(self.fields | where(lambda fmeta: fmeta.name == fname))
             except StopIteration:
-                raise KeyError(f'TypeMeta.ObjectMeta.field: no field named {fname} for interface {self.name}')
+                raise KeyError(
+                    f"TypeMeta.ObjectMeta.field: no field named {fname} for interface {self.name}"
+                )
 
         def type_of_field(self: TypeMeta.ObjectMeta, fname: str) -> TypeRef.T:
-            """ Returns the type reference of the field of object :attr:`self` with name :attr:`fname`, if any.
+            """Returns the type reference of the field of object :attr:`self` with name :attr:`fname`, if any.
 
             Args:
                 self (TypeMeta.ObjectMeta): The object type
@@ -219,6 +220,7 @@ class TypeMeta:
             Returns:
                 TypeRef.T: The field type reference
             """
+
             try:
                 return next(
                     self.fields
@@ -226,19 +228,24 @@ class TypeMeta:
                     | map(lambda fmeta: fmeta.type_)
                 )
             except StopIteration:
-                raise KeyError(f'TypeMeta.ObjectMeta.type_of_field: no field named {fname} for object {self.name}')
+                raise KeyError(
+                    f"TypeMeta.ObjectMeta.type_of_field: no field named {fname} for object {self.name}"
+                )
 
     class EnumValueMeta(T):
-        """ Class representing an enum value definition."""
+        """Class representing an enum value definition."""
+
         pass
 
     class EnumMeta(T):
-        """ Class representing an enum definition."""
+        """Class representing an enum definition."""
+
         kind: Literal["ENUM"] = "ENUM"
         values: list[TypeMeta.EnumValueMeta] = Field(alias="enumValues")
 
     class InterfaceMeta(T):
-        """ Class representing an interface definition."""
+        """Class representing an interface definition."""
+
         kind: Literal["INTERFACE"] = "INTERFACE"
         fields: list[TypeMeta.FieldMeta]
 
@@ -247,7 +254,7 @@ class TypeMeta:
             return False
 
         def field(self: TypeMeta.InterfaceMeta, fname: str) -> TypeMeta.FieldMeta:
-            """ Returns the field definition of interface `self` with name `fname`, if any.
+            """Returns the field definition of interface `self` with name `fname`, if any.
 
             Args:
                 self (TypeMeta.InterfaceMeta): The interface type
@@ -259,26 +266,30 @@ class TypeMeta:
             Returns:
                 TypeMeta.FieldMeta: The field definition
             """
+
             try:
-                return next(
-                self.fields
-                | where(lambda fmeta: fmeta.name == fname)
-                )
+                return next(self.fields | where(lambda fmeta: fmeta.name == fname))
             except StopIteration:
-                raise KeyError(f'TypeMeta.InterfaceMeta.field: no field named {fname} for interface {self.name}')
+                raise KeyError(
+                    f"TypeMeta.InterfaceMeta.field: no field named {fname} for interface {self.name}"
+                )
 
     class UnionMeta(T):
-        """ Class representing an union definition."""
+        """Class representing an union definition."""
+
         kind: Literal["UNION"] = "UNION"
         types: list[str] = Field(alias="possibleTypes")
 
     class InputObjectMeta(T):
-        """ Class representing an input object definition."""
+        """Class representing an input object definition."""
+
         kind: Literal["INPUT_OBJECT"] = "INPUT_OBJECT"
         input_fields: list[TypeMeta.ArgumentMeta] = Field(alias="inputFields")
 
-        def type_of_input_field(self: TypeMeta.InputObjectMeta, fname: str) -> TypeRef.T:
-            """ Returns the type reference of the input field named `fname` in the
+        def type_of_input_field(
+            self: TypeMeta.InputObjectMeta, fname: str
+        ) -> TypeRef.T:
+            """Returns the type reference of the input field named `fname` in the
             input object `self`, if any.
 
             Args:
@@ -291,24 +302,27 @@ class TypeMeta:
             Returns:
                 TypeRef.T: The type reference for input field `fname`
             """
+
             try:
                 return next(
-                self.input_fields
-                | where(lambda infield: infield.name == fname)
-                | map(lambda infield: infield.type_)
+                    self.input_fields
+                    | where(lambda infield: infield.name == fname)
+                    | map(lambda infield: infield.type_)
                 )
             except StopIteration:
-                raise KeyError(f'TypeMeta.InputObjectMeta.type_of_input_field: no input field named {fname} for input object {self.name}')
+                raise KeyError(
+                    f"TypeMeta.InputObjectMeta.type_of_input_field: no input field named {fname} for input object {self.name}"
+                )
+
 
 TypeMeta_T = Annotated[
-    TypeMeta.ScalarMeta
-    | TypeMeta.ObjectMeta
+    TypeMeta.ScalarMeta | TypeMeta.ObjectMeta
     # | TypeMeta.EnumValueMeta
     | TypeMeta.EnumMeta
     | TypeMeta.InterfaceMeta
     | TypeMeta.UnionMeta
     | TypeMeta.InputObjectMeta,
-    Field(discriminator="kind")
+    Field(discriminator="kind"),
 ]
 
 # Pydantic stuff
@@ -328,14 +342,17 @@ TypeMeta.InputObjectMeta.update_forward_refs()
 
 
 class SchemaMeta(BaseModel):
-    """ Class representing a GraphQL schema.
+    """Class representing a GraphQL schema.
 
     Contains all type definitions."""
+
     query_type_: dict[str, str] = Field(alias="queryType")
     types: list[TypeMeta_T]
     type_map: dict[str, TypeMeta_T] = Field(default_factory=dict)
     mutation_type_: dict[str, str] | None = Field(alias="mutationType", default=None)
-    subscription_type_: dict[str, str] | None = Field(alias="subscriptionType", default=None)
+    subscription_type_: dict[str, str] | None = Field(
+        alias="subscriptionType", default=None
+    )
 
     @property
     def query_type(self) -> str:
@@ -358,14 +375,13 @@ class SchemaMeta(BaseModel):
     # @validator("type_map", "types", always=True, pre=True)
     @root_validator(allow_reuse=True)
     def type_map_generator(cls, values):
-        # print(values)
-        # print(v)
         if "types" in values and len(values["types"]) > 0:
             values["type_map"] = {type_.name: type_ for type_ in values["types"]}
+
         return values
 
     def type_of_typeref(self: SchemaMeta, typeref: TypeRef.T) -> TypeMeta.T:
-        """ Returns the type information of the type reference `typeref`
+        """Returns the type information of the type reference `typeref`
 
         Args:
         self (SchemaMeta): The schema.
@@ -377,13 +393,18 @@ class SchemaMeta(BaseModel):
         Returns:
         TypeMeta.T: _description_
         """
+
         tname = TypeRef.root_type_name(typeref)
         try:
             return self.type_map[tname]
         except KeyError:
-            raise KeyError(f'SchemaMeta.type_of_typeref: No type named {typeref.name} in schema!')
+            raise KeyError(
+                f"SchemaMeta.type_of_typeref: No type named {typeref.name} in schema!"
+            )
 
-    def type_of(self: SchemaMeta, tmeta: TypeMeta.ArgumentMeta | TypeMeta.FieldMeta) -> TypeMeta.T:
-        """ Returns the argument or field definition's underlying type.
-        """
+    def type_of(
+        self: SchemaMeta, tmeta: TypeMeta.ArgumentMeta | TypeMeta.FieldMeta
+    ) -> TypeMeta.T:
+        """Returns the argument or field definition's underlying type"""
+
         return self.type_of_typeref(tmeta.type_)

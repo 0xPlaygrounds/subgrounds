@@ -3,8 +3,13 @@ from dataclasses import dataclass
 
 import pytest
 
-from subgrounds.utils import (extract_data, flatten_dict, intersection,
-                              rel_complement, union)
+from subgrounds.utils import (
+    extract_data,
+    flatten_dict,
+    intersection,
+    rel_complement,
+    union,
+)
 from tests.conftest import identity
 
 

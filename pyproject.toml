@@ -27,19 +27,17 @@ dash = ["dash"]
 [tool.poetry.group.dev.dependencies]
 black = "^22.3.0"
 deepdiff = "^6.2.1"  # used for debugging data structures
-flake8 = "^4.0.1"
 ipykernel = "^6.13.0"
-isort = "^5.10.1"
 mypy = "^0.950"
 nose2 = "^0.11.0"
-pylint = "^2.13.8"
 pytest = "^7.1.2"
 pytest-mock = "^3.8.2"
 python-semantic-release = "^7.33.1"
+ruff = "^0.0.253"
 
 [tool.poe.tasks]
-format = { shell = "isort .; black ."}
-check = { shell = "isort . --check; black . --check"}
+format = { shell = "black subgrounds examples tests"}
+check = { shell = "black subgrounds examples tests --check; ruff check subgrounds examples tests"}
 develop = { shell = "mudkip develop" }
 test = { shell = "pytest" }
 generate-api-docs = { shell = "sphinx-apidoc --output docs/api subgrounds --separate --force" }

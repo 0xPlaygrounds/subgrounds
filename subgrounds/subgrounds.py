@@ -11,7 +11,7 @@ import warnings
 from dataclasses import dataclass, field
 from functools import reduce
 from pathlib import Path
-from typing import Any, Iterator, Optional, Type
+from typing import Any, Iterator, Type
 
 import pandas as pd
 from pipe import groupby, map, traverse, where
@@ -19,18 +19,20 @@ from pipe import groupby, map, traverse, where
 import subgrounds.client as client
 from subgrounds.dataframe_utils import df_of_json
 from subgrounds.errors import SubgroundsError
-from subgrounds.pagination import paginate, paginate_iter
-from subgrounds.pagination.pagination import PaginationStrategy
-from subgrounds.pagination.strategies import LegacyStrategy
+from subgrounds.pagination import (
+    LegacyStrategy,
+    PaginationStrategy,
+    SkipStrategy,
+    paginate_iter,
+)
 from subgrounds.query import DataRequest, Document, Query
 from subgrounds.schema import SchemaMeta
-from subgrounds.subgraph.fieldpath import FieldPath
-from subgrounds.subgraph.subgraph import Subgraph
+from subgrounds.subgraph import FieldPath, Subgraph
 from subgrounds.transform import (
     DEFAULT_GLOBAL_TRANSFORMS,
     DEFAULT_SUBGRAPH_TRANSFORMS,
-    DocumentTransform,
     RequestTransform,
+    apply_request_transform,
 )
 from subgrounds.utils import PLAYGROUNDS_APP_URL
 
@@ -174,7 +176,7 @@ class Subgrounds:
     def execute(
         self,
         req: DataRequest,
-        pagination_strategy: Optional[Type[PaginationStrategy]] = LegacyStrategy,
+        pagination_strategy: Type[PaginationStrategy] | None = LegacyStrategy,
     ) -> list[dict]:
         """Executes a :class:`DataRequest` object, sending the underlying
         query(ies) to the server and returning a data blob (list of Python
@@ -183,74 +185,28 @@ class Subgrounds:
         Args:
             req (DataRequest): The :class:`DataRequest` object to be executed
             pagination_strategy (Optional[Type[PaginationStrategy]], optional): A Class
-              implementing the :class:`PaginationStrategy` ``Protocol``. If ``None``, then
-              automatic pagination is disabled. Defaults to :class:`LegacyStrategy`.
+              implementing the :class:`PaginationStrategy` ``Protocol``. If ``None``,
+              then automatic pagination is disabled.
+
+              Defaults to :class:`LegacyStrategy`.
 
         Returns:
             list[dict]: The reponse data
         """
 
-        def execute_document(doc: Document) -> dict:
-            subgraph: Subgraph = next(
-                self.subgraphs.values() | where(lambda sg: sg._url == doc.url)
-            )
-            if pagination_strategy is not None and subgraph._is_subgraph:
-                return paginate(
-                    subgraph._schema,
-                    doc,
-                    pagination_strategy=pagination_strategy,
-                    headers=self.headers,
-                )
-            else:
-                return client.query(
-                    doc.url, doc.graphql, variables=doc.variables, headers=self.headers
-                )
-
-        def transform_doc(transforms: list[DocumentTransform], doc: Document) -> dict:
-            logger.debug(f"execute.transform_doc: doc = \n{doc.graphql}")
-            match transforms:
-                case []:
-                    return execute_document(doc)
-                case [transform, *rest]:
-                    new_doc = transform.transform_document(doc)
-                    data = transform_doc(rest, new_doc)
-                    return transform.transform_response(doc, data)
-
-            assert False  # Suppress mypy missing return statement warning
-
-        def transform_req(
-            transforms: list[RequestTransform], req: DataRequest
-        ) -> list[dict]:
-            match transforms:
-                case []:
-                    return list(
-                        req.documents
-                        | map(
-                            lambda doc: transform_doc(
-                                self.subgraphs[doc.url]._transforms, doc
-                            )
-                        )
-                    )
-                case [transform, *rest]:
-                    new_req = transform.transform_request(req)
-                    data = transform_req(rest, new_req)
-                    return transform.transform_response(req, data)
-
-            assert False  # Suppress mypy missing return statement warning
-
-        return transform_req(self.global_transforms, req)
+        return list(self.execute_iter(req, pagination_strategy))
 
     def execute_iter(
         self,
         req: DataRequest,
-        pagination_strategy: Optional[Type[PaginationStrategy]] = LegacyStrategy,
+        pagination_strategy: Type[PaginationStrategy] | None = LegacyStrategy,
     ) -> Iterator[dict[str, Any]]:
         """Same as `execute`, except that an iterator is returned which will iterate
         the data pages.
 
         Args:
           req (DataRequest): The :class:`DataRequest` object to be executed
-          pagination_strategy (Optional[Type[PaginationStrategy]], optional): A Class
+          pagination_strategy (Type[PaginationStrategy] | None, optional): A Class
             implementing the :class:`PaginationStrategy` ``Protocol``. If ``None``, then
             automatic pagination is disabled. Defaults to :class:`LegacyStrategy`.
 
@@ -262,60 +218,34 @@ class Subgrounds:
             subgraph: Subgraph = next(
                 self.subgraphs.values() | where(lambda sg: sg._url == doc.url)
             )
-            if pagination_strategy is not None and subgraph._is_subgraph:
-                yield from paginate_iter(
-                    subgraph._schema,
-                    doc,
-                    pagination_strategy=pagination_strategy,
-                    headers=self.headers,
-                )
-            else:
-                yield client.query(
-                    doc.url,
-                    doc.graphql,
-                    variables=doc.variables,
-                    headers=self.headers,
-                )
 
-        def transform_doc(
-            transforms: list[DocumentTransform], doc: Document
-        ) -> Iterator[dict[str, Any]]:
-            logger.debug(f"execute_iter.transform_doc: doc = \n{doc.graphql}")
-            match transforms:
-                case []:
-                    yield from execute_document(doc)
-                case [transform, *rest]:
-                    new_doc = transform.transform_document(doc)
-                    for data in transform_doc(rest, new_doc):
-                        yield transform.transform_response(doc, data)
+            yield from paginate_iter(
+                subgraph._schema,
+                doc,
+                pagination_strategy=(
+                    pagination_strategy
+                    if (pagination_strategy is not None) and subgraph._is_subgraph
+                    else SkipStrategy
+                ),
+                headers=self.headers,
+            )
 
-        def transform_req(
-            transforms: list[RequestTransform], req: DataRequest
-        ) -> Iterator[dict[str, Any]]:
-            match transforms:
-                case []:
-                    for doc in req.documents:
-                        yield from transform_doc(
-                            self.subgraphs[doc.url]._transforms, doc
-                        )
-                case [transform, *rest]:
-                    new_req = transform.transform_request(req)
-                    for data in transform_req(rest, new_req):
-                        yield transform.transform_response(req, data)
-
-        yield from transform_req(self.global_transforms, req)
+        yield from apply_request_transform(
+            self.subgraphs, self.global_transforms, req, execute_document
+        )
 
     def query_json(
         self,
         fpaths: FieldPath | list[FieldPath],
-        pagination_strategy: Optional[Type[PaginationStrategy]] = LegacyStrategy,
+        pagination_strategy: Type[PaginationStrategy] | None = LegacyStrategy,
     ) -> list[dict[str, Any]]:
-        """Equivalent to ``Subgrounds.execute(Subgrounds.mk_request(fpaths), pagination_strategy)``.
+        """Equivalent to
+         ``Subgrounds.execute(Subgrounds.mk_request(fpaths), pagination_strategy)``.
 
         Args:
-          fpaths (FieldPath | list[FieldPath]): One or more :class:`FieldPath` objects that should be
-            included in the request.
-          pagination_strategy (Optional[Type[PaginationStrategy]], optional): A Class
+          fpaths (FieldPath | list[FieldPath]): One or more :class:`FieldPath` objects
+            that should be included in the request.
+          pagination_strategy (Type[PaginationStrategy] | None, optional): A Class
             implementing the :class:`PaginationStrategy` ``Protocol``. If ``None``, then
             automatic pagination is disabled. Defaults to :class:`LegacyStrategy`.
 
@@ -323,21 +253,19 @@ class Subgrounds:
           list[dict[str, Any]]: The reponse data
         """
 
-        fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)
-        req = self.mk_request(fpaths)
-        return self.execute(req, pagination_strategy=pagination_strategy)
+        return list(self.query_json_iter(fpaths, pagination_strategy))
 
     def query_json_iter(
         self,
         fpaths: FieldPath | list[FieldPath],
-        pagination_strategy: Optional[Type[PaginationStrategy]] = LegacyStrategy,
+        pagination_strategy: Type[PaginationStrategy] | None = LegacyStrategy,
     ) -> Iterator[dict[str, Any]]:
-        """Same as `query_json` except an iterator over the response data pages is returned.
+        """Same as `query_json` returns an iterator over the response data pages.
 
         Args:
           fpaths (FieldPath | list[FieldPath]): One or more :class:`FieldPath` objects
             that should be included in the request.
-          pagination_strategy (Optional[Type[PaginationStrategy]], optional): A Class
+          pagination_strategy (Type[PaginationStrategy] | None, optional): A Class
             implementing the :class:`PaginationStrategy` ``Protocol``. If ``None``, then
             automatic pagination is disabled. Defaults to :class:`LegacyStrategy`.
 
@@ -352,9 +280,9 @@ class Subgrounds:
     def query_df(
         self,
         fpaths: FieldPath | list[FieldPath],
-        columns: Optional[list[str]] = None,
+        columns: list[str] | None = None,
         concat: bool = False,
-        pagination_strategy: Optional[Type[PaginationStrategy]] = LegacyStrategy,
+        pagination_strategy: Type[PaginationStrategy] | None = LegacyStrategy,
     ) -> pd.DataFrame | list[pd.DataFrame]:
         """Same as :func:`Subgrounds.query` but formats the response data into a
         Pandas DataFrame. If the response data cannot be flattened to a single query
@@ -376,9 +304,9 @@ class Subgrounds:
         Args:
           fpaths (FieldPath | list[FieldPath]): One or more `FieldPath` objects that
             should be included in the request.
-          columns (Optional[list[str]], optional): The column labels. Defaults to None.
+          columns (list[str] | None, optional): The column labels. Defaults to None.
           merge (bool, optional): Whether or not to merge resulting dataframes.
-          pagination_strategy (Optional[Type[PaginationStrategy]], optional): A Class
+          pagination_strategy (Type[PaginationStrategy] | None, optional): A Class
             implementing the :class:`PaginationStrategy` ``Protocol``. If ``None``, then
             automatic pagination is disabled. Defaults to :class:`LegacyStrategy`.
 
@@ -391,7 +319,8 @@ class Subgrounds:
 
             >>> from subgrounds import Subgrounds
             >>> sg = Subgrounds()
-            >>> univ3 = sg.load_subgraph('https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3')
+            >>> univ3 = sg.load_subgraph(
+            ...    'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3')
 
             # Define price SyntheticField
             >>> univ3.Swap.price = abs(univ3.Swap.amount0) / abs(univ3.Swap.amount1)
@@ -429,9 +358,10 @@ class Subgrounds:
     def query_df_iter(
         self,
         fpaths: FieldPath | list[FieldPath],
-        pagination_strategy: Optional[Type[PaginationStrategy]] = LegacyStrategy,
-    ) -> Iterator[pd.DataFrame]:
-        """Same as `query_df` except an iterator over the response data pages is returned
+        pagination_strategy: Type[PaginationStrategy] | None = LegacyStrategy,
+    ) -> Iterator[pd.DataFrame | list[pd.DataFrame]]:
+        """Same as `query_df` except returns an iterator over the response data pages
+
         Args:
           fpaths (FieldPath | list[FieldPath]): One or more `FieldPath` objects that
             should be included in the request
@@ -442,7 +372,8 @@ class Subgrounds:
             automatic pagination is disabled. Defaults to :class:`LegacyStrategy`.
 
         Returns:
-          Iterator[pd.DataFrame]: An iterator over the response data pages, each as a  DataFrame
+          Iterator[pd.DataFrame]: An iterator over the response data pages,
+            each as a DataFrame
         """
 
         fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)
@@ -455,16 +386,18 @@ class Subgrounds:
         self,
         fpaths: FieldPath | list[FieldPath],
         unwrap: bool = True,
-        pagination_strategy: Optional[Type[PaginationStrategy]] = LegacyStrategy,
+        pagination_strategy: Type[PaginationStrategy] | None = LegacyStrategy,
     ) -> str | int | float | bool | list | tuple | None:
-        """Executes one or multiple ``FieldPath`` objects immediately and return the data (as a tuple if multiple ``FieldPath`` objects are provided).
+        """Executes one or multiple ``FieldPath`` objects immediately and returns the
+        data (as a tuple if multiple ``FieldPath`` objects are provided).
 
         Args:
-          fpaths (FieldPath | list[FieldPath]): One or more ``FieldPath`` object(s) to query.
+          fpaths (FieldPath | list[FieldPath]): One or more ``FieldPath`` object(s)
+            to query.
           unwrap (bool, optional): Flag indicating whether or not, in the case where
             the returned data is a list of one element, the element itself should be
             returned instead of the list. Defaults to ``True``.
-          pagination_strategy (Optional[Type[PaginationStrategy]], optional): A Class
+          pagination_strategy (Type[PaginationStrategy] | None, optional): A Class
             implementing the :class:`PaginationStrategy` ``Protocol``. If ``None``, then
             automatic pagination is disabled. Defaults to :class:`LegacyStrategy`.
 
@@ -477,7 +410,8 @@ class Subgrounds:
 
           >>> from subgrounds import Subgrounds
           >>> sg = Subgrounds()
-          >>> univ3 = sg.load_subgraph('https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3')
+          >>> univ3 = sg.load_subgraph(
+          ...  'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3')
 
           # Define price SyntheticField
           >>> univ3.Swap.price = abs(univ3.Swap.amount0) / abs(univ3.Swap.amount1)
@@ -495,7 +429,6 @@ class Subgrounds:
           # Query last price FieldPath
           >>> sg.query(eth_usdc_last)
           2628.975030015892
-
         """
 
         fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)
@@ -519,16 +452,17 @@ class Subgrounds:
         self,
         fpaths: FieldPath | list[FieldPath],
         unwrap: bool = True,
-        pagination_strategy: Optional[Type[PaginationStrategy]] = LegacyStrategy,
-    ) -> str | int | float | bool | list | tuple | None:
+        pagination_strategy: Type[PaginationStrategy] | None = LegacyStrategy,
+    ) -> Iterator[str | int | float | bool | list | tuple | None]:
         """Same as `query` except an iterator over the resonse data pages is returned.
 
         Args:
-          fpath (FieldPath | list[FieldPath]): One or more ``FieldPath`` object(s) to query.
+          fpath (FieldPath | list[FieldPath]): One or more ``FieldPath`` object(s)
+            to query.
           unwrap (bool, optional): Flag indicating whether or not, in the case where
             the returned data is a list of one element, the element itself should be
             returned instead of the list. Defaults to ``True``.
-          pagination_strategy (Optional[Type[PaginationStrategy]], optional): A Class
+          pagination_strategy (Type[PaginationStrategy] | None, optional): A Class
             implementing the :class:`PaginationStrategy` ``Protocol``. If ``None``, then
             automatic pagination is disabled. Defaults to :class:`LegacyStrategy`.
 

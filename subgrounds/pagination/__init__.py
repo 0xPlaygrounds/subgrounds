@@ -21,7 +21,11 @@ from subgrounds.pagination.preprocess import (
     normalize,
     prune_doc,
 )
-from subgrounds.pagination.strategies import LegacyStrategy, ShallowStrategy
+from subgrounds.pagination.strategies import (
+    LegacyStrategy,
+    ShallowStrategy,
+    SkipStrategy,
+)
 
 __all__ = [
     "generate_pagination_nodes",
@@ -34,4 +38,5 @@ __all__ = [
     "PaginationStrategy",
     "prune_doc",
     "ShallowStrategy",
+    "SkipStrategy",
 ]

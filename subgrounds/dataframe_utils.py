@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import partial
-from typing import Any, Optional
+from typing import Any
 
 import pandas as pd
 from pipe import dedup, groupby, map, traverse, where
@@ -211,7 +211,7 @@ def columns_of_selections(selections: list[Selection]) -> list[DataFrameColumns]
 def df_of_json(
     json_data: list[dict[str, Any]],
     fpaths: list[FieldPath],
-    columns: Optional[list[str]] = None,
+    columns: list[str] | None = None,
     concat: bool = False,
 ) -> pd.DataFrame | list[pd.DataFrame]:
     """Formats the JSON data :attr:`json_data` into Pandas DataFrames,
@@ -235,13 +235,14 @@ def df_of_json(
     Args:
       json_data (list[dict[str, Any]]): Response data
       fpaths (list[FieldPath]): Fieldpaths that yielded the response data
-      columns (Optional[list[str]], optional): Column names. Defaults to None.
+      columns (list[str] | None, optional): Column names. Defaults to None.
       concat (bool, optional): Flag indicating whether or not to concatenate the
         resulting dataframes, if there are more than one. Defaults to False.
 
     Returns:
       pd.DataFrame | list[pd.DataFrame]: The resulting dataframe(s)
     """
+
     if columns is None:
         columns = list(fpaths | map(lambda fpath: fpath._name()))
 
@@ -259,15 +260,16 @@ def df_of_json(
         | map(partial(DataFrameColumns.mk_df, data=json_data, path_map=path_map))
     )
 
-    match (len(dfs), concat):
-        case (0, _):
-            return pd.DataFrame(columns=columns, data=[])
-        case (1, _):
-            return fmt_cols(dfs[0], col_map)
-        case (_, False):
-            return list(dfs | map(lambda df: fmt_cols(df, col_map)))
-        case (_, True):
-            dfs = list(dfs | map(lambda df: fmt_cols(df, col_map)))
-            return pd.concat(dfs, ignore_index=True)
+    if len(dfs) == 0:
+        return pd.DataFrame(columns=columns, data=[])
 
-    assert False  # Suppress mypy missing return statement warning
+    if len(dfs) == 1:
+        return fmt_cols(dfs[0], col_map)
+
+    if concat:
+        return pd.concat(
+            list(dfs | map(lambda df: fmt_cols(df, col_map))),
+            ignore_index=True,
+        )
+
+    return list(dfs | map(lambda df: fmt_cols(df, col_map)))

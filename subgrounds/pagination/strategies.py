@@ -69,7 +69,6 @@ Depending on the strategy, the variable values computed at step 3 will change.
 
 from __future__ import annotations
 
-from ast import Tuple
 from dataclasses import dataclass, field
 from functools import partial
 from itertools import count
@@ -490,3 +489,19 @@ class ShallowStrategy:
         args = self.arg_generator.step(page_data)
         trimmed_doc = prune_doc(self.normalized_doc, args)
         return (trimmed_doc, args)
+
+
+class SkipStrategy:
+    """This strategy always raises a :class:`~subgrounds.pagination.SkipPagination`
+      when constructed or if *somehow* `step` is called.
+
+    This is the default if `None` is passed to the strategy (default for non-subgraphs).
+    """
+
+    def __init__(self, schema: SchemaMeta, document: Document) -> None:
+        raise SkipPagination
+
+    def step(
+        self, page_data: Optional[dict[str, Any]] = None
+    ) -> tuple[Document, dict[str, Any]]:
+        raise SkipPagination

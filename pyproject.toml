@@ -39,7 +39,7 @@ ruff = "^0.0.253"
 format = { shell = "black subgrounds examples tests"}
 check = { shell = "black subgrounds examples tests --check; ruff check subgrounds examples tests"}
 develop = { shell = "mudkip develop" }
-test = { shell = "pytest" }
+test = "pytest"
 generate-api-docs = { shell = "sphinx-apidoc --output docs/api subgrounds --separate --force" }
 
 [tool.semantic_release]

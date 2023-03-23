@@ -4,7 +4,7 @@ iterative) that make use of pagination strategies.
 
 from __future__ import annotations
 
-from typing import Any, Iterator, Optional, Protocol, Tuple, Type
+from typing import Any, Iterator, Protocol, Type
 
 import subgrounds.client as client
 from subgrounds.pagination.strategies import SkipPagination, StopPagination
@@ -26,31 +26,33 @@ class PaginationStrategy(Protocol):
         :class:`SkipPagination` exception.
 
         Args:
-            schema (SchemaMeta): The schema of the API against which ``document`` will be executed
+            schema (SchemaMeta): The schema of the API against which ``document`` will
+              be executed
             document (Document): The query document
         """
-        ...
 
     def step(
-        self, page_data: Optional[dict[str, Any]] = None
-    ) -> Tuple[Document, dict[str, Any]]:
-        """Returns the new query document and its variables which will be executed to get the next
-        page of data. If this is the first query made as part of the pagination strategy, then
-        ``page_data`` will be ``None``.
+        self, page_data: dict[str, Any] | None = None
+    ) -> tuple[Document, dict[str, Any]]:
+        """Returns the new query document and its variables which will be executed to get
+        the next page of data.
 
-        If pagination should be interupted (e.g.: if enough entities have been queried), then this method
-        should raise a :class:`StopPagination` exception.
+        If this is the first query made as part of the pagination strategy, then
+          ``page_data`` will be ``None``.
+
+        If pagination should be interupted (e.g.: if enough entities have been queried),
+        then this method should raise a :class:`StopPagination` exception.
 
         Args:
-            page_data (Optional[dict[str, Any]], optional): The previous query's response data.
-            If this is the first query (i.e.: the first page of data), then it will be None.
-            Defaults to None.
+            page_data (dict[str, Any] | None, optional): The previous query's response
+             data. If this is the first query (i.e.: the first page of data), then it
+             will be `None`. Defaults to None.
 
         Returns:
-            Tuple[Document, dict[str, Any]]: A tuple `(doc, vars)` where `doc` is the query document that
-            will be executed to fetch the next page of data and `vars` are the variables for that document.
+            tuple[Document, dict[str, Any]]: A tuple `(doc, vars)` where `doc` is the
+             query document that will be executed to fetch the next page of data and
+             `vars` are the variables for that document.
         """
-        ...
 
 
 def paginate(
@@ -59,8 +61,8 @@ def paginate(
     pagination_strategy: Type[PaginationStrategy],
     headers: dict[str, Any],
 ) -> dict[str, Any]:
-    """Executes the request document `doc` based on the GraphQL schema `schema` and returns
-    the response as a JSON dictionary.
+    """Executes the request document `doc` based on the GraphQL schema `schema` and
+    returns the response as a JSON dictionary.
 
     Args:
       schema (SchemaMeta): The GraphQL schema on which the request document is based
@@ -70,8 +72,9 @@ def paginate(
       dict[str, Any]: The response data as a JSON dictionary
     """
 
-    try:
-        strategy = pagination_strategy(schema, doc)
+    data = {}
+    for page in paginate_iter(schema, doc, pagination_strategy):
+        data = merge(data, page)
 
         data: dict[str, Any] = {}
         doc, args = strategy.step()
@@ -105,8 +108,8 @@ def paginate_iter(
     pagination_strategy: Type[PaginationStrategy],
     headers: dict[str, Any],
 ) -> Iterator[dict[str, Any]]:
-    """Executes the request document `doc` based on the GraphQL schema `schema` and returns
-    the response as a JSON dictionary.
+    """Executes the request document `doc` based on the GraphQL schema `schema` and
+    returns the response as a JSON dictionary.
 
     Args:
       schema (SchemaMeta): The GraphQL schema on which the request document is based

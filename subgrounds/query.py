@@ -1717,7 +1717,7 @@ class DataRequest:
         return "\n".join(list(self.documents | map(lambda doc: doc.graphql)))
 
     @staticmethod
-    def combine(req: DataRequest, other: DataRequest) -> None:
+    def combine(req: DataRequest, other: DataRequest) -> DataRequest:
         return DataRequest(
             documents=union(
                 req.documents,

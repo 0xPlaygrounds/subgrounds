@@ -39,6 +39,7 @@ pytest = "^7.1.2"
 pytest-mock = "^3.8.2"
 python-semantic-release = "^7.33.1"
 ruff = "^0.0.253"
+pytest-insta = "^0.2.0"
 
 [tool.poe.tasks]
 format = { shell = "black subgrounds examples tests" }

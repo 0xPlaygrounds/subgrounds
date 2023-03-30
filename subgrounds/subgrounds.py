@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any, Iterator, Type
 
 import pandas as pd
-from pipe import groupby, map, traverse, where
+from pipe import groupby, map, traverse
 
 import subgrounds.client as client
 from subgrounds.dataframe_utils import df_of_json
@@ -22,9 +22,10 @@ from subgrounds.errors import SubgroundsError
 from subgrounds.pagination import (
     LegacyStrategy,
     PaginationStrategy,
-    SkipStrategy,
     paginate_iter,
 )
+from subgrounds.pagination import LegacyStrategy, PaginationStrategy, paginate_iter
+from subgrounds.pagination.utils import normalize_strategy
 from subgrounds.query import DataRequest, Document, Query
 from subgrounds.schema import SchemaMeta
 from subgrounds.subgraph import FieldPath, Subgraph
@@ -194,7 +195,7 @@ class Subgrounds:
             list[dict]: The reponse data
         """
 
-        return list(self.execute_iter(req, pagination_strategy))
+        self.execute_iter(req, pagination_strategy))
 
     def execute_iter(
         self,
@@ -215,17 +216,11 @@ class Subgrounds:
         """
 
         def execute_document(doc: Document) -> Iterator[dict[str, Any]]:
-            subgraph: Subgraph = next(
-                self.subgraphs.values() | where(lambda sg: sg._url == doc.url)
-            )
-
-            yield from paginate_iter(
-                subgraph._schema,
+            return paginate_iter(
+                self.subgraphs[doc.url]._schema,
                 doc,
-                pagination_strategy=(
-                    pagination_strategy
-                    if (pagination_strategy is not None) and subgraph._is_subgraph
-                    else SkipStrategy
+                pagination_strategy=normalize_strategy(
+                    pagination_strategy, self.subgraphs[doc.url]._is_subgraph
                 ),
                 headers=self.headers,
             )

@@ -5,16 +5,17 @@ from typing import TYPE_CHECKING, Any, Callable
 
 from pipe import map, traverse
 
-from .errors import TransformError
-from .query import DataRequest, Document, Query, Selection
-from .schema import TypeMeta, TypeRef
-from .utils import flatten, union
+from subgrounds.errors import TransformError
+from subgrounds.query import Document, Query, Selection
+from subgrounds.schema import TypeMeta, TypeRef
+from subgrounds.utils import flatten
 
-from .abcs import DocumentTransform, RequestTransform
+from .abcs import DocumentTransform
 from .utils import select_data
 
 if TYPE_CHECKING:
-    from .subgraph import Subgraph
+    from subgrounds.subgraph import Subgraph
+
 
 class TypeTransform(DocumentTransform):
     """Transform to be applied to scalar fields on a per-type basis.
@@ -34,7 +35,7 @@ class TypeTransform(DocumentTransform):
         self.f = f
         super().__init__()
 
-    def transform_document(self: TypeTransform, doc: Document) -> Document:
+    def transform_document(self, doc: Document) -> Document:
         return doc
 
     def transform_response(self, doc: Document, data: dict[str, Any]) -> dict[str, Any]:
@@ -313,72 +314,3 @@ class LocalSyntheticField(DocumentTransform):
                 transform_on_type(select, data)
 
         return data
-
-
-# TODO: Decide if necessary
-class SplitTransform(RequestTransform):
-    def __init__(self, query: Query) -> None:
-        self.query = query
-
-    def transform_request(self, req: DataRequest) -> DataRequest:
-        def split(doc: Document) -> list[Document]:
-            if Query.contains(doc.query, self.query):
-                return [
-                    Document(
-                        doc.url, Query.remove(doc.query, self.query), doc.fragments
-                    ),
-                    Document(
-                        doc.url, Query.select(doc.query, self.query), doc.fragments
-                    ),
-                ]
-            else:
-                return [doc]
-
-        return DataRequest(documents=list(req.documents | map(split) | traverse))
-
-    # TODO: Fix transform_response
-    def transform_response(
-        self, req: DataRequest, data: list[dict[str, Any]]
-    ) -> list[dict[str, Any]]:
-        def merge_data(
-            data1: dict | list | Any, data2: dict | list | Any
-        ) -> dict | list | Any:
-            match (data1, data2):
-                case (dict() as data1, dict() as data2):
-                    return dict(
-                        union(
-                            list(data1.items()),
-                            list(data2.items()),
-                            key=lambda item: item[0],
-                            combine=lambda item1, item2: (
-                                item1[0],
-                                merge_data(item1[1], item2[1]),
-                            ),
-                        )
-                    )
-
-                case (list(), list()):
-                    return list(
-                        zip(data1, data2) | map(lambda tup: merge_data(tup[0], tup[1]))
-                    )
-
-                case (value, _):
-                    return value
-
-            assert False  # Suppress mypy missing return statement warning
-
-        def transform(
-            docs: list[Document], data: list[dict[str, Any]], acc: list[dict[str, Any]]
-        ) -> list[dict[str, Any]]:
-            match (docs, data):
-                case ([doc, *docs_rest], [d1, d2, *data_rest]) if Query.contains(
-                    doc.query, self.query
-                ):
-                    return transform(docs_rest, data_rest, [*acc, merge_data(d1, d2)])
-
-                case ([], []):
-                    return acc
-
-            assert False  # Suppress mypy missing return statement warning
-
-        return transform(req.documents, data, [])

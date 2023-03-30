@@ -8,7 +8,8 @@ import warnings
 from functools import cache
 from itertools import accumulate as _accumulate
 from itertools import filterfalse
-from typing import Any, Callable, Iterator, Optional, Tuple, TypeVar
+from operator import itemgetter
+from typing import Any, Callable, Iterator, Optional, Tuple, TypeVar, overload
 
 from pipe import Pipe, map
 
@@ -28,14 +29,14 @@ def identity(x):
 
 
 T = TypeVar("T")
-U = TypeVar("U")
+Container = list[T] | dict[str, T]
 
 
-def fst(tup: Tuple[T, U]) -> T:
+def fst(tup: Tuple[T, Any]) -> T:
     return tup[0]
 
 
-def snd(tup: Tuple[T, U]) -> U:
+def snd(tup: Tuple[Any, T]) -> T:
     return tup[1]
 
 
@@ -79,6 +80,58 @@ def union(
         + intersection(l1, l2, key, combine)
         + rel_complement(l2, l1, key)
     )
+
+
+@overload
+def merge(data1: list[T], data2: list[T]) -> list[T]:
+    ...
+
+
+@overload
+def merge(data1: dict[str, T], data2: dict[str, T]) -> dict[str, T]:
+    ...
+
+
+def merge(data1: Container, data2: Container) -> Container:
+    """Merges ``data1`` and ``data2`` and returns the combined result.
+
+    ``data1`` and ``data2`` must be of the same type. Either both are
+    ``dict`` or ``list``.
+
+    Args:
+      data1 (list[T] | dict[str, T]): First data blob
+      data2 (list[T] | dict[str, T]): Second data blob
+
+    Returns:
+        list[T] | dict[str, T]: Combined data blob
+    """
+
+    match data1, data2:
+        case list(l1), list(l2):
+            return union(l1, l2, itemgetter("id"), combine=merge)
+
+        case dict(d1), dict(d2):
+            data = d1.copy()
+
+            for key in d1:
+                if key in d2:
+                    data[key] = merge(d1[key], d2[key])
+
+            for key in d2:
+                if key not in data:
+                    data[key] = d2[key]
+
+            return data
+
+        case (dict(), _) | (_, dict()) | (list(), _) | (_, list()):
+            raise TypeError(
+                f"merge: incompatible data types!"
+                f"type(data1): {type(data1)} != type(data2): {type(data2)}"
+            )
+
+        case val1, _:
+            return val1
+
 
 
 # ================================================================
@@ -126,7 +179,8 @@ def extract_data(
                         return None
                     case _:
                         raise Exception(
-                            f"extract_data: unexpected state! path = {keys}, data = {data}"
+                            f"extract_data: unexpected state!"
+                            f" path = {keys}, data = {data}"
                         )
 
     match data:

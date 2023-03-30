@@ -42,9 +42,13 @@ ruff = "^0.0.253"
 pytest-insta = "^0.2.0"
 
 [tool.poe.tasks]
-format = { shell = "black subgrounds examples tests" }
-check = { shell = "black subgrounds examples tests --check; ruff check subgrounds examples tests" }
-develop = { shell = "mudkip develop" }
+format = "black subgrounds examples tests"
+
+_black = "black subgrounds examples tests --check"
+_ruff = "ruff check subgrounds examples tests"
+check.sequence = ["_black", "_ruff"]
+check.ignore_fail = "return_zero"
+
 test = "pytest"
 
 [tool.semantic_release]

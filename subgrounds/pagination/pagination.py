@@ -7,10 +7,11 @@ from __future__ import annotations
 from typing import Any, Iterator, Protocol, Type
 
 import subgrounds.client as client
-from subgrounds.pagination.strategies import SkipPagination, StopPagination
-from subgrounds.pagination.utils import merge
 from subgrounds.query import Document
 from subgrounds.schema import SchemaMeta
+from subgrounds.utils import merge
+
+from .strategies import SkipPagination, StopPagination
 
 
 class PaginationError(RuntimeError):
@@ -34,8 +35,8 @@ class PaginationStrategy(Protocol):
     def step(
         self, page_data: dict[str, Any] | None = None
     ) -> tuple[Document, dict[str, Any]]:
-        """Returns the new query document and its variables which will be executed to get
-        the next page of data.
+        """Returns the new query document and its variables which will be executed to
+        get the next page of data.
 
         If this is the first query made as part of the pagination strategy, then
           ``page_data`` will be ``None``.
@@ -53,6 +54,7 @@ class PaginationStrategy(Protocol):
              query document that will be executed to fetch the next page of data and
              `vars` are the variables for that document.
         """
+        ...
 
 
 def paginate(

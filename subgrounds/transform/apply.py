@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import logging
 from collections.abc import Iterator
 from typing import TYPE_CHECKING, Any
@@ -39,12 +37,14 @@ def apply_request_transform(
 ) -> Iterator[dict[str, Any]]:
     match transforms:
         case []:
-            for doc in req.documents:
-                yield from apply_document_transform(
+            yield (
+                apply_document_transform(
                     subgraphs[doc.url]._transforms,
                     doc,
                     executor,
                 )
+                for doc in req.documents
+            )
 
         case [transform, *rest]:
             new_req = transform.transform_request(req)

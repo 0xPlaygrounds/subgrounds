@@ -10,6 +10,7 @@ from hashlib import blake2b
 from typing import TYPE_CHECKING, Any, Callable, ClassVar, Optional, Tuple
 
 from pipe import map, traverse
+# from typing_extensions import Self  # 3.10 support
 
 from subgrounds.query import Query, Selection, arguments_of_field_args
 from subgrounds.schema import SchemaMeta, TypeMeta, TypeRef
@@ -754,8 +755,8 @@ class SyntheticField(FieldOperatorMixin):
             case _:
                 return 0
 
-    @staticmethod
-    def constant(value: str | int | float | bool) -> SyntheticField:
+    @classmethod
+    def constant(cls, value: str | int | float | bool) -> SyntheticField:
         """Returns a constant ``SyntheticField`` with value ``value``.
         Useful for injecting additional static data to a schema or merging entities.
 
@@ -835,16 +836,16 @@ class SyntheticField(FieldOperatorMixin):
         """
         match value:
             case str():
-                return SyntheticField(lambda: value, SyntheticField.STRING, [])
+                return cls(lambda: value, cls.STRING, [])
             case int():
-                return SyntheticField(lambda: value, SyntheticField.INT, [])
+                return cls(lambda: value, cls.INT, [])
             case float():
-                return SyntheticField(lambda: value, SyntheticField.FLOAT, [])
+                return cls(lambda: value, cls.FLOAT, [])
             case bool():
-                return SyntheticField(lambda: value, SyntheticField.BOOL, [])
+                return cls(lambda: value, cls.BOOL, [])
 
-    @staticmethod
-    def datetime_of_timestamp(timestamp: FieldPath | SyntheticField) -> SyntheticField:
+    @classmethod
+    def datetime_of_timestamp(cls, timestamp: FieldPath | SyntheticField) -> Self:
         """Returns a ``SyntheticField`` that will transform the ``FieldPath`` ``timestamp``
         into a human-readable ISO8601 string.
 

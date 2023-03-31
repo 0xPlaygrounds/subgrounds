@@ -10,7 +10,7 @@ from hashlib import blake2b
 from typing import TYPE_CHECKING, Any, Callable, ClassVar, Optional, Tuple
 
 from pipe import map, traverse
-# from typing_extensions import Self  # 3.10 support
+from typing_extensions import Self  # 3.10 support
 
 from subgrounds.query import Query, Selection, arguments_of_field_args
 from subgrounds.schema import SchemaMeta, TypeMeta, TypeRef
@@ -846,8 +846,8 @@ class SyntheticField(FieldOperatorMixin):
 
     @classmethod
     def datetime_of_timestamp(cls, timestamp: FieldPath | SyntheticField) -> Self:
-        """Returns a ``SyntheticField`` that will transform the ``FieldPath`` ``timestamp``
-        into a human-readable ISO8601 string.
+        """Returns a ``SyntheticField`` that will transform the ``FieldPath``
+        ``timestamp`` into a human-readable ISO8601 string.
 
         Args:
           timestamp (FieldPath | SyntheticField): A ``FieldPath`` representing a
@@ -868,7 +868,9 @@ class SyntheticField(FieldOperatorMixin):
             ... )
 
             # Create datetime SyntheticField
-            >>> univ3.Swap.datetime = SyntheticField.datetime_of_timestamp(univ3.Swap.timestamp)
+            >>> univ3.Swap.datetime = SyntheticField.datetime_of_timestamp(
+            ...     univ3.Swap.timestamp
+            ... )
 
             # Query 100 swaps
             >>> sg.query_df([
@@ -888,19 +890,21 @@ class SyntheticField(FieldOperatorMixin):
             98       1626416555  2021-07-16 02:22:35
             99       1625837291  2021-07-09 09:28:11
         """
+
         return SyntheticField(
             lambda timestamp: str(datetime.fromtimestamp(timestamp)),
             SyntheticField.STRING,
             timestamp,
         )
 
-    @staticmethod
+    @classmethod
     def map(
+        cls,
         dict: dict[Any, Any],
         type_: TypeRef.T,
         fpath: FieldPath | SyntheticField,
         default: Optional[Any] = None,
-    ) -> SyntheticField:
+    ) -> Self:
         """Returns a SyntheticField that will map the values of ``fpath`` using the
         key value pairs in ``dict``. If a value is not in the dictionary, then
         ``default`` will be used instead.
@@ -969,6 +973,7 @@ class SyntheticField(FieldOperatorMixin):
 
 
         """
+
         return SyntheticField(
             lambda value: dict[value] if value in dict else default, type_, fpath
         )

@@ -195,7 +195,18 @@ class Subgrounds:
             list[dict]: The reponse data
         """
 
-        self.execute_iter(req, pagination_strategy))
+        def execute_document(doc: Document) -> Iterator[dict[str, Any]]:
+            return paginate_iter(
+                self.subgraphs[doc.url]._schema,
+                doc,
+                pagination_strategy=normalize_strategy(
+                    pagination_strategy, self.subgraphs[doc.url]._is_subgraph
+                ),
+            )
+
+        yield from apply_request_transform(
+            self.subgraphs, self.global_transforms, req, execute_document
+        )
 
     def execute_iter(
         self,

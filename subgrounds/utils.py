@@ -98,6 +98,11 @@ def merge(data1: Container, data2: Container) -> Container:
     ``data1`` and ``data2`` must be of the same type. Either both are
     ``dict`` or ``list``.
 
+    >>> a = {'a': 1, 'b': {'c': 2, 'd': 3}}
+    >>> b = {'b': {'e': 4}, 'f': 5}
+    >>> merge(a, b)
+    {'a': 1, 'b': {'c': 2, 'd': 3, 'e': 4}, 'f': 5}
+
     Args:
       data1 (list[T] | dict[str, T]): First data blob
       data2 (list[T] | dict[str, T]): Second data blob
@@ -133,7 +138,6 @@ def merge(data1: Container, data2: Container) -> Container:
             return val1
 
 
-
 # ================================================================
 # Misc
 # ================================================================
@@ -147,16 +151,6 @@ def filter_map(items: Iterator[T], mapping: Callable[[T], Optional[T]]) -> Itera
         new_item = mapping(item)
         if new_item is not None:
             yield new_item
-
-
-def loop_generator(items: list):
-    while True:
-        for item in items:
-            yield item
-
-
-def repeat(value: T, n: int) -> list[T]:
-    return [value for _ in range(n)]
 
 
 # ================================================================
@@ -199,15 +193,17 @@ def extract_data(
 
 def flatten_dict(data: dict[str, Any], keys: list[str] = []) -> dict:
     """Takes a dictionary containing key-value pairs where all values are of type
-    other than `list` and flattens it such that all key-value pairs in nested dictionaries
-    are now at depth 1.
+    other than `list` and flattens it such that all key-value pairs in nested
+    dictionaries are now at depth 1.
 
     Args:
-      data (dict): Dictionary containing non-list values
-      keys (list[str], optional): Keys of `data` if `data` is a nested `dict` (`len(keys)` == depth of `data`). Defaults to [].
+      data Dictionary containing non-list values
+      keys: Keys of `data` if `data` is a nested `dict`
+        (`len(keys)` == depth of `data`).  Defaults to [].
 
     Returns:
-      dict: Flat dictionary containing all key-value pairs in `data` and its nested dictionaries
+      dict: Flat dictionary containing all key-value pairs in `data` and its nested
+        dictionaries
     """
     flat_dict: dict[str, Any] = {}
     for key, value in data.items():

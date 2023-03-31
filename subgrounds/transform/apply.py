@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import logging
 from collections.abc import Iterator
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Iterable
 
 from subgrounds.query import DataRequest, Document
 
@@ -34,19 +36,17 @@ def apply_request_transform(
     transforms: list[RequestTransform],
     req: DataRequest,
     executor: DocumentExecutor,
-) -> Iterator[dict[str, Any]]:
+) -> Iterator[Iterable[dict[str, Any]]]:
     match transforms:
         case []:
-            yield (
-                apply_document_transform(
+            for doc in req.documents:
+                yield apply_document_transform(
                     subgraphs[doc.url]._transforms,
                     doc,
                     executor,
                 )
-                for doc in req.documents
-            )
 
         case [transform, *rest]:
             new_req = transform.transform_request(req)
             for data in apply_request_transform(subgraphs, rest, new_req, executor):
-                yield transform.transform_response(req, data)
+                yield transform.transform_response(req, list(data))

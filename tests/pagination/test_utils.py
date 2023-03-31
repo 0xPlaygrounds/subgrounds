@@ -2,7 +2,7 @@ from typing import Any
 
 import pytest
 
-from subgrounds.pagination.utils import merge
+from subgrounds.utils import merge
 
 
 @pytest.mark.parametrize(

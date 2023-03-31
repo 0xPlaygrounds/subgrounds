@@ -82,10 +82,11 @@ from subgrounds.pagination.preprocess import (
     normalize,
     prune_doc,
 )
-from subgrounds.pagination.utils import PAGE_SIZE
 from subgrounds.query import Document
 from subgrounds.schema import SchemaMeta
 from subgrounds.utils import extract_data
+
+PAGE_SIZE = 900
 
 
 class StopPagination(Exception):

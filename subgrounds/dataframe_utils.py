@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import partial
+from itertools import cycle
 from typing import Any
 
 import pandas as pd
@@ -13,7 +14,7 @@ from pipe import dedup, groupby, map, traverse, where
 
 from subgrounds.query import Selection
 from subgrounds.subgraph import FieldPath
-from subgrounds.utils import loop_generator, union
+from subgrounds.utils import union
 
 
 def gen_columns(data: list | dict, prefix: str = "") -> list[str]:
@@ -246,7 +247,7 @@ def df_of_json(
     if columns is None:
         columns = list(fpaths | map(lambda fpath: fpath._name()))
 
-    col_fpaths = zip(fpaths, loop_generator(columns))
+    col_fpaths = zip(fpaths, cycle(columns))
     col_map = {fpath._name(use_aliases=True): colname for fpath, colname in col_fpaths}
 
     path_map = {fpath._name(use_aliases=True): fpath for fpath in fpaths}

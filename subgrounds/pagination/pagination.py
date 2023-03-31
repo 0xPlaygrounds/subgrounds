@@ -4,6 +4,7 @@ iterative) that make use of pagination strategies.
 
 from __future__ import annotations
 
+from functools import reduce
 from typing import Any, Iterator, Protocol, Type
 
 import subgrounds.client as client
@@ -31,6 +32,7 @@ class PaginationStrategy(Protocol):
               be executed
             document (Document): The query document
         """
+        ...
 
     def step(
         self, page_data: dict[str, Any] | None = None
@@ -74,34 +76,9 @@ def paginate(
       dict[str, Any]: The response data as a JSON dictionary
     """
 
-    data = {}
-    for page in paginate_iter(schema, doc, pagination_strategy):
-        data = merge(data, page)
+    gen = paginate_iter(schema, doc, pagination_strategy, headers)
 
-        data: dict[str, Any] = {}
-        doc, args = strategy.step()
-
-        while True:
-            try:
-                page_data = client.query(
-                    url=doc.url,
-                    query_str=doc.graphql,
-                    variables=doc.variables | args,
-                    headers=headers,
-                )
-                data = merge(data, page_data)
-                doc, args = strategy.step(page_data)
-            except StopPagination:
-                break
-            except Exception as exn:
-                raise PaginationError(exn.args[0], strategy)
-
-        return data
-
-    except SkipPagination:
-        return client.query(
-            doc.url, doc.graphql, variables=doc.variables, headers=headers
-        )
+    return reduce(merge, gen, next(gen))
 
 
 def paginate_iter(

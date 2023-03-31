@@ -1,12 +1,11 @@
+from __future__ import annotations
+
 from typing import overload
 
 from subgrounds.query import InputValue
 
 from .pagination import PaginationStrategy
 from .strategies import LegacyStrategy, SkipStrategy
-
-DEFAULT_NUM_ENTITIES = 100
-PAGE_SIZE = 900
 
 
 @overload
@@ -60,4 +59,5 @@ def normalize_strategy(
 ):
     if strategy is not None and is_subgraph:
         return strategy
+
     return SkipStrategy

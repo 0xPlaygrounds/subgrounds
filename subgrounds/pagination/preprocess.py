@@ -22,6 +22,8 @@ from subgrounds.utils import accumulate
 
 from .utils import DEFAULT_NUM_ENTITIES, merge_input_value_object_metas
 
+DEFAULT_NUM_ENTITIES = 100
+
 
 @dataclass(frozen=True)
 class PaginationNode:

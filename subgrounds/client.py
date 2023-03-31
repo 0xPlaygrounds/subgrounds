@@ -101,7 +101,7 @@ INTROSPECTION_QUERY: str = """
 """
 
 
-def get_schema(url: str) -> dict[str, Any]:
+def get_schema(url: str, headers: dict[str, Any]) -> dict[str, Any]:
     """Runs the introspection query on the GraphQL API served localed at
     :attr:`url` and returns the result. In case of errors, an exception containing
     the error message is thrown.
@@ -118,7 +118,7 @@ def get_schema(url: str) -> dict[str, Any]:
     resp = requests.post(
         url,
         json={"query": INTROSPECTION_QUERY},
-        headers={"Content-Type": "application/json"},
+        headers={"Content-Type": "application/json"} | headers,
     ).json()
 
     try:
@@ -127,7 +127,12 @@ def get_schema(url: str) -> dict[str, Any]:
         raise Exception(resp["errors"]) from exn
 
 
-def query(url: str, query_str: str, variables: dict[str, Any] = {}) -> dict[str, Any]:
+def query(
+    url: str,
+    query_str: str,
+    variables: dict[str, Any] = {},
+    headers: dict[str, Any] = {},
+) -> dict[str, Any]:
     """Executes the GraphQL query :attr:`query_str` with variables
     :attr:`variables` against the API served at :attr:`url` and returns the
     response data. In case of errors, an exception containing the error message is
@@ -154,7 +159,7 @@ def query(url: str, query_str: str, variables: dict[str, Any] = {}) -> dict[str,
             if variables == {}
             else {"query": query_str, "variables": variables}
         ),
-        headers={"Content-Type": "application/json"},
+        headers={"Content-Type": "application/json"} | headers,
     ).json()
 
     try:

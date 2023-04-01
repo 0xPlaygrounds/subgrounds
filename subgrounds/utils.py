@@ -198,6 +198,13 @@ def contains_list(data: dict | list | str | int | float | bool) -> bool:
 
 
 @cache
+def default_header():
+    """Contains the default header information for requests made by subgrounds"""
+
+    return {"Content-Type": "application/json", "User-Agent": user_agent()}
+
+
+@cache
 def user_agent():
     """A basic user agent describing the following details:
 

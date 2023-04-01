@@ -7,6 +7,8 @@ from typing import Any
 
 import requests
 
+from subgrounds.utils import user_agent
+
 logger = logging.getLogger("subgrounds")
 
 
@@ -101,6 +103,9 @@ INTROSPECTION_QUERY: str = """
 """
 
 
+DEFAULT_HEADER = {"Content-Type": "application/json", "User-Agent": user_agent()}
+
+
 def get_schema(url: str, headers: dict[str, Any]) -> dict[str, Any]:
     """Runs the introspection query on the GraphQL API served localed at
     :attr:`url` and returns the result. In case of errors, an exception containing
@@ -118,7 +123,7 @@ def get_schema(url: str, headers: dict[str, Any]) -> dict[str, Any]:
     resp = requests.post(
         url,
         json={"query": INTROSPECTION_QUERY},
-        headers={"Content-Type": "application/json"} | headers,
+        headers=DEFAULT_HEADER | headers,
     ).json()
 
     try:
@@ -159,7 +164,7 @@ def query(
             if variables == {}
             else {"query": query_str, "variables": variables}
         ),
-        headers={"Content-Type": "application/json"} | headers,
+        headers=DEFAULT_HEADER | headers,
     ).json()
 
     try:

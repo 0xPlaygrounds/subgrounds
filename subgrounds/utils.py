@@ -2,6 +2,8 @@
 Utility module for Subgrounds
 """
 
+import platform
+from functools import cache
 from itertools import filterfalse
 from typing import Any, Callable, Iterator, Optional, Tuple, TypeVar
 
@@ -189,3 +191,37 @@ def contains_list(data: dict | list | str | int | float | bool) -> bool:
 #         columns.append('_'.join([*keys, key]))
 
 #   return columns
+
+# ================================================================
+# User Agent / Headers
+# ================================================================
+
+
+@cache
+def user_agent():
+    """A basic user agent describing the following details:
+
+    - "Subgrounds" (and version)
+    - Platform/OS (and architecture)
+    - Python Type (and version)
+
+    Examples:
+    - Subgrounds/1.1.2 (Darwin; arm64) CPython/3.11.2
+    - Subgrounds/1.1.2 (Emscripten; wasm32) CPython/3.10.2
+
+    ⚠️ To override this, construct your :class:`~subgrounds.Subgrounds` with a headers
+      parameter with a dictionary containing an empty "User-Agent" key-value pairing.
+    """
+
+    from subgrounds import __version__  # avoid import loops
+
+    system = platform.system()
+    python = platform.python_implementation()
+    python_version = platform.python_version()
+    machine = platform.machine()
+
+    return (
+        f"Subgrounds/{__version__}"
+        f" ({system}; {machine})"
+        f" {python}/{python_version}"
+    )

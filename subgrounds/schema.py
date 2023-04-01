@@ -13,6 +13,8 @@ from pipe import map, where
 from pydantic import BaseModel as PydanticBaseModel
 from pydantic import Field, root_validator
 
+from .errors import SchemaError
+
 warnings.simplefilter("default")
 
 
@@ -161,7 +163,7 @@ class TypeMeta:
                     | map(lambda arg: arg.type_)
                 )
             except StopIteration:
-                raise Exception(
+                raise SchemaError(
                     f"TypeMeta.FieldMeta.type_of_arg: no argument named {argname} for field {self.name}"
                 )
 
@@ -407,4 +409,5 @@ class SchemaMeta(BaseModel):
     ) -> TypeMeta.T:
         """Returns the argument or field definition's underlying type"""
 
+        return self.type_of_typeref(tmeta.type_)
         return self.type_of_typeref(tmeta.type_)

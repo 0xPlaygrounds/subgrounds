@@ -54,6 +54,7 @@ def subgraph_slug(url: str) -> str:
 
 @dataclass
 class Subgrounds:
+    headers: dict[str, Any] = field(default_factory=dict)
     global_transforms: list[RequestTransform] = field(
         default_factory=lambda: DEFAULT_GLOBAL_TRANSFORMS
     )
@@ -76,11 +77,11 @@ class Subgrounds:
             if schema_path.exists():
                 schema = load_schema(schema_path)
             else:
-                schema = client.get_schema(url)
+                schema = client.get_schema(url, headers=self.headers)
                 store_schema(schema, schema_path)
 
         else:
-            schema = client.get_schema(url)
+            schema = client.get_schema(url, headers=self.headers)
 
         subgraph = Subgraph(
             url,
@@ -183,10 +184,15 @@ class Subgrounds:
             )
             if pagination_strategy is not None and subgraph._is_subgraph:
                 return paginate(
-                    subgraph._schema, doc, pagination_strategy=pagination_strategy
+                    subgraph._schema,
+                    doc,
+                    pagination_strategy=pagination_strategy,
+                    headers=self.headers,
                 )
             else:
-                return client.query(doc.url, doc.graphql, variables=doc.variables)
+                return client.query(
+                    doc.url, doc.graphql, variables=doc.variables, headers=headers
+                )
 
         def transform_doc(transforms: list[DocumentTransform], doc: Document) -> dict:
             logger.debug(f"execute.transform_doc: doc = \n{doc.graphql}")
@@ -246,10 +252,18 @@ class Subgrounds:
             )
             if pagination_strategy is not None and subgraph._is_subgraph:
                 yield from paginate_iter(
-                    subgraph._schema, doc, pagination_strategy=pagination_strategy
+                    subgraph._schema,
+                    doc,
+                    pagination_strategy=pagination_strategy,
+                    headers=self.headers,
                 )
             else:
-                yield client.query(doc.url, doc.graphql, variables=doc.variables)
+                yield client.query(
+                    doc.url,
+                    doc.graphql,
+                    variables=doc.variables,
+                    headers=self.headers,
+                )
 
         def transform_doc(
             transforms: list[DocumentTransform], doc: Document

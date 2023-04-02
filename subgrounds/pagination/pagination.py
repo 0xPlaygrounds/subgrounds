@@ -54,7 +54,10 @@ class PaginationStrategy(Protocol):
 
 
 def paginate(
-    schema: SchemaMeta, doc: Document, pagination_strategy: Type[PaginationStrategy]
+    schema: SchemaMeta,
+    doc: Document,
+    pagination_strategy: Type[PaginationStrategy],
+    headers: dict[str, Any],
 ) -> dict[str, Any]:
     """Executes the request document `doc` based on the GraphQL schema `schema` and returns
     the response as a JSON dictionary.
@@ -76,7 +79,10 @@ def paginate(
         while True:
             try:
                 page_data = client.query(
-                    url=doc.url, query_str=doc.graphql, variables=doc.variables | args
+                    url=doc.url,
+                    query_str=doc.graphql,
+                    variables=doc.variables | args,
+                    headers=headers,
                 )
                 data = merge(data, page_data)
                 doc, args = strategy.step(page_data)
@@ -88,11 +94,16 @@ def paginate(
         return data
 
     except SkipPagination:
-        return client.query(doc.url, doc.graphql, variables=doc.variables)
+        return client.query(
+            doc.url, doc.graphql, variables=doc.variables, headers=headers
+        )
 
 
 def paginate_iter(
-    schema: SchemaMeta, doc: Document, pagination_strategy: Type[PaginationStrategy]
+    schema: SchemaMeta,
+    doc: Document,
+    pagination_strategy: Type[PaginationStrategy],
+    headers: dict[str, Any],
 ) -> Iterator[dict[str, Any]]:
     """Executes the request document `doc` based on the GraphQL schema `schema` and returns
     the response as a JSON dictionary.
@@ -113,7 +124,10 @@ def paginate_iter(
         while True:
             try:
                 page_data = client.query(
-                    url=doc.url, query_str=doc.graphql, variables=doc.variables | args
+                    url=doc.url,
+                    query_str=doc.graphql,
+                    variables=doc.variables | args,
+                    headers=headers,
                 )
                 yield page_data
                 doc, args = strategy.step(page_data)
@@ -123,4 +137,6 @@ def paginate_iter(
                 raise PaginationError(exn.args[0], strategy)
 
     except SkipPagination:
-        return client.query(doc.url, doc.graphql, variables=doc.variables)
+        return client.query(
+            doc.url, doc.graphql, variables=doc.variables, headers=headers
+        )

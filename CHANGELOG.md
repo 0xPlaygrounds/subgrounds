@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v1.2.0 (2023-04-02)
+### Feature
+* Headers Support ([#13](https://github.com/0xPlaygrounds/subgrounds/issues/13)) ([`8ff3c04`](https://github.com/0xPlaygrounds/subgrounds/commit/8ff3c040a2c8c205b31566f1135e38a3c84293b2))
+
+### Documentation
+* Fix changelog formatting ([`7f8a630`](https://github.com/0xPlaygrounds/subgrounds/commit/7f8a6302871387042ffa0ea323284832f2611ea7))
+
 ## v1.1.2 (2023-03-15)
 ### Fix
 * `Query.map` had no default value for `priority` ([#12](https://github.com/0xPlaygrounds/subgrounds/issues/12)) ([`82a5f29`](https://github.com/0xPlaygrounds/subgrounds/commit/82a5f293e4cf7398350d12e309cd3cff190c1318))

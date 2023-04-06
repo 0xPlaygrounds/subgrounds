@@ -6,10 +6,6 @@ class SchemaError(SubgroundsError):
     """Errors related to schema"""
 
 
-class QueryError(SubgroundsError):
-    """Errors related to queries"""
-
-
 class TransformError(SubgroundsError):
     """Errors related to transforms"""
 

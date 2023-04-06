@@ -410,4 +410,3 @@ class SchemaMeta(BaseModel):
         """Returns the argument or field definition's underlying type"""
 
         return self.type_of_typeref(tmeta.type_)
-        return self.type_of_typeref(tmeta.type_)

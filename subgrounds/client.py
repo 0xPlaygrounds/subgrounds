@@ -7,7 +7,8 @@ from typing import Any
 
 import requests
 
-from subgrounds.utils import default_header
+from .errors import GraphQLError, ServerError
+from .utils import default_header
 
 logger = logging.getLogger("subgrounds")
 
@@ -112,21 +113,36 @@ def get_schema(url: str, headers: dict[str, Any]) -> dict[str, Any]:
       url (str): The url of the GraphQL API
 
     Raises:
-      Exception: In case of GraphQL server error
+      HttpError: If the request response resulted in an error
+      ServerError: If server responds back non-json content
+      GraphQLError: If the GraphQL query failed or other grapql server errors
 
     Returns:
       dict[str, Any]: The GraphQL API's schema in JSON
     """
+
     resp = requests.post(
         url,
         json={"query": INTROSPECTION_QUERY},
         headers=default_header() | headers,
-    ).json()
+    )
+
+    resp.raise_for_status()
 
     try:
-        return resp["data"]
-    except KeyError as exn:
-        raise Exception(resp["errors"]) from exn
+        raw_data = resp.json()
+
+    except requests.JSONDecodeError:
+        raise ServerError(
+            f"Server ({url}) did not respond with proper JSON"
+            f"\nDid you query a proper GraphQL endpoint?"
+            f"\n\n{resp.content}"
+        )
+
+    if (data := raw_data.get("data")) is None:
+        raise GraphQLError(raw_data.get("errors", "Unknown Error(s) Found"))
+
+    return data
 
 
 def query(
@@ -147,7 +163,9 @@ def query(
         Defaults to {}.
 
     Raises:
-      Exception: GraphQL error
+      HttpError: If the request response resulted in an error
+      ServerError: If server responds back non-json content
+      GraphQLError: If the GraphQL query failed or other grapql server errors
 
     Returns:
       dict[str, Any]: Response data
@@ -162,9 +180,21 @@ def query(
             else {"query": query_str, "variables": variables}
         ),
         headers=default_header() | headers,
-    ).json()
+    )
+
+    resp.raise_for_status()
 
     try:
-        return resp["data"]
-    except KeyError as exn:
-        raise Exception(resp["errors"]) from exn
+        raw_data = resp.json()
+
+    except requests.JSONDecodeError:
+        raise ServerError(
+            f"Server ({url}) did not respond with proper JSON"
+            f"\nDid you query a proper GraphQL endpoint?"
+            f"\n\n{resp.content}"
+        )
+
+    if (data := raw_data.get("data")) is None:
+        raise GraphQLError(raw_data.get("errors", "Unknown Error(s) Found"))
+
+    return data

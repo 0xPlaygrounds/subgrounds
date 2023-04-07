@@ -30,8 +30,9 @@ from typing import Any, Callable, Iterator, Literal, Optional, Protocol, TypeVar
 
 from pipe import map, take, traverse, where
 
-from subgrounds.schema import SchemaMeta, TypeMeta, TypeRef
-from subgrounds.utils import (
+from .errors import SubgroundsError
+from .schema import SchemaMeta, TypeMeta, TypeRef
+from .utils import (
     extract_data,
     filter_map,
     filter_none,
@@ -549,7 +550,7 @@ class Selection:
                 return map_f(new_selection)
 
             case _:
-                raise Exception(f"map: invalid priority {priority}")
+                raise SubgroundsError(f"map: invalid priority {priority}")
 
     def map_args(
         self,
@@ -870,7 +871,7 @@ class Selection:
 
     def combine(self: Selection, other: Selection) -> Selection:
         if self.key != other.key:
-            raise Exception(f"Selection.combine: {self.key} != {other.key}")
+            raise SubgroundsError(f"Selection.combine: {self.key} != {other.key}")
 
         return Selection(
             fmeta=self.fmeta,

@@ -26,12 +26,13 @@ from typing import TYPE_CHECKING, Any, Callable
 
 from pipe import map, traverse
 
-from subgrounds.query import DataRequest, Document, Query, Selection
-from subgrounds.schema import TypeMeta, TypeRef
-from subgrounds.utils import flatten, union
+from .errors import TransformError
+from .query import DataRequest, Document, Query, Selection
+from .schema import TypeMeta, TypeRef
+from .utils import flatten, union
 
 if TYPE_CHECKING:
-    from subgrounds.subgraph import Subgraph
+    from .subgraph import Subgraph
 
 logger = logging.getLogger("subgrounds")
 
@@ -55,7 +56,9 @@ def select_data(select: Selection, data: dict) -> list[Any]:
             )
 
         case (select, data):
-            raise Exception(f"select_data: invalid selection {select} for data {data}")
+            raise TransformError(
+                f"select_data: invalid selection {select} for data {data}"
+            )
 
     assert False  # Suppress mypy missing return statement warning
 
@@ -163,7 +166,8 @@ class TypeTransform(DocumentTransform):
 
     def transform_response(self, doc: Document, data: dict[str, Any]) -> dict[str, Any]:
         def transform(select: Selection, data: dict[str, Any]) -> None:
-            # TODO: Handle NonNull and List more graciously (i.e.: without using TypeRef.root_type_name)
+            # TODO: Handle NonNull and List more graciously
+            #  (i.e.: without using TypeRef.root_type_name)
             match (select, data):
                 # Type matches
                 case (
@@ -211,13 +215,15 @@ class TypeTransform(DocumentTransform):
                         case None:
                             return None
                         case _:
-                            raise Exception(
-                                f"transform_data_type: data for selection {select} is neither list or dict {data[name]}"
+                            raise TransformError(
+                                f"transform_data_type: data for selection {select} is"
+                                f" neither list or dict {data[name]}"
                             )
 
                 case (select, data):
-                    raise Exception(
-                        f"transform_data_type: invalid selection {select} for data {data}"
+                    raise TransformError(
+                        f"transform_data_type: invalid selection {select}"
+                        f" for data {data}"
                     )
 
         for select in doc.query.selection:
@@ -292,7 +298,9 @@ class LocalSyntheticField(DocumentTransform):
                     new_inner_select = list(inner_select | map(transform) | traverse)
                     return Selection(select_fmeta, alias, args, new_inner_select)
                 case _:
-                    raise Exception(f"transform_document: unhandled selection {select}")
+                    raise TransformError(
+                        f"transform_document: unhandled selection {select}"
+                    )
 
             assert False  # Suppress mypy missing return statement warning
 
@@ -334,10 +342,12 @@ class LocalSyntheticField(DocumentTransform):
                     | Selection(TypeMeta.FieldMeta(), name, _, [] | None),
                     dict() as data,
                 ) if name == self.fmeta.name and name not in data:
-                    # Case where the selection selects a the syntheticfield of the curren transform
-                    # that is not in the data blob and there are no inner selections
+                    # Case where the selection selects a the syntheticfield of the
+                    #  current transform that is not in the data blob and there are
+                    #  no inner selections
 
-                    # Try to grab the arguments to the synthetic field transform in the data blob
+                    # Try to grab the arguments to the synthetic field transform in
+                    #  the data blob
                     arg_values = flatten(
                         list(self.args | map(partial(select_data, data=data)))
                     )
@@ -352,7 +362,8 @@ class LocalSyntheticField(DocumentTransform):
                     | Selection(TypeMeta.FieldMeta(), name, _, [] | None),
                     dict() as data,
                 ) if name not in data:
-                    # Case where the selection selects a regular field but it is not in the data blob (caused by None value at higher selection)
+                    # Case where the selection selects a regular field but it is not in
+                    #  the data blob (caused by None value at higher selection)
                     data[name] = None
 
                 case (
@@ -360,8 +371,8 @@ class LocalSyntheticField(DocumentTransform):
                     | Selection(TypeMeta.FieldMeta(), name, _, [] | None),
                     dict() as data,
                 ):
-                    # Case where the selection selects a regular field and there are no inner selections
-                    # (nothing to do)
+                    # Case where the selection selects a regular field and there are
+                    #  no inner selections (nothing to do)
                     pass
 
                 case (
@@ -385,13 +396,15 @@ class LocalSyntheticField(DocumentTransform):
                                 transform(select, data[name])
 
                         case _:
-                            raise Exception(
-                                f"transform_response: data for selection {select} is neither list or dict {data[name]}"
+                            raise TransformError(
+                                f"transform_response: data for selection {select} is"
+                                f" neither list or dict {data[name]}"
                             )
 
                 case (select, data):
-                    raise Exception(
-                        f"transform_response: invalid selection {select} for data {data}"
+                    raise TransformError(
+                        f"transform_response: invalid selection {select}"
+                        f" for data {data}"
                     )
 
         def transform_on_type(select: Selection, data: dict) -> None:

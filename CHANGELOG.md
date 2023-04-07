@@ -5,13 +5,6 @@
 ## v1.3.0 (2023-04-07)
 ### Feature
 * Add specific error models ([`6218076`](https://github.com/0xPlaygrounds/subgrounds/commit/621807602c3467a3e729541f645d992d3e5b6297))
-* Add user-agent to headers ([`41dbaf6`](https://github.com/0xPlaygrounds/subgrounds/commit/41dbaf6443ad604665ad5412d4b2c6bd3d3cdeb4))
-* Add headers to Subgrounds ([`80d6c20`](https://github.com/0xPlaygrounds/subgrounds/commit/80d6c208dd2fa624f7033f60217f6de85fcb4099))
-
-### Fix
-* Better defined error models ([`c121132`](https://github.com/0xPlaygrounds/subgrounds/commit/c1211328bbd4db00ec981f1cf167bd88d62cc94b))
-* Adjust error models + fix typos ([`fa853d7`](https://github.com/0xPlaygrounds/subgrounds/commit/fa853d70e9fe388b025410314baabc7e8447485d))
-* Default header as a function to avoid circular imports ([`1f2f8f6`](https://github.com/0xPlaygrounds/subgrounds/commit/1f2f8f6d10a115c596fe938b983f86e865711bd7))
 
 ## v1.2.0 (2023-04-02)
 ### Feature

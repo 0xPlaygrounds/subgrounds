@@ -1,6 +1,5 @@
-import warnings
-
-from subgrounds.contrib.plotly import (
+from .figure import Figure
+from .traces import (
     Bar,
     Barpolar,
     Box,
@@ -11,7 +10,6 @@ from subgrounds.contrib.plotly import (
     Contour,
     Contourcarpet,
     Densitymapbox,
-    Figure,
     Funnel,
     Heatmap,
     Histogram,
@@ -77,10 +75,3 @@ __all__ = [
     "Scattercarpet",
     "Contourcarpet",
 ]
-
-
-warnings.warn(
-    "Importing from `subgrounds.plotly_wrappers` is deprecated."
-    " Use `subgrounds.contrib.plotly` instead.",
-    DeprecationWarning,
-)

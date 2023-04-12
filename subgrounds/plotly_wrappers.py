@@ -1,3 +1,7 @@
+"""
+DEPRECIATED: Use `subgrounds.contrib.plotly` instead
+"""
+
 import warnings
 
 from subgrounds.contrib.plotly import (
@@ -81,6 +85,7 @@ __all__ = [
 
 warnings.warn(
     "Importing from `subgrounds.plotly_wrappers` is deprecated."
-    " Use `subgrounds.contrib.plotly` instead.",
+    " Use `subgrounds.contrib.plotly` instead.\n"
+    "Will be removed in a future version.",
     DeprecationWarning,
 )

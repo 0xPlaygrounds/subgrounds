@@ -1,10 +1,10 @@
-"""
-DEPRECIATED: Use `subgrounds.contrib.plotly` instead
+"""Subgrounds Plotly Components
+
+Extending plotly components to be able to understand subgrounds logic.
 """
 
-import warnings
-
-from subgrounds.contrib.plotly import (
+from .figure import Figure
+from .traces import (
     Bar,
     Barpolar,
     Box,
@@ -15,7 +15,6 @@ from subgrounds.contrib.plotly import (
     Contour,
     Contourcarpet,
     Densitymapbox,
-    Figure,
     Funnel,
     Heatmap,
     Histogram,
@@ -81,11 +80,3 @@ __all__ = [
     "Scattercarpet",
     "Contourcarpet",
 ]
-
-
-warnings.warn(
-    "Importing from `subgrounds.plotly_wrappers` is deprecated."
-    " Use `subgrounds.contrib.plotly` instead.\n"
-    "Will be removed in a future version.",
-    DeprecationWarning,
-)

@@ -1,14 +1,11 @@
 from datetime import datetime
-from random import choice
 
 import dash
 from dash import html
 
-from subgrounds.dash_wrappers import Graph
-from subgrounds.plotly_wrappers import Figure, Indicator, Scatter
-from subgrounds.schema import TypeRef
-from subgrounds.subgraph import SyntheticField
-from subgrounds.subgrounds import Subgrounds
+from subgrounds import Subgrounds, SyntheticField
+from subgrounds.contrib.dash import Graph
+from subgrounds.contrib.plotly import Figure, Scatter
 
 sg = Subgrounds()
 olympusDAO = sg.load_subgraph(

@@ -1,9 +1,9 @@
 import dash
 from dash import html
 
-from subgrounds.dash_wrappers import Graph
-from subgrounds.plotly_wrappers import Figure, Indicator
-from subgrounds.subgrounds import Subgrounds
+from subgrounds import Subgrounds
+from subgrounds.contrib.dash import Graph
+from subgrounds.contrib.plotly import Figure, Indicator
 
 sg = Subgrounds()
 uniswapV2 = sg.load_subgraph(
@@ -11,7 +11,19 @@ uniswapV2 = sg.load_subgraph(
 )
 
 # This is unecessary, but nice for brevity
-pair = uniswapV2.Query.pair(id="0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc")
+Swap = uniswapV2.Swap
+
+# This is a synthetic field
+Swap.price1 = abs(Swap.amount0In - Swap.amount0Out) / abs(
+    Swap.amount1In - Swap.amount1Out
+)
+
+swaps = uniswapV2.Query.swaps(
+    orderBy=Swap.timestamp,
+    orderDirection="desc",
+    first=1,
+    where=[Swap.pair == "0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc"],
+)
 
 # Dashboard
 app = dash.Dash(__name__)
@@ -25,7 +37,7 @@ app.layout = html.Div(
                         Figure(
                             subgrounds=sg,
                             traces=[
-                                Indicator(value=pair.token0Price),
+                                Indicator(value=swaps.price1),
                             ],
                         )
                     )

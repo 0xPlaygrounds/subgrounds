@@ -26,7 +26,7 @@ dash = ["dash"]
 # https://python-poetry.org/docs/managing-dependencies/#dependency-groups
 [tool.poetry.group.dev.dependencies]
 black = "^22.3.0"
-deepdiff = "^6.2.1"  # used for debugging data structures
+deepdiff = "^6.2.1"                 # used for debugging data structures
 ipykernel = "^6.13.0"
 mypy = "^0.950"
 nose2 = "^0.11.0"
@@ -36,8 +36,8 @@ python-semantic-release = "^7.33.1"
 ruff = "^0.0.253"
 
 [tool.poe.tasks]
-format = { shell = "black subgrounds examples tests"}
-check = { shell = "black subgrounds examples tests --check; ruff check subgrounds examples tests"}
+format = { shell = "black subgrounds examples tests" }
+check = { shell = "black subgrounds examples tests --check; ruff check subgrounds examples tests" }
 develop = { shell = "mudkip develop" }
 test = "pytest"
 generate-api-docs = { shell = "sphinx-apidoc --output docs/api subgrounds --separate --force" }
@@ -49,6 +49,12 @@ version_variable = ["subgrounds/__init__.py:__version__"]
 version_toml = "pyproject.toml:tool.poetry.version"
 major_on_zero = false
 build_command = "poetry build"
+
+[tool.ruff]
+
+[tool.ruff.per-file-ignores]
+"subgrounds/plotly_wrappers" = ["F405", "F403"]
+"subgrounds/dash_wrappers" = ["F405", "F403"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

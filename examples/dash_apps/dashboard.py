@@ -1,11 +1,9 @@
 import dash
 from dash import html
 
-# from subgrounds.components import AutoUpdate, BarChart, IndicatorWithChange
-# from subgrounds.subgraph import Subgraph
-from subgrounds.dash_wrappers import AutoUpdate, Graph
-from subgrounds.plotly_wrappers import Bar, Figure, Indicator
-from subgrounds.subgrounds import Subgrounds
+from subgrounds.contrib.dash import AutoUpdate, Graph
+from subgrounds.contrib.plotly import Bar, Figure, Indicator
+from subgrounds import Subgrounds
 
 sg = Subgrounds()
 uniswapV2 = sg.load_subgraph(

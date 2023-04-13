@@ -191,7 +191,7 @@ class Subgrounds:
                 )
             else:
                 return client.query(
-                    doc.url, doc.graphql, variables=doc.variables, headers=headers
+                    doc.url, doc.graphql, variables=doc.variables, headers=self.headers
                 )
 
         def transform_doc(transforms: list[DocumentTransform], doc: Document) -> dict:

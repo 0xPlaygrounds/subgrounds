@@ -1,3 +1,8 @@
+"""Subgrounds Plotly Components
+
+Extending plotly components to be able to understand subgrounds logic.
+"""
+
 from .figure import Figure
 from .traces import (
     Bar,

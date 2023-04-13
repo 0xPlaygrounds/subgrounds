@@ -1,9 +1,9 @@
 import dash
 from dash import html
 
-from subgrounds.dash_wrappers import Graph
-from subgrounds.plotly_wrappers import Bar, Figure
-from subgrounds.subgrounds import Subgrounds
+from subgrounds import Subgrounds
+from subgrounds.contrib.dash import Graph
+from subgrounds.contrib.plotly import Bar, Figure
 
 sg = Subgrounds()
 aaveV2 = sg.load_subgraph("https://api.thegraph.com/subgraphs/name/aave/protocol-v2")

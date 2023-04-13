@@ -11,7 +11,7 @@ For us, `subgrounds.contrib` will represent extra features and ideas with `subgr
 ## What's currently here?
 
 ### Plotly
-Originally located in `subgrounds.plotly_wrappers`, `subgrounds.contrib.plotly` contains helpful wrappers on `plotly` objects that allow you to use `FieldPaths` directly without creating a `panda`'s `DataFrame`.
+Originally located in `subgrounds.plotly_wrappers`, `subgrounds.contrib.plotly` contains helpful wrappers on `plotly` objects that allow you to use `FieldPaths` directly without creating a `pandas` `DataFrame`.
 
 ### Dash
-Originally located in `subgrounds.dash_wrappers`, `subgrounds.contrib.dash` contains helpful wrappers on `dash` objects that allow you to use other wrapped visualization objects (currently `subgrounds.contrib.plotly`) in `dash` apps without creating `panda`'s `DataFrame`s.
+Originally located in `subgrounds.dash_wrappers`, `subgrounds.contrib.dash` contains helpful wrappers on `dash` objects that allow you to use other wrapped visualization objects (currently `subgrounds.contrib.plotly`) in `dash` apps without creating `pandas` `DataFrame`s.

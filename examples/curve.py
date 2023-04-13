@@ -25,10 +25,12 @@ most_traded_snapshots = most_traded_pools.dailySnapshots(
 # Querying:
 #  - the name of the top 4 most traded pools, their 2 most liquid
 # pools' token symbols and their 2 most liquid pool's TVL in USD
-sg.query_df(
+df = sg.query_df(
     [
         most_traded_pools.name,
         most_traded_snapshots.dailyVolumeUSD,
         most_traded_snapshots.dailyTotalRevenueUSD,
     ]
 )
+
+print(df)

@@ -3,11 +3,10 @@ from datetime import datetime
 import dash
 from dash import html
 
-from subgrounds.dash_wrappers import Graph
-from subgrounds.plotly_wrappers import Figure, Scatter
+from subgrounds import Subgrounds, SyntheticField
+from subgrounds.contrib.dash import Graph
+from subgrounds.contrib.plotly import Figure, Scatter
 from subgrounds.schema import TypeRef
-from subgrounds.subgraph import SyntheticField
-from subgrounds.subgrounds import Subgrounds
 
 sg = Subgrounds()
 uniswapV2 = sg.load_subgraph(

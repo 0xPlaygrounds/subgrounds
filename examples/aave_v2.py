@@ -15,4 +15,6 @@ latest = aave_v2.Query.markets(
 )
 
 # Return query to a dataframe
-sg.query_df([latest.name, latest.totalValueLockedUSD])
+df = sg.query_df([latest.name, latest.totalValueLockedUSD])
+
+print(df)

@@ -1,9 +1,9 @@
 import dash
 from dash import html
 
-from subgrounds.dash_wrappers import Graph
-from subgrounds.plotly_wrappers import Figure, Indicator
-from subgrounds.subgrounds import Subgrounds
+from subgrounds import Subgrounds
+from subgrounds.contrib.dash import Graph
+from subgrounds.contrib.plotly import Figure, Indicator
 
 sg = Subgrounds()
 uniswapV2 = sg.load_subgraph(

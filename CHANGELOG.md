@@ -2,6 +2,18 @@
 
 <!--next-version-placeholder-->
 
+## v1.4.0 (2023-04-13)
+### Feature
+* `subgrounds.contrib.dash` and `subgrounds.contrib.plotly` ([`f1d79e8`](https://github.com/0xPlaygrounds/subgrounds/commit/f1d79e89f1594bc31d443fa2b248f745974dd468))
+
+### Fix
+* Headers bugs w/ non-subgraph apis ([`7749f8f`](https://github.com/0xPlaygrounds/subgrounds/commit/7749f8f378fd5dcad727e2b507a50ed99654fab3))
+* Update examples to user modern subgrounds ([`6e14b89`](https://github.com/0xPlaygrounds/subgrounds/commit/6e14b89dd040d938210827d2defcfa80e397a896))
+
+### Documentation
+* Adjust wording ([`501b480`](https://github.com/0xPlaygrounds/subgrounds/commit/501b480a93834978faa063633060389ef82b5931))
+* Add extra details about `contrib` and deprecation ([`6a7bbec`](https://github.com/0xPlaygrounds/subgrounds/commit/6a7bbecbbd30d926ff7a9c8285b3c7be64b28722))
+
 ## v1.3.0 (2023-04-07)
 ### Feature
 * Add specific error models ([`6218076`](https://github.com/0xPlaygrounds/subgrounds/commit/621807602c3467a3e729541f645d992d3e5b6297))

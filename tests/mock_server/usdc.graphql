@@ -1,0 +1,865 @@
+"""
+Marks the GraphQL type as indexable entity.  Each type that should be an entity
+is required to be annotated with this directive.
+"""
+directive @entity on OBJECT
+
+"""Defined a Subgraph ID for an object type"""
+directive @subgraphId(id: String!) on OBJECT
+
+"""
+creates a virtual field on the entity that may be queried but cannot be set manually through the mappings API.
+"""
+directive @derivedFrom(field: String!) on FIELD_DEFINITION
+
+type _Block_ {
+  """The hash of the block"""
+  hash: Bytes
+
+  """The block number"""
+  number: Int!
+
+  """Integer representation of the timestamp stored in blocks for the chain"""
+  timestamp: Int
+}
+
+"""The type for the top-level _meta field"""
+type _Meta_ {
+  """
+  Information about a specific subgraph block. The hash of the block
+  will be null if the _meta field has a block constraint that asks for
+  a block number. It will be filled if the _meta field has no block constraint
+  and therefore asks for the latest  block
+  
+  """
+  block: _Block_!
+
+  """The deployment ID"""
+  deployment: String!
+
+  """If `true`, the subgraph encountered indexing errors at some past block"""
+  hasIndexingErrors: Boolean!
+}
+
+enum _SubgraphErrorPolicy_ {
+  """Data will be returned even if the subgraph has indexing errors"""
+  allow
+
+  """
+  If the subgraph has indexing errors, data will be omitted. The default.
+  """
+  deny
+}
+
+scalar BigDecimal
+
+scalar BigInt
+
+input Block_height {
+  hash: Bytes
+  number: Int
+  number_gte: Int
+}
+
+input BlockChangedFilter {
+  number_gte: Int!
+}
+
+scalar Bytes
+
+type Minter {
+  id: ID!
+  address: String!
+  totalMinted: BigInt!
+  totalBurned: BigInt!
+}
+
+input Minter_filter {
+  id: ID
+  id_not: ID
+  id_gt: ID
+  id_lt: ID
+  id_gte: ID
+  id_lte: ID
+  id_in: [ID!]
+  id_not_in: [ID!]
+  address: String
+  address_not: String
+  address_gt: String
+  address_lt: String
+  address_gte: String
+  address_lte: String
+  address_in: [String!]
+  address_not_in: [String!]
+  address_contains: String
+  address_contains_nocase: String
+  address_not_contains: String
+  address_not_contains_nocase: String
+  address_starts_with: String
+  address_starts_with_nocase: String
+  address_not_starts_with: String
+  address_not_starts_with_nocase: String
+  address_ends_with: String
+  address_ends_with_nocase: String
+  address_not_ends_with: String
+  address_not_ends_with_nocase: String
+  totalMinted: BigInt
+  totalMinted_not: BigInt
+  totalMinted_gt: BigInt
+  totalMinted_lt: BigInt
+  totalMinted_gte: BigInt
+  totalMinted_lte: BigInt
+  totalMinted_in: [BigInt!]
+  totalMinted_not_in: [BigInt!]
+  totalBurned: BigInt
+  totalBurned_not: BigInt
+  totalBurned_gt: BigInt
+  totalBurned_lt: BigInt
+  totalBurned_gte: BigInt
+  totalBurned_lte: BigInt
+  totalBurned_in: [BigInt!]
+  totalBurned_not_in: [BigInt!]
+
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [Minter_filter]
+  or: [Minter_filter]
+}
+
+enum Minter_orderBy {
+  id
+  address
+  totalMinted
+  totalBurned
+}
+
+type MinterCounter {
+  id: ID!
+  count: Int!
+}
+
+input MinterCounter_filter {
+  id: ID
+  id_not: ID
+  id_gt: ID
+  id_lt: ID
+  id_gte: ID
+  id_lte: ID
+  id_in: [ID!]
+  id_not_in: [ID!]
+  count: Int
+  count_not: Int
+  count_gt: Int
+  count_lt: Int
+  count_gte: Int
+  count_lte: Int
+  count_in: [Int!]
+  count_not_in: [Int!]
+
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [MinterCounter_filter]
+  or: [MinterCounter_filter]
+}
+
+enum MinterCounter_orderBy {
+  id
+  count
+}
+
+"""Defines the order direction, either ascending or descending"""
+enum OrderDirection {
+  asc
+  desc
+}
+
+type Query {
+  user(
+    id: ID!
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): User
+  users(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: User_orderBy
+    orderDirection: OrderDirection
+    where: User_filter
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [User!]!
+  minter(
+    id: ID!
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): Minter
+  minters(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: Minter_orderBy
+    orderDirection: OrderDirection
+    where: Minter_filter
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [Minter!]!
+  userCounter(
+    id: ID!
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): UserCounter
+  userCounters(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: UserCounter_orderBy
+    orderDirection: OrderDirection
+    where: UserCounter_filter
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [UserCounter!]!
+  minterCounter(
+    id: ID!
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): MinterCounter
+  minterCounters(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: MinterCounter_orderBy
+    orderDirection: OrderDirection
+    where: MinterCounter_filter
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [MinterCounter!]!
+  transferCounter(
+    id: ID!
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): TransferCounter
+  transferCounters(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: TransferCounter_orderBy
+    orderDirection: OrderDirection
+    where: TransferCounter_filter
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [TransferCounter!]!
+  totalSupply(
+    id: ID!
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): TotalSupply
+  totalSupplies(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: TotalSupply_orderBy
+    orderDirection: OrderDirection
+    where: TotalSupply_filter
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [TotalSupply!]!
+
+  """Access to subgraph metadata"""
+  _meta(block: Block_height): _Meta_
+}
+
+type Subscription {
+  user(
+    id: ID!
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): User
+  users(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: User_orderBy
+    orderDirection: OrderDirection
+    where: User_filter
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [User!]!
+  minter(
+    id: ID!
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): Minter
+  minters(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: Minter_orderBy
+    orderDirection: OrderDirection
+    where: Minter_filter
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [Minter!]!
+  userCounter(
+    id: ID!
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): UserCounter
+  userCounters(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: UserCounter_orderBy
+    orderDirection: OrderDirection
+    where: UserCounter_filter
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [UserCounter!]!
+  minterCounter(
+    id: ID!
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): MinterCounter
+  minterCounters(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: MinterCounter_orderBy
+    orderDirection: OrderDirection
+    where: MinterCounter_filter
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [MinterCounter!]!
+  transferCounter(
+    id: ID!
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): TransferCounter
+  transferCounters(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: TransferCounter_orderBy
+    orderDirection: OrderDirection
+    where: TransferCounter_filter
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [TransferCounter!]!
+  totalSupply(
+    id: ID!
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): TotalSupply
+  totalSupplies(
+    skip: Int = 0
+    first: Int = 100
+    orderBy: TotalSupply_orderBy
+    orderDirection: OrderDirection
+    where: TotalSupply_filter
+
+    """
+    The block at which the query should be executed. Can either be a `{ hash:
+    Bytes }` value containing a block hash, a `{ number: Int }` containing the
+    block number, or a `{ number_gte: Int }` containing the minimum block
+    number. In the case of `number_gte`, the query will be executed on the
+    latest block only if the subgraph has progressed to or past the minimum
+    block number. Defaults to the latest block when omitted.
+    """
+    block: Block_height
+
+    """
+    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
+    """
+    subgraphError: _SubgraphErrorPolicy_! = deny
+  ): [TotalSupply!]!
+
+  """Access to subgraph metadata"""
+  _meta(block: Block_height): _Meta_
+}
+
+type TotalSupply {
+  id: ID!
+  supply: BigInt!
+  minted: BigInt!
+  burned: BigInt!
+}
+
+input TotalSupply_filter {
+  id: ID
+  id_not: ID
+  id_gt: ID
+  id_lt: ID
+  id_gte: ID
+  id_lte: ID
+  id_in: [ID!]
+  id_not_in: [ID!]
+  supply: BigInt
+  supply_not: BigInt
+  supply_gt: BigInt
+  supply_lt: BigInt
+  supply_gte: BigInt
+  supply_lte: BigInt
+  supply_in: [BigInt!]
+  supply_not_in: [BigInt!]
+  minted: BigInt
+  minted_not: BigInt
+  minted_gt: BigInt
+  minted_lt: BigInt
+  minted_gte: BigInt
+  minted_lte: BigInt
+  minted_in: [BigInt!]
+  minted_not_in: [BigInt!]
+  burned: BigInt
+  burned_not: BigInt
+  burned_gt: BigInt
+  burned_lt: BigInt
+  burned_gte: BigInt
+  burned_lte: BigInt
+  burned_in: [BigInt!]
+  burned_not_in: [BigInt!]
+
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [TotalSupply_filter]
+  or: [TotalSupply_filter]
+}
+
+enum TotalSupply_orderBy {
+  id
+  supply
+  minted
+  burned
+}
+
+type TransferCounter {
+  id: ID!
+  count: Int!
+  totalTransferred: BigInt!
+}
+
+input TransferCounter_filter {
+  id: ID
+  id_not: ID
+  id_gt: ID
+  id_lt: ID
+  id_gte: ID
+  id_lte: ID
+  id_in: [ID!]
+  id_not_in: [ID!]
+  count: Int
+  count_not: Int
+  count_gt: Int
+  count_lt: Int
+  count_gte: Int
+  count_lte: Int
+  count_in: [Int!]
+  count_not_in: [Int!]
+  totalTransferred: BigInt
+  totalTransferred_not: BigInt
+  totalTransferred_gt: BigInt
+  totalTransferred_lt: BigInt
+  totalTransferred_gte: BigInt
+  totalTransferred_lte: BigInt
+  totalTransferred_in: [BigInt!]
+  totalTransferred_not_in: [BigInt!]
+
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [TransferCounter_filter]
+  or: [TransferCounter_filter]
+}
+
+enum TransferCounter_orderBy {
+  id
+  count
+  totalTransferred
+}
+
+type User {
+  id: ID!
+  address: String!
+  balance: BigInt!
+  transactionCount: Int!
+}
+
+input User_filter {
+  id: ID
+  id_not: ID
+  id_gt: ID
+  id_lt: ID
+  id_gte: ID
+  id_lte: ID
+  id_in: [ID!]
+  id_not_in: [ID!]
+  address: String
+  address_not: String
+  address_gt: String
+  address_lt: String
+  address_gte: String
+  address_lte: String
+  address_in: [String!]
+  address_not_in: [String!]
+  address_contains: String
+  address_contains_nocase: String
+  address_not_contains: String
+  address_not_contains_nocase: String
+  address_starts_with: String
+  address_starts_with_nocase: String
+  address_not_starts_with: String
+  address_not_starts_with_nocase: String
+  address_ends_with: String
+  address_ends_with_nocase: String
+  address_not_ends_with: String
+  address_not_ends_with_nocase: String
+  balance: BigInt
+  balance_not: BigInt
+  balance_gt: BigInt
+  balance_lt: BigInt
+  balance_gte: BigInt
+  balance_lte: BigInt
+  balance_in: [BigInt!]
+  balance_not_in: [BigInt!]
+  transactionCount: Int
+  transactionCount_not: Int
+  transactionCount_gt: Int
+  transactionCount_lt: Int
+  transactionCount_gte: Int
+  transactionCount_lte: Int
+  transactionCount_in: [Int!]
+  transactionCount_not_in: [Int!]
+
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [User_filter]
+  or: [User_filter]
+}
+
+enum User_orderBy {
+  id
+  address
+  balance
+  transactionCount
+}
+
+type UserCounter {
+  id: ID!
+  count: Int!
+}
+
+input UserCounter_filter {
+  id: ID
+  id_not: ID
+  id_gt: ID
+  id_lt: ID
+  id_gte: ID
+  id_lte: ID
+  id_in: [ID!]
+  id_not_in: [ID!]
+  count: Int
+  count_not: Int
+  count_gt: Int
+  count_lt: Int
+  count_gte: Int
+  count_lte: Int
+  count_in: [Int!]
+  count_not_in: [Int!]
+
+  """Filter for the block changed event."""
+  _change_block: BlockChangedFilter
+  and: [UserCounter_filter]
+  or: [UserCounter_filter]
+}
+
+enum UserCounter_orderBy {
+  id
+  count
+}
+

@@ -19,10 +19,12 @@ pipe = "^2.0"
 pydantic = "^1.10.2"
 dash = { version = "^2.3.1", optional = true }
 plotly = { version = "^5.14.1", optional = true }
+pyodide-http = { version = "^0.2.1", optional = true }
 
 [tool.poetry.extras]
 dash = ["dash"]
 plotly = ["plotly"]
+pyodide = ["pyodide-http"]
 
 # https://python-poetry.org/docs/managing-dependencies/#dependency-groups
 [tool.poetry.group.dev.dependencies]

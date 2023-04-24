@@ -1602,6 +1602,18 @@ files = [
 plugins = ["importlib-metadata"]
 
 [[package]]
+name = "pyodide-http"
+version = "0.2.1"
+description = "Patch requests, urllib and urllib3 to make them work in Pyodide"
+category = "main"
+optional = true
+python-versions = "*"
+files = [
+    {file = "pyodide_http-0.2.1-py3-none-any.whl", hash = "sha256:504f62904536a91049c12d0b9162ebaa187a84a3dd877e17c04fd9bf6ec3b68e"},
+    {file = "pyodide_http-0.2.1.tar.gz", hash = "sha256:96afea01716c434025d70c45e255e28ac68ecddc196ddc2eafe8741c91661354"},
+]
+
+[[package]]
 name = "pytest"
 version = "7.2.1"
 description = "pytest: simple powerful testing with Python"
@@ -2245,8 +2257,9 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [extras]
 dash = ["dash"]
 plotly = ["plotly"]
+pyodide = ["pyodide-http"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "789033f54319894ff812bf3b5a57929a446ebbf8c09b58b9bfbc225f0b374ef5"
+content-hash = "ede29441d002620fa4e3b35478bbdc54947e31a60b3a6dc91bbc54431f00ad89"

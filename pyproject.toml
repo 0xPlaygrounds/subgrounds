@@ -25,6 +25,7 @@ pyodide-http = { version = "^0.2.1", optional = true }
 dash = ["dash"]
 plotly = ["plotly"]
 pyodide = ["pyodide-http"]
+all = ["dash", "plotly", "pyodide-http"]
 
 # https://python-poetry.org/docs/managing-dependencies/#dependency-groups
 [tool.poetry.group.dev.dependencies]

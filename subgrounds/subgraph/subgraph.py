@@ -47,7 +47,7 @@ class Subgraph:
         self._is_subgraph = is_subgraph
 
         # Add objects as attributes
-        for (key, obj) in self._schema.type_map.items():
+        for key, obj in self._schema.type_map.items():
             match obj:
                 case TypeMeta.ObjectMeta() | TypeMeta.InterfaceMeta():
                     super().__setattr__(key, Object(self, obj))

@@ -38,7 +38,7 @@ def __test_args(
     data_and_exception: list[Tuple[dict[str, Any], Optional[Type]]],
 ):
     args_ = strategy.step()
-    for (args, (data, exn)) in zip(expected, data_and_exception):
+    for args, (data, exn) in zip(expected, data_and_exception):
         assert args_ == args
 
         if exn is not None:

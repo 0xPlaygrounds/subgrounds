@@ -9,7 +9,7 @@
 [![Twitter Follow](https://img.shields.io/twitter/follow/Playgrounds0x?color=%231fa1f2&label=Playgrounds%20Analytics&logo=Twitter&logoColor=1fa1f2&style=flat)](https://twitter.com/Playgrounds0x)
 
 [![Open Notebook in Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/0xPlaygrounds/jupyter-stacks-subgrounds/HEAD?labpath=index.ipynb)
-[![Github Codepsaces](https://img.shields.io/badge/Github-Codespaces-24292f.svg?logo=Github)](https://twitter.com/Playgrounds0x)
+[![Github Codepsaces](https://img.shields.io/badge/Github-Codespaces-24292f.svg?logo=Github)](https://codespaces.new/0xPlaygrounds/subgrounds-template?quickstart=1)
 
 <!-- start elevator-pitch -->
 An intuitive python library for interfacing with Subgraphs.

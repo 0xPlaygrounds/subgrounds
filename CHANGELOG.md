@@ -2,6 +2,16 @@
 
 <!--next-version-placeholder-->
 
+## v1.5.0 (2023-04-25)
+### Feature
+* Add `all` as an extra install ([`f1adacf`](https://github.com/0xPlaygrounds/subgrounds/commit/f1adacf8162e711a8395cd75c9726350ec67c0c5))
+* `subgrounds[pyodide]` patching for requests ([`7293262`](https://github.com/0xPlaygrounds/subgrounds/commit/7293262bed062932a6ca52ae69cf0545850ed470))
+* Add `plotly` as an extra ([`058e28d`](https://github.com/0xPlaygrounds/subgrounds/commit/058e28d2f4170fabd0558313be50137ecd8c4972))
+
+### Fix
+* `poetry.lock` file ([`5e365e0`](https://github.com/0xPlaygrounds/subgrounds/commit/5e365e09e63e5a077fcca861b6ecb0cbb494cc0f))
+* Enable `pyodide` patch on import ([`dd5193b`](https://github.com/0xPlaygrounds/subgrounds/commit/dd5193b2a46ff16ed4e7c7ca8f5d708bfa65d63b))
+
 ## v1.4.0 (2023-04-13)
 ### Feature
 * `subgrounds.contrib.dash` and `subgrounds.contrib.plotly` ([`f1d79e8`](https://github.com/0xPlaygrounds/subgrounds/commit/f1d79e89f1594bc31d443fa2b248f745974dd468))

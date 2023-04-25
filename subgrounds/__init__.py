@@ -9,3 +9,9 @@ __all__ = [
     "Subgrounds",
     "SyntheticField",
 ]
+
+### Pyodide Patch ###
+
+from subgrounds.contrib import pyodide as _pyodide
+
+_pyodide.patch()

@@ -11,7 +11,24 @@ For us, `subgrounds.contrib` will represent extra features and ideas with `subgr
 ## What's currently here?
 
 ### Plotly
+```bash
+pip install subgrounds[dash]
+```
+
 Originally located in `subgrounds.plotly_wrappers`, `subgrounds.contrib.plotly` contains helpful wrappers on `plotly` objects that allow you to use `FieldPaths` directly without creating a `pandas` `DataFrame`.
 
 ### Dash
+```bash
+pip install subgrounds[plotly]
+```
+
 Originally located in `subgrounds.dash_wrappers`, `subgrounds.contrib.dash` contains helpful wrappers on `dash` objects that allow you to use other wrapped visualization objects (currently `subgrounds.contrib.plotly`) in `dash` apps without creating `pandas` `DataFrame`s.
+
+### Pyodide
+```bash
+pip install subgrounds[pyodide]
+```
+
+This module enables support for `pyodide` environments. This allows `subgrounds` to execute requests when used in programs such as `pyscript` and `jupyterlite`.
+
+This `contrib` is imported and ran in `__init__` which means the support will be automatically enabled when `subgrounds` is important in a `pyodide` environment.

@@ -16,12 +16,16 @@ python = "^3.10"
 requests = "^2.27.1"
 pandas = "^1.4.2"
 pipe = "^2.0"
-dash = { version = "^2.3.1", optional = true }
-pathlib = "^1.0.1"
 pydantic = "^1.10.2"
+dash = { version = "^2.3.1", optional = true }
+plotly = { version = "^5.14.1", optional = true }
+pyodide-http = { version = "^0.2.1", optional = true }
 
 [tool.poetry.extras]
 dash = ["dash"]
+plotly = ["plotly"]
+pyodide = ["pyodide-http"]
+all = ["dash", "plotly", "pyodide-http"]
 
 # https://python-poetry.org/docs/managing-dependencies/#dependency-groups
 [tool.poetry.group.dev.dependencies]

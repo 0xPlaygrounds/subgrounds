@@ -31,8 +31,8 @@ An intuitive python library for interfacing with Subgraphs.
 Subgrounds is available on PyPi. To install it, run the following:<br>
 `pip install subgrounds`.
 
-Subgrounds also comes bundled with some handy `dash` wrappers. To use those wrappers, you can install the extra `dash` dependencies.<br>
-`pip install subgrounds[dash]`.
+Subgrounds also comes bundled with extra modules that may require extra libraries. You can get all functionality of `subgrounds` via the following:<br>
+`pip install subgrounds[all]`.
 
 ## Simple example
 <!-- start simple-example -->

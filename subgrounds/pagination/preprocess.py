@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from itertools import count
-from typing import Any
+from typing import Any, cast
 
 from pipe import map, traverse
 
@@ -108,23 +108,39 @@ def get_orderDirection_value(selection: Selection) -> str:
         return order_direction_arg.value.value
 
 
-def get_filtering_arg(selection: Selection) -> str:
+def get_filtering_args(selection: Selection) -> list[str]:
     orderBy_val = get_orderBy_value(selection)
     orderDirection_val = get_orderDirection_value(selection)
 
-    return "{}_{}".format(orderBy_val, "gt" if orderDirection_val == "asc" else "lt")
+    *names, last = orderBy_val.split("__")
+
+    return [*names, "{}_{}".format(last, "gt" if orderDirection_val == "asc" else "lt")]
 
 
-def get_filtering_value(selection: Selection) -> Any:
+def get_filtering_value(selection: Selection) -> Any | None:
+    def recurse_filtering_values(
+        filtering_args: list[str],
+        obj: InputValue.Object,
+    ) -> Any | None:
+        if not filtering_args:
+            return None
+
+        if (filtering_arg := filtering_args.pop(0)) not in obj.value:
+            return None
+
+        match obj.value[filtering_arg]:
+            case InputValue.Object() as obj:
+                return recurse_filtering_values(filtering_args, obj)
+            case value:
+                return value.value
+
     where_arg = selection.find_args(lambda arg: arg.name == "where", recurse=False)
     if where_arg is None:
         return None
-    else:
-        filtering_arg = get_filtering_arg(selection)
-        if filtering_arg in where_arg.value.value:
-            return where_arg.value.value[filtering_arg].value
-        else:
-            return None
+
+    return recurse_filtering_values(
+        get_filtering_args(selection), cast(InputValue.Object, where_arg.value)
+    )
 
 
 """ normalize:
@@ -150,7 +166,7 @@ def generate_pagination_nodes(
             idx = next(counter)
 
             orderBy_val = get_orderBy_value(current)
-            filtering_arg = get_filtering_arg(current)
+            filtering_arg = get_filtering_args(current).pop()
 
             t: TypeRef.T = current.fmeta.type_of_arg("where")
             where_arg_type: TypeMeta.InputObjectMeta = schema.type_of_typeref(t)
@@ -211,6 +227,17 @@ def normalize(
 
             orderBy_value = get_orderBy_value(current)
 
+            where_filtering_args = None
+            for arg in reversed(get_filtering_args(current)):
+                if where_filtering_args is None:
+                    where_filtering_args = {
+                        arg: InputValue.Variable(f"lastOrderingValue{idx}")
+                    }
+                else:
+                    where_filtering_args = {arg: where_filtering_args}
+
+            where_filtering_args = cast(dict[str, Any], where_filtering_args)
+
             pagination_args = [
                 Argument(name="first", value=InputValue.Variable(f"first{idx}")),
                 Argument(name="skip", value=InputValue.Variable(f"skip{idx}")),
@@ -221,14 +248,7 @@ def normalize(
                 ),
                 Argument(
                     name="where",
-                    value=InputValue.Object(
-                        where_value
-                        | {
-                            get_filtering_arg(current): InputValue.Variable(
-                                f"lastOrderingValue{idx}"
-                            )
-                        }
-                    ),
+                    value=InputValue.Object(where_value | where_filtering_args),
                 ),
             ]
 

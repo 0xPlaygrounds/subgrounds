@@ -305,6 +305,17 @@ class TypeMeta:
                 TypeRef.T: The type reference for input field `fname`
             """
 
+            def print2(thing):
+                print(thing)
+                return thing
+            
+            for field in self.input_fields:
+                if field.name == fname:
+                    return field.type_
+
+                if field.type_ is TypeMeta.InputObjectMeta:
+                    field.name
+
             try:
                 return next(
                     self.input_fields

@@ -4,10 +4,13 @@ Utility module for Subgrounds
 
 import platform
 from functools import cache
+from itertools import accumulate as _accumulate
 from itertools import filterfalse
 from typing import Any, Callable, Iterator, Optional, Tuple, TypeVar
 
 from pipe import Pipe, map
+
+accumulate = Pipe(_accumulate)
 
 
 def flatten(t):

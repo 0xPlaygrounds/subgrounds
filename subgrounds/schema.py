@@ -305,17 +305,6 @@ class TypeMeta:
                 TypeRef.T: The type reference for input field `fname`
             """
 
-            def print2(thing):
-                print(thing)
-                return thing
-            
-            for field in self.input_fields:
-                if field.name == fname:
-                    return field.type_
-
-                if field.type_ is TypeMeta.InputObjectMeta:
-                    field.name
-
             try:
                 return next(
                     self.input_fields
@@ -393,7 +382,7 @@ class SchemaMeta(BaseModel):
 
         return values
 
-    def type_of_typeref(self: SchemaMeta, typeref: TypeRef.T) -> TypeMeta.T:
+    def type_of_typeref(self: SchemaMeta, typeref: TypeRef.T) -> TypeMeta_T:
         """Returns the type information of the type reference `typeref`
 
         Args:
@@ -417,7 +406,23 @@ class SchemaMeta(BaseModel):
 
     def type_of(
         self: SchemaMeta, tmeta: TypeMeta.ArgumentMeta | TypeMeta.FieldMeta
-    ) -> TypeMeta.T:
+    ) -> TypeMeta_T:
         """Returns the argument or field definition's underlying type"""
 
         return self.type_of_typeref(tmeta.type_)
+
+    def type_of_input_object_meta(
+        self, tmeta: TypeMeta.InputObjectMeta, args: list[str]
+    ) -> TypeRef.T:
+        """Recursively finds the nested type"""
+
+        if len(args) < 1:
+            raise Exception("type_of_input_object_meta: TODO")
+
+        type_ref = tmeta.type_of_input_field(args.pop(0))
+        match self.type_of_typeref(type_ref):
+            case TypeMeta.InputObjectMeta() as tmeta:
+                return self.type_of_input_object_meta(tmeta, args)
+
+            case _:
+                return type_ref

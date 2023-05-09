@@ -1921,6 +1921,134 @@ def test_gen_pagination_nodes(
                 ),
             ),
         ),
+        (
+            queries.doc14(),
+            [
+                PaginationNode(
+                    0,
+                    "id",
+                    100,
+                    0,
+                    None,
+                    TypeRef.Named(name="String", kind="SCALAR"),
+                    ["pairs"],
+                    [],
+                )
+            ],
+            Document(
+                url="www.abc.xyz/graphql",
+                query=Query(
+                    name=None,
+                    selection=[
+                        Selection(
+                            fmeta=TypeMeta.FieldMeta(
+                                name="pairs",
+                                description="",
+                                args=[
+                                    TypeMeta.ArgumentMeta(
+                                        name="first",
+                                        description="",
+                                        type=TypeRef.Named(name="Int", kind="SCALAR"),
+                                        defaultValue=None,
+                                    ),
+                                    TypeMeta.ArgumentMeta(
+                                        name="skip",
+                                        description="",
+                                        type=TypeRef.Named(name="Int", kind="SCALAR"),
+                                        defaultValue=None,
+                                    ),
+                                    TypeMeta.ArgumentMeta(
+                                        name="where",
+                                        description="",
+                                        type=TypeRef.Named(
+                                            name="Pair_filter", kind="INPUT_OBJECT"
+                                        ),
+                                        defaultValue=None,
+                                    ),
+                                ],
+                                type=TypeRef.non_null_list("Pair", kind="OBJECT"),
+                            ),
+                            arguments=[
+                                Argument("first", InputValue.Variable("first0")),
+                                Argument("skip", InputValue.Variable("skip0")),
+                                Argument("orderBy", InputValue.Enum("token0__symbol")),
+                                Argument("orderDirection", InputValue.Enum("asc")),
+                                Argument(
+                                    "where",
+                                    InputValue.Object(
+                                        {
+                                            "token0": InputValue.Object(
+                                                {
+                                                    "symbol_gt": InputValue.Variable(
+                                                        "lastOrderingValue0"
+                                                    )
+                                                }
+                                            )
+                                        }
+                                    ),
+                                ),
+                            ],
+                            selection=[
+                                Selection(
+                                    fmeta=TypeMeta.FieldMeta(
+                                        name="name",
+                                        description="",
+                                        args=[],
+                                        type=TypeRef.Named(
+                                            name="String", kind="SCALAR"
+                                        ),
+                                    ),
+                                ),
+                                Selection(
+                                    fmeta=TypeMeta.FieldMeta(
+                                        name="id",
+                                        description="",
+                                        args=[],
+                                        type=TypeRef.Named(
+                                            name="String", kind="SCALAR"
+                                        ),
+                                    ),
+                                ),
+                                Selection(
+                                    fmeta=TypeMeta.FieldMeta(
+                                        name="token0",
+                                        description="",
+                                        args=[],
+                                        type=TypeRef.Named(
+                                            name="String", kind="SCALAR"
+                                        ),
+                                    ),
+                                    selection=[
+                                        Selection(
+                                            fmeta=TypeMeta.FieldMeta(
+                                                name="symbol",
+                                                description="",
+                                                args=[],
+                                                type=TypeRef.Named(
+                                                    name="String", kind="SCALAR"
+                                                ),
+                                            ),
+                                        )
+                                    ],
+                                ),
+                            ],
+                        )
+                    ],
+                    variables=[
+                        VariableDefinition(
+                            "first0", TypeRef.Named(name="Int", kind="SCALAR")
+                        ),
+                        VariableDefinition(
+                            "skip0", TypeRef.Named(name="Int", kind="SCALAR")
+                        ),
+                        VariableDefinition(
+                            "lastOrderingValue0",
+                            TypeRef.Named(name="String", kind="SCALAR"),
+                        ),
+                    ],
+                ),
+            ),
+        ),
     ],
 )
 def test_normalize_doc(

@@ -1,13 +1,4 @@
-import pytest
-
-from subgrounds.query import (
-    Argument,
-    Document,
-    InputValue,
-    Query,
-    Selection,
-    VariableDefinition,
-)
+from subgrounds.query import Argument, Document, InputValue, Query, Selection
 from subgrounds.schema import TypeMeta, TypeRef
 
 
@@ -1055,6 +1046,105 @@ def doc13():
                                 type=TypeRef.Named(name="String", kind="SCALAR"),
                             ),
                         )
+                    ],
+                )
+            ],
+        ),
+    )
+
+
+def doc14():
+    """
+    query {
+      liquidityPools(orderBy: outputToken__lastPriceUSD, orderDirection: desc) {
+        name
+        outputToken {
+          lastPriceUSD
+          name
+        }
+      }
+    }
+    """
+    return Document(
+        url="www.abc.xyz/graphql",
+        query=Query(
+            name=None,
+            selection=[
+                Selection(
+                    fmeta=TypeMeta.FieldMeta(
+                        name="pairs",
+                        description="",
+                        args=[
+                            TypeMeta.ArgumentMeta(
+                                name="first",
+                                description="",
+                                type=TypeRef.Named(name="Int", kind="SCALAR"),
+                                defaultValue=None,
+                            ),
+                            TypeMeta.ArgumentMeta(
+                                name="skip",
+                                description="",
+                                type=TypeRef.Named(name="Int", kind="SCALAR"),
+                                defaultValue=None,
+                            ),
+                            TypeMeta.ArgumentMeta(
+                                name="where",
+                                description="",
+                                type=TypeRef.Named(
+                                    name="Pair_filter", kind="INPUT_OBJECT"
+                                ),
+                                defaultValue=None,
+                            ),
+                        ],
+                        type=TypeRef.non_null_list("Pair", kind="OBJECT"),
+                    ),
+                    arguments=[
+                        Argument("orderBy", InputValue.Enum("token0__symbol")),
+                        Argument("orderDirection", InputValue.Enum("asc")),
+                        Argument(
+                            "where",
+                            InputValue.Object(
+                                {
+                                    "token0": InputValue.Object(
+                                        {
+                                            "symbol_gt": InputValue.Variable(
+                                                "lastOrderingValue0"
+                                            )
+                                        }
+                                    )
+                                }
+                            ),
+                        ),
+                    ],
+                    selection=[
+                        Selection(
+                            fmeta=TypeMeta.FieldMeta(
+                                name="name",
+                                description="",
+                                args=[],
+                                type=TypeRef.Named(name="String", kind="SCALAR"),
+                            ),
+                        ),
+                        Selection(
+                            fmeta=TypeMeta.FieldMeta(
+                                name="token0",
+                                description="",
+                                args=[],
+                                type=TypeRef.Named(name="String", kind="SCALAR"),
+                            ),
+                            selection=[
+                                Selection(
+                                    fmeta=TypeMeta.FieldMeta(
+                                        name="symbol",
+                                        description="",
+                                        args=[],
+                                        type=TypeRef.Named(
+                                            name="String", kind="SCALAR"
+                                        ),
+                                    ),
+                                )
+                            ],
+                        ),
                     ],
                 )
             ],

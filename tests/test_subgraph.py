@@ -1,8 +1,3 @@
-import unittest
-from ast import Sub
-
-import pytest
-
 from subgrounds.query import Argument, DataRequest, InputValue, Query, Selection
 from subgrounds.schema import SchemaMeta, TypeMeta, TypeRef
 from subgrounds.subgraph import FieldPath, Filter, Object, Subgraph, SyntheticField
@@ -210,6 +205,48 @@ def test_add_synthetic_field_1(subgraph: Subgraph):
                     ),
                 ],
             ),
+            "Token_filter": TypeMeta.InputObjectMeta(
+                name="Token_filter",
+                description="",
+                inputFields=[
+                    TypeMeta.ArgumentMeta(
+                        name="id",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="id_gt",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="id_lt",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="symbol",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="symbol_gt",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="symbol_lt",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                ],
+            ),
             "Pair": TypeMeta.ObjectMeta(
                 name="Pair",
                 description="",
@@ -293,9 +330,21 @@ def test_add_synthetic_field_1(subgraph: Subgraph):
                         defaultValue=None,
                     ),
                     TypeMeta.ArgumentMeta(
+                        name="token0_",
+                        description="",
+                        type=TypeRef.Named(name="Token_filter", kind="OBJECT"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
                         name="token1",
                         description="",
                         type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="token1_",
+                        description="",
+                        type=TypeRef.Named(name="Token_filter", kind="OBJECT"),
                         defaultValue=None,
                     ),
                     TypeMeta.ArgumentMeta(
@@ -355,6 +404,8 @@ def test_add_synthetic_field_1(subgraph: Subgraph):
                     TypeMeta.EnumValueMeta(name="id", description=""),
                     TypeMeta.EnumValueMeta(name="reserveUSD", description=""),
                     TypeMeta.EnumValueMeta(name="createdAtTimestamp", description=""),
+                    TypeMeta.EnumValueMeta(name="token0__symbol", description=""),
+                    TypeMeta.EnumValueMeta(name="token1__symbol", description=""),
                 ],
             ),
             "Swap_filter": TypeMeta.InputObjectMeta(
@@ -622,6 +673,48 @@ def test_add_synthetic_field_2(subgraph: Subgraph):
                     ),
                 ],
             ),
+            "Token_filter": TypeMeta.InputObjectMeta(
+                name="Token_filter",
+                description="",
+                inputFields=[
+                    TypeMeta.ArgumentMeta(
+                        name="id",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="id_gt",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="id_lt",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="symbol",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="symbol_gt",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="symbol_lt",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                ],
+            ),
             "Pair": TypeMeta.ObjectMeta(
                 name="Pair",
                 description="",
@@ -705,9 +798,21 @@ def test_add_synthetic_field_2(subgraph: Subgraph):
                         defaultValue=None,
                     ),
                     TypeMeta.ArgumentMeta(
+                        name="token0_",
+                        description="",
+                        type=TypeRef.Named(name="Token_filter", kind="OBJECT"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
                         name="token1",
                         description="",
                         type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="token1_",
+                        description="",
+                        type=TypeRef.Named(name="Token_filter", kind="OBJECT"),
                         defaultValue=None,
                     ),
                     TypeMeta.ArgumentMeta(
@@ -767,6 +872,8 @@ def test_add_synthetic_field_2(subgraph: Subgraph):
                     TypeMeta.EnumValueMeta(name="id", description=""),
                     TypeMeta.EnumValueMeta(name="reserveUSD", description=""),
                     TypeMeta.EnumValueMeta(name="createdAtTimestamp", description=""),
+                    TypeMeta.EnumValueMeta(name="token0__symbol", description=""),
+                    TypeMeta.EnumValueMeta(name="token1__symbol", description=""),
                 ],
             ),
             "Swap_filter": TypeMeta.InputObjectMeta(
@@ -1034,6 +1141,48 @@ def test_add_synthetic_field_3(subgraph: Subgraph):
                     ),
                 ],
             ),
+            "Token_filter": TypeMeta.InputObjectMeta(
+                name="Token_filter",
+                description="",
+                inputFields=[
+                    TypeMeta.ArgumentMeta(
+                        name="id",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="id_gt",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="id_lt",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="symbol",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="symbol_gt",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="symbol_lt",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                ],
+            ),
             "Pair": TypeMeta.ObjectMeta(
                 name="Pair",
                 description="",
@@ -1123,9 +1272,21 @@ def test_add_synthetic_field_3(subgraph: Subgraph):
                         defaultValue=None,
                     ),
                     TypeMeta.ArgumentMeta(
+                        name="token0_",
+                        description="",
+                        type=TypeRef.Named(name="Token_filter", kind="OBJECT"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
                         name="token1",
                         description="",
                         type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="token1_",
+                        description="",
+                        type=TypeRef.Named(name="Token_filter", kind="OBJECT"),
                         defaultValue=None,
                     ),
                     TypeMeta.ArgumentMeta(
@@ -1185,6 +1346,8 @@ def test_add_synthetic_field_3(subgraph: Subgraph):
                     TypeMeta.EnumValueMeta(name="id", description=""),
                     TypeMeta.EnumValueMeta(name="reserveUSD", description=""),
                     TypeMeta.EnumValueMeta(name="createdAtTimestamp", description=""),
+                    TypeMeta.EnumValueMeta(name="token0__symbol", description=""),
+                    TypeMeta.EnumValueMeta(name="token1__symbol", description=""),
                 ],
             ),
             "Swap_filter": TypeMeta.InputObjectMeta(
@@ -1453,6 +1616,48 @@ def test_add_synthetic_field_4(subgraph: Subgraph):
                     ),
                 ],
             ),
+            "Token_filter": TypeMeta.InputObjectMeta(
+                name="Token_filter",
+                description="",
+                inputFields=[
+                    TypeMeta.ArgumentMeta(
+                        name="id",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="id_gt",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="id_lt",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="symbol",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="symbol_gt",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="symbol_lt",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                ],
+            ),
             "Pair": TypeMeta.ObjectMeta(
                 name="Pair",
                 description="",
@@ -1536,9 +1741,21 @@ def test_add_synthetic_field_4(subgraph: Subgraph):
                         defaultValue=None,
                     ),
                     TypeMeta.ArgumentMeta(
+                        name="token0_",
+                        description="",
+                        type=TypeRef.Named(name="Token_filter", kind="OBJECT"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
                         name="token1",
                         description="",
                         type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="token1_",
+                        description="",
+                        type=TypeRef.Named(name="Token_filter", kind="OBJECT"),
                         defaultValue=None,
                     ),
                     TypeMeta.ArgumentMeta(
@@ -1598,6 +1815,8 @@ def test_add_synthetic_field_4(subgraph: Subgraph):
                     TypeMeta.EnumValueMeta(name="id", description=""),
                     TypeMeta.EnumValueMeta(name="reserveUSD", description=""),
                     TypeMeta.EnumValueMeta(name="createdAtTimestamp", description=""),
+                    TypeMeta.EnumValueMeta(name="token0__symbol", description=""),
+                    TypeMeta.EnumValueMeta(name="token1__symbol", description=""),
                 ],
             ),
             "Swap_filter": TypeMeta.InputObjectMeta(

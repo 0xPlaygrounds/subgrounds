@@ -342,6 +342,48 @@ def schema(
                 ],
             ),
             "Token": token_objectmeta,
+            "Token_filter": TypeMeta.InputObjectMeta(
+                name="Token_filter",
+                description="",
+                inputFields=[
+                    TypeMeta.ArgumentMeta(
+                        name="id",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="id_gt",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="id_lt",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="symbol",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="symbol_gt",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="symbol_lt",
+                        description="",
+                        type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                ],
+            ),
             "Pair": pair_objectmeta,
             "Pair_filter": TypeMeta.InputObjectMeta(
                 name="Pair_filter",
@@ -372,9 +414,21 @@ def schema(
                         defaultValue=None,
                     ),
                     TypeMeta.ArgumentMeta(
+                        name="token0_",
+                        description="",
+                        type=TypeRef.Named(name="Token_filter", kind="OBJECT"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
                         name="token1",
                         description="",
                         type=TypeRef.Named(name="String", kind="SCALAR"),
+                        defaultValue=None,
+                    ),
+                    TypeMeta.ArgumentMeta(
+                        name="token1_",
+                        description="",
+                        type=TypeRef.Named(name="Token_filter", kind="OBJECT"),
                         defaultValue=None,
                     ),
                     TypeMeta.ArgumentMeta(
@@ -434,6 +488,8 @@ def schema(
                     TypeMeta.EnumValueMeta(name="id", description=""),
                     TypeMeta.EnumValueMeta(name="reserveUSD", description=""),
                     TypeMeta.EnumValueMeta(name="createdAtTimestamp", description=""),
+                    TypeMeta.EnumValueMeta(name="token0__symbol", description=""),
+                    TypeMeta.EnumValueMeta(name="token1__symbol", description=""),
                 ],
             ),
         },

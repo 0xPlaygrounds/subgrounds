@@ -282,8 +282,9 @@ def normalize(
         # Using nested orderBy values (tabulated by "__"), gather the type of the field
         #  from the schema.
         # Note, we skip the first type since that is the type of the current `Selection`
+        orderBy_values = orderBy_value.split("__")
         orderBy_types = (
-            orderBy_values := orderBy_value.split("__")
+            orderBy_values
             | accumulate(
                 func=lambda curr, val: (
                     schema.type_of_typeref(curr).type_of_field(val)

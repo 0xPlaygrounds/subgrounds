@@ -1979,6 +1979,9 @@ def test_gen_pagination_nodes(
                                         {
                                             "token0": InputValue.Object(
                                                 {
+                                                    "id": InputValue.String(
+                                                        "0x000000000000000000000000000000000000dEaD"
+                                                    ),
                                                     "symbol_gt": InputValue.Variable(
                                                         "lastOrderingValue0"
                                                     )

@@ -1107,8 +1107,8 @@ def doc14():
                                 {
                                     "token0": InputValue.Object(
                                         {
-                                            "symbol_gt": InputValue.Variable(
-                                                "lastOrderingValue0"
+                                            "id": InputValue.String(
+                                                "0x000000000000000000000000000000000000dEaD"
                                             )
                                         }
                                     )

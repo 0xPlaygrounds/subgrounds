@@ -10,7 +10,6 @@ from typing import Any, cast
 
 from pipe import map, reverse, skip, traverse
 
-from subgrounds.pagination.utils import DEFAULT_NUM_ENTITIES
 from subgrounds.query import (
     Argument,
     Document,
@@ -20,6 +19,8 @@ from subgrounds.query import (
 )
 from subgrounds.schema import SchemaMeta, TypeMeta, TypeRef
 from subgrounds.utils import accumulate
+
+from .utils import DEFAULT_NUM_ENTITIES, merge_input_value_object_metas
 
 
 @dataclass(frozen=True)
@@ -95,19 +96,18 @@ def get_orderBy_value(selection: Selection) -> str:
     order_by_val = selection.find_args(lambda arg: arg.name == "orderBy", recurse=False)
     if order_by_val is None:
         return "id"
-    else:
-        return order_by_val.value.value
+
+    return order_by_val.value.value
 
 
 def get_orderDirection_value(selection: Selection) -> str:
     order_direction_arg = selection.find_args(
         lambda arg: arg.name == "orderDirection", recurse=False
     )
-
     if order_direction_arg is None:
         return "asc"
-    else:
-        return order_direction_arg.value.value
+
+    return order_direction_arg.value.value
 
 
 def get_filtering_args(selection: Selection) -> list[str]:
@@ -143,17 +143,6 @@ def get_filtering_value(selection: Selection) -> Any | None:
     return recurse_filtering_values(
         get_filtering_args(selection), cast(InputValue.Object, where_arg.value)
     )
-
-
-""" normalize:
-
-For each selection:
-1. If `id` not selected, add `id` to selection
-2. Replace `first` argument value by `$firstX`
-3. Replace `skip` argument value by `$skipX`
-4. If `orderBy` argument is not defined, add argument with value `asc`
-5. If `where` argument specified 
-"""
 
 
 def generate_pagination_nodes(
@@ -204,8 +193,31 @@ def generate_pagination_nodes(
 
 
 def normalize(
-    schema: SchemaMeta, document: Document, pagination_nodes: list[PaginationNode]
+    schema: SchemaMeta,
+    document: Document,
+    pagination_nodes: list[PaginationNode],
 ):
+    """Inject various graphql components to "normalize" the query for pagination.
+
+    When we paginate a query, we inject custom filtering based on the order by values.
+    We also add GraphQL variables so that `PaginationStrategy` only need to change those
+     to perform pagination.
+
+    The main process for normalization begins by recursively adjusting `Selection` nodes
+     within the Query tree. We only apply the following steps if the node needs to be
+     paginated.
+
+    > Note, these steps always check the current selection and will merge new values
+     and selections onto whats currently there.
+
+    1. Ensure `id` is on the `Selection`
+    2. Replace `first` argument value by `$firstX`
+    3. Replace `skip` argument value by `$skipX`
+    4. With the `orderBy` (default being `id`), generate where filtering arguments
+      a) These are used to filter out values when paginating
+    5. Set `where` filtering values (deep union / merge)
+    """
+
     counter = count()
 
     def map_f(current: Selection) -> Selection:
@@ -214,17 +226,20 @@ def normalize(
 
         idx = next(counter)
 
-        where_value: dict[str, Any] = (
+        where_value: dict[str, Any] = cast(
+            dict,
             current.find_args(
                 lambda arg: arg.name == "where", recurse=False
-            ).value.value
+            ).value.value  # type: ignore
             if current.exists_args(lambda arg: arg.name == "where", recurse=False)
-            else {}
+            else {},
         )
 
         orderBy_value = get_orderBy_value(current)
 
-        # TODO: write comment
+        # Build out a nested dictionary of `InputValue.Object` containing the
+        #  `lastOrderingValue{idx}` used for pagination. We do this by iterating through
+        #  the args backwards starting from the innermost and nesting them in dicts.
         *args, innermost_arg = get_filtering_args(current)
         where_filtering_args: InputValue.Object = reduce(
             lambda inner, outer_arg: InputValue.Object({outer_arg: inner}),
@@ -233,7 +248,6 @@ def normalize(
                 {innermost_arg: InputValue.Variable(f"lastOrderingValue{idx}")}
             ),
         )
-        # where_filtering_args =
 
         pagination_args = [
             Argument(name="first", value=InputValue.Variable(f"first{idx}")),
@@ -244,11 +258,16 @@ def normalize(
                 value=InputValue.Enum(get_orderDirection_value(current)),
             ),
             Argument(
-                name="where",  # TODO: FIX
-                value=InputValue.Object(where_value | where_filtering_args.value),
+                name="where",
+                value=InputValue.Object(
+                    merge_input_value_object_metas(
+                        where_filtering_args.value, where_value
+                    )
+                ),
             ),
         ]
 
+        # This ensures `id` always exists
         current = current.add(
             Selection(
                 fmeta=TypeMeta.FieldMeta(
@@ -260,58 +279,53 @@ def normalize(
             )
         )
 
-        if orderBy_values := orderBy_value.split("__"):
-            # current_type: TypeMeta.ObjectMeta = schema.type_of_typeref(
-            #     current.fmeta.type_
-            # )
-
-            orderBy_types = (
-                orderBy_values
-                | accumulate(
-                    func=lambda curr, val: (
-                        schema.type_of_typeref(curr).type_of_field(val)
-                    ),
-                    initial=schema.type_of_typeref(current.fmeta.type_),
-                )
-                | skip(1)
+        # Using nested orderBy values (tabulated by "__"), gather the type of the field
+        #  from the schema.
+        # Note, we skip the first type since that is the type of the current `Selection`
+        orderBy_types = (
+            orderBy_values := orderBy_value.split("__")
+            | accumulate(
+                func=lambda curr, val: (
+                    schema.type_of_typeref(curr).type_of_field(val)
+                ),
+                initial=schema.type_of_typeref(current.fmeta.type_),
             )
-
-            current = current.add(
-                reduce(
-                    lambda current, new: replace(current, selection=[new]),
-                    zip(orderBy_values, orderBy_types)
-                    | map(
-                        lambda tup: Selection(
-                            fmeta=TypeMeta.FieldMeta(
-                                name=tup[0],
-                                description="",
-                                args=[],
-                                type=tup[1],
-                            ),
-                        )
-                    ),
-                )
-            )
-
-        return Selection(
-            fmeta=current.fmeta,
-            alias=current.alias,
-            arguments=pagination_args
-            + current.find_all_args(
-                lambda arg: arg.name not in PAGINATION_ARGS, recurse=False
-            ),
-            selection=current.selection,
+            | skip(1)
         )
+
+        # Generate a `Selection` tree to add to the current selection.
+        # This tree is generated from the orderBy values and types as nested `FieldMeta`
+        # It is constructed through `reduce` by placing singular `Selection` objects in
+        #  the `selection` field on the `Selection`.
+        current = current.add(
+            reduce(
+                lambda current, new: replace(current, selection=[new]),
+                zip(orderBy_values, orderBy_types)
+                | map(
+                    lambda tup: Selection(
+                        fmeta=TypeMeta.FieldMeta(
+                            name=tup[0],
+                            description="",
+                            args=[],
+                            type=tup[1],
+                        ),
+                    )
+                ),
+            )
+        )
+
+        # add the other arguments that aren't used for pagination
+        pagination_args += current.find_all_args(
+            lambda arg: arg.name not in PAGINATION_ARGS, recurse=False
+        )
+
+        return replace(current, arguments=pagination_args)
 
     query = document.query.map(map_f, priority="children")
     vardefs = list(pagination_nodes | map(PaginationNode.get_vardefs) | traverse)
 
-    return Document(
-        url=document.url,
-        query=query.add_vardefs(vardefs),
-        fragments=document.fragments,  # TODO: normalize fragments
-        variables=document.variables,
-    )
+    # TODO: normalize document fragments
+    return replace(document, query=query.add_vardefs(vardefs))
 
 
 def prune_doc(document: Document, args: dict[str, Any]) -> Document:
@@ -325,14 +339,6 @@ def prune_doc(document: Document, args: dict[str, Any]) -> Document:
                     for name, val in input_val.value.items()
                     if not val.is_variable or (val.is_variable and val.name in args)
                 }
-                # dict(
-                #     input_val.value.items()
-                #     | tee
-                #     | where(
-                #         lambda val: not val[1].is_variable
-                #         or (val[1].is_variable and val[1].name in args)
-                #     )
-                # )
             ),
         )
 

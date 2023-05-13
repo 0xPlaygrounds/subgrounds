@@ -240,6 +240,8 @@ def normalize(
         # Build out a nested dictionary of `InputValue.Object` containing the
         #  `lastOrderingValue{idx}` used for pagination. We do this by iterating through
         #  the args backwards starting from the innermost and nesting them in dicts.
+        # We need to add a trailing `_` to outer arguments for `InputValue.Object` for
+        #  where clauses to work properly.
         *args, innermost_arg = get_filtering_args(current)
         where_filtering_args: InputValue.Object = reduce(
             lambda inner, outer_arg: InputValue.Object({f"{outer_arg}_": inner}),

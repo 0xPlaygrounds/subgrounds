@@ -242,7 +242,7 @@ def normalize(
         #  the args backwards starting from the innermost and nesting them in dicts.
         *args, innermost_arg = get_filtering_args(current)
         where_filtering_args: InputValue.Object = reduce(
-            lambda inner, outer_arg: InputValue.Object({outer_arg: inner}),
+            lambda inner, outer_arg: InputValue.Object({f"{outer_arg}_": inner}),
             args | reverse,
             InputValue.Object(
                 {innermost_arg: InputValue.Variable(f"lastOrderingValue{idx}")}
@@ -281,8 +281,9 @@ def normalize(
 
         # Using nested orderBy values (tabulated by "__"), gather the type of the field
         #  from the schema.
-        # Note, we skip the first type since that is the type of the current `Selection`
         orderBy_values = orderBy_value.split("__")
+
+        # Note, we skip the first type since that is the type of the current `Selection`
         orderBy_types = (
             orderBy_values
             | accumulate(
@@ -296,8 +297,8 @@ def normalize(
 
         # Generate a `Selection` tree to add to the current selection.
         # This tree is generated from the orderBy values and types as nested `FieldMeta`
-        # It is constructed through `reduce` by placing singular `Selection` objects in
-        #  the `selection` field on the `Selection`.
+        #  constructed through `reduce` by placing singular `Selection` objects in the
+        #  `selection` field on the `Selection`.
         current = current.add(
             reduce(
                 lambda current, new: replace(current, selection=[new]),

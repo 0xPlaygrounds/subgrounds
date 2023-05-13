@@ -1105,7 +1105,7 @@ def doc14():
                             "where",
                             InputValue.Object(
                                 {
-                                    "token0": InputValue.Object(
+                                    "token0_": InputValue.Object(
                                         {
                                             "id": InputValue.String(
                                                 "0x000000000000000000000000000000000000dEaD"

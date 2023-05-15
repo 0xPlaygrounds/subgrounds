@@ -73,7 +73,6 @@ from ast import Tuple
 from dataclasses import dataclass, field
 from functools import partial
 from itertools import count
-from pprint import pprint
 from typing import Any, Callable, Iterator, Literal, Optional
 
 from pipe import map, traverse
@@ -137,7 +136,11 @@ class LegacyStrategyArgGenerator:
             # Current node step
             index_field_data = list(
                 extract_data(
-                    [*self.page_node.key_path, self.page_node.filter_field], data
+                    [
+                        *self.page_node.key_path,
+                        *self.page_node.filter_field.split("__"),
+                    ],
+                    data,
                 )
                 | traverse
             )
@@ -259,7 +262,7 @@ class LegacyStrategy:
 
     def step(
         self, page_data: Optional[dict[str, Any]] = None
-    ) -> Tuple[Document, dict[str, Any]]:
+    ) -> tuple[Document, dict[str, Any]]:
         args = self.arg_generator.step(page_data)
         trimmed_doc = prune_doc(self.normalized_doc, args)
         return (trimmed_doc, args)

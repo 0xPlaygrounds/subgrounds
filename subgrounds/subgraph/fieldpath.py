@@ -686,7 +686,7 @@ class SyntheticField(FieldOperatorMixin):
                     def new_f(*args):
                         new_args = []
                         _counter = 0
-                        for (f_, deps) in acc:
+                        for f_, deps in acc:
                             match (f_, deps):
                                 case (None, FieldPath()):
                                     new_args.append(args[_counter])
@@ -705,7 +705,7 @@ class SyntheticField(FieldOperatorMixin):
                         return f(*new_args)
 
                     new_deps = []
-                    for (_, deps) in acc:
+                    for _, deps in acc:
                         match deps:
                             case FieldPath() as dep:
                                 new_deps.append(dep)

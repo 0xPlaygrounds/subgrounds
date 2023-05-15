@@ -2,6 +2,17 @@
 
 <!--next-version-placeholder-->
 
+## v1.5.1 (2023-05-15)
+### Fix
+* Nested OrderBy ([#17](https://github.com/0xPlaygrounds/subgrounds/issues/17)) ([`b807319`](https://github.com/0xPlaygrounds/subgrounds/commit/b8073193ddeee2cde2d795382ef8523d87a7ca71))
+
+### Documentation
+* Fix broken links ([`24bd498`](https://github.com/0xPlaygrounds/subgrounds/commit/24bd4987b98960d97d711a05fa12dc2c91e903db))
+* LICENSE update ([`c4c4b3b`](https://github.com/0xPlaygrounds/subgrounds/commit/c4c4b3b16b1bcaa96a4d236534092d760ff5b7de))
+* Adjust twitter badge ([`95218d1`](https://github.com/0xPlaygrounds/subgrounds/commit/95218d1c5947bfe54665db1c8e1a4e138865d5f4))
+* Fix codespace badge link ([`cd5841d`](https://github.com/0xPlaygrounds/subgrounds/commit/cd5841d3da9cda45ea74fb1c9e68ae80b63168d3))
+* Cleanup and improve README.md ([`5e524bd`](https://github.com/0xPlaygrounds/subgrounds/commit/5e524bdc5d5bed52cd596ea7f569ce5e9d1e193e))
+
 ## v1.5.0 (2023-04-25)
 ### Feature
 * Add `all` as an extra install ([`f1adacf`](https://github.com/0xPlaygrounds/subgrounds/commit/f1adacf8162e711a8395cd75c9726350ec67c0c5))

@@ -1,7 +1,7 @@
 from subgrounds.subgraph import FieldPath, Subgraph, SyntheticField
 from subgrounds.subgrounds import Subgrounds
 
-__version__ = "1.5.0"
+__version__ = "1.5.1"
 
 __all__ = [
     "FieldPath",

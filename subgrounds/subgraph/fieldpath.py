@@ -230,6 +230,7 @@ def fieldpaths_of_object(
                     yield subgraph.__getattribute__(object_.name).__getattribute__(
                         fmeta.name
                     ).id
+
                 case _:
                     yield subgraph.__getattribute__(object_.name).__getattribute__(
                         fmeta.name
@@ -456,13 +457,11 @@ class FieldPath(FieldOperatorMixin):
                 case ("where", [Filter(), *_] as filters):
                     return Filter.to_dict(filters)
                 case ("orderBy", FieldPath() as fpath):
-                    match fpath._leaf:
-                        case TypeMeta.FieldMeta() as fmeta:
-                            return fmeta.name
-                        case _:
-                            raise Exception(
-                                f"Cannot use non field {fpath} as orderBy argument"
-                            )
+                    if paths := fpath._name_path():
+                        return "__".join(paths)
+                    raise Exception(
+                        f"Cannot use empty paths as orderBy argument {fpath}"
+                    )
                 case _:
                     return raw_arg
 

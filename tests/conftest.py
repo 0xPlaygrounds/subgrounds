@@ -1,4 +1,5 @@
 import json
+from contextlib import contextmanager
 
 import pytest
 
@@ -559,9 +560,22 @@ def identity(x):
     return x
 
 
-def fieldpath_test_mode(func):
-    def wrapper(*args, **kwargs):
-        FieldPath.__test_mode = True
-        func(*args, **kwargs)
+@contextmanager
+def fieldpath_test_mode():
+    """Temporarily turns on `FieldPath`'s testing mode which undo's custom DSL-type
+      behavior that overrides `__eq__`.
 
-    return wrapper
+    `FieldPath.__test_mode` is the name of the field inside the class but here, we use
+      `FieldPath._FieldPath__test_mode` which seemingly shouldn't work. This is due
+      Python's name-mangling that occurs when a class field starts with at-least 2
+      underscores. We use this odd python feature as a sense of a "private" variable
+      since external users shouldn't be touching this field anyways (and single `_` is
+      reserved for "normal" fields in this DSL).
+
+    You can find out more information about that here:
+    https://docs.python.org/3/tutorial/classes.html#private-variables
+    """
+
+    FieldPath._FieldPath__test_mode = True  # type: ignore
+    yield
+    FieldPath._FieldPath__test_mode = False  # type: ignore

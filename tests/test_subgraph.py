@@ -3,6 +3,7 @@ from subgrounds.schema import SchemaMeta, TypeMeta, TypeRef
 from subgrounds.subgraph import FieldPath, Filter, Object, Subgraph, SyntheticField
 from subgrounds.subgrounds import Subgrounds
 from subgrounds.utils import identity
+from tests.conftest import fieldpath_test_mode
 
 # class TestAddType(unittest.TestCase):
 #   def setUp(self):
@@ -1956,8 +1957,8 @@ def test_object(subgraph: Subgraph):
 
     Pair = subgraph.Pair
 
-    FieldPath.__test_mode = True
-    assert Pair == expected
+    with fieldpath_test_mode():
+        assert Pair == expected
 
 
 def test_field_path_1(subgraph: Subgraph):
@@ -2004,8 +2005,8 @@ def test_field_path_2(subgraph: Subgraph):
 
     fpath = subgraph.Pair.id
 
-    FieldPath.__test_mode = True
-    assert fpath == expected
+    with fieldpath_test_mode():
+        assert fpath == expected
 
 
 def test_field_path_3(subgraph: Subgraph):
@@ -2037,8 +2038,8 @@ def test_field_path_3(subgraph: Subgraph):
 
     fpath = subgraph.Pair.token0.id
 
-    FieldPath.__test_mode = True
-    assert fpath == expected
+    with fieldpath_test_mode():
+        assert fpath == expected
 
 
 def test_synthetic_field_path_1(subgraph: Subgraph):
@@ -2064,8 +2065,8 @@ def test_synthetic_field_path_1(subgraph: Subgraph):
     subgraph.Pair.reserveCAD = sfield
     fpath = subgraph.Pair.reserveCAD
 
-    FieldPath.__test_mode = True
-    assert fpath == expected
+    with fieldpath_test_mode():
+        assert fpath == expected
 
 
 def test_synthetic_field_path_2(subgraph: Subgraph):
@@ -2100,8 +2101,8 @@ def test_synthetic_field_path_2(subgraph: Subgraph):
     subgraph.Token.frenchName = sfield
     fpath = subgraph.Pair.token0.frenchName
 
-    FieldPath.__test_mode = True
-    assert fpath == expected
+    with fieldpath_test_mode():
+        assert fpath == expected
 
 
 def test_synthetic_field_path_3(subgraph: Subgraph):
@@ -2125,8 +2126,8 @@ def test_synthetic_field_path_3(subgraph: Subgraph):
     subgraph.Pair.token0Id = subgraph.Pair.token0.id
     fpath = subgraph.Pair.token0Id
 
-    FieldPath.__test_mode = True
-    assert fpath == expected
+    with fieldpath_test_mode():
+        assert fpath == expected
 
 
 def test_filter_1(subgraph: Subgraph):
@@ -2143,8 +2144,8 @@ def test_filter_1(subgraph: Subgraph):
 
     filter_ = subgraph.Pair.reserveUSD > 100
 
-    FieldPath.__test_mode = True
-    assert filter_ == expected
+    with fieldpath_test_mode():
+        assert filter_ == expected
 
 
 def test_field_path_args_1(subgraph: Subgraph):
@@ -2208,8 +2209,8 @@ def test_field_path_args_1(subgraph: Subgraph):
         orderDirection="desc",
     )
 
-    FieldPath.__test_mode = True
-    assert fpath == expected
+    with fieldpath_test_mode():
+        assert fpath == expected
 
 
 def test_field_path_args_2(subgraph: Subgraph):
@@ -2266,8 +2267,8 @@ def test_field_path_args_2(subgraph: Subgraph):
         where=[subgraph.Pair.reserveUSD > 100, subgraph.Pair.token0 == "abcd"],
     )
 
-    FieldPath.__test_mode = True
-    assert fpath == expected
+    with fieldpath_test_mode():
+        assert fpath == expected
 
 
 def test_field_path_args_3(subgraph: Subgraph):
@@ -2321,8 +2322,8 @@ def test_field_path_args_3(subgraph: Subgraph):
 
     fpath = subgraph.Query.pairs(first=100, orderBy=subgraph.Pair.reserveUSD)
 
-    FieldPath.__test_mode = True
-    assert fpath == expected
+    with fieldpath_test_mode():
+        assert fpath == expected
 
 
 def test_field_path_extend_1(subgraph: Subgraph):
@@ -2397,8 +2398,8 @@ def test_field_path_extend_1(subgraph: Subgraph):
 
     fpath = FieldPath._extend(fpath1, fpath2)
 
-    FieldPath.__test_mode = True
-    assert fpath == expected
+    with fieldpath_test_mode():
+        assert fpath == expected
 
 
 def test_mk_request_1(subgraph: Subgraph):
@@ -2489,8 +2490,8 @@ def test_mk_request_1(subgraph: Subgraph):
 
     req = sg.mk_request([pairs.id, pairs.token0.symbol])
 
-    FieldPath.__test_mode = True
-    assert req == expected
+    with fieldpath_test_mode():
+        assert req == expected
 
 
 def test_mk_request_2(sg: Subgrounds, subgraph: Subgraph):
@@ -2570,8 +2571,8 @@ def test_mk_request_2(sg: Subgrounds, subgraph: Subgraph):
 
     req = sg.mk_request([pairs.id, pairs.token0Id])
 
-    FieldPath.__test_mode = True
-    assert req == expected
+    with fieldpath_test_mode():
+        assert req == expected
 
 
 def test_mk_request_3(sg: Subgrounds, subgraph: Subgraph):
@@ -2649,8 +2650,8 @@ def test_mk_request_3(sg: Subgrounds, subgraph: Subgraph):
 
     req = sg.mk_request([subgraph.Query.swaps.timestamp, subgraph.Query.swaps.price])
 
-    FieldPath.__test_mode = True
-    assert req == expected
+    with fieldpath_test_mode():
+        assert req == expected
 
 
 def test_mk_request_4(sg: Subgrounds, subgraph: Subgraph):
@@ -2726,8 +2727,8 @@ def test_mk_request_4(sg: Subgrounds, subgraph: Subgraph):
 
     req = sg.mk_request([subgraph.Query.swaps.timestamp, subgraph.Query.swaps.my_value])
 
-    FieldPath.__test_mode = True
-    assert req == expected
+    with fieldpath_test_mode():
+        assert req == expected
 
 
 def test_synthetic_field_1(subgraph: Subgraph):

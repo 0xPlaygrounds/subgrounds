@@ -18,7 +18,6 @@ An intuitive python library for interfacing with Subgraphs.
 - **Simple**: Leverage a Pythonic API to easily build queries and transformations without the need for raw GraphQL manipulation.
 - **Automated**: Automatically handle pagination and schema introspection for effortless data retrieval.
 - **Powerful**: Create sophisticated queries using the `SyntheticFields` transformation system.
-
 <!-- end elevator-pitch -->
 
 ## Resources

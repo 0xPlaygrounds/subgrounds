@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v1.5.2 (2023-05-17)
+### Fix
+* Nested orderBy working with DSL ([`7e320e8`](https://github.com/0xPlaygrounds/subgrounds/commit/7e320e8c77c12ad3fcfa64f3aad4428ad1068539))
+
 ## v1.5.1 (2023-05-15)
 ### Fix
 * Nested OrderBy ([#17](https://github.com/0xPlaygrounds/subgrounds/issues/17)) ([`b807319`](https://github.com/0xPlaygrounds/subgrounds/commit/b8073193ddeee2cde2d795382ef8523d87a7ca71))

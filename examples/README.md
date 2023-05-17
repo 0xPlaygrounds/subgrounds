@@ -1,2 +1,2 @@
 # Examples
-> See [our docs](https://docs.playgrounds.network/examples/) for more examples!
+> See [our docs](https://docs.playgrounds.network/subgrounds/examples/) for more examples!

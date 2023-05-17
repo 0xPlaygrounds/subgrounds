@@ -1,0 +1,19 @@
+name: Trigger Docs Rebuild
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "**/*.md"
+
+jobs:
+  trigger-docs:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v2
+        with:
+            token: ${{ secrets.PAT }}
+            repository: 0xPlaygrounds/docs
+            event-type: trigger-rebuild

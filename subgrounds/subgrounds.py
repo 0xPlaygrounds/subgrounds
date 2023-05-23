@@ -18,6 +18,7 @@ from pipe import groupby, map, traverse, where
 
 import subgrounds.client as client
 from subgrounds.dataframe_utils import df_of_json
+from subgrounds.errors import SubgroundsError
 from subgrounds.pagination import paginate, paginate_iter
 from subgrounds.pagination.pagination import PaginationStrategy
 from subgrounds.pagination.strategies import LegacyStrategy
@@ -31,6 +32,7 @@ from subgrounds.transform import (
     DocumentTransform,
     RequestTransform,
 )
+from subgrounds.utils import PLAYGROUNDS_APP_URL
 
 logger = logging.getLogger("subgrounds")
 warnings.simplefilter("default")
@@ -59,6 +61,16 @@ class Subgrounds:
         default_factory=lambda: DEFAULT_GLOBAL_TRANSFORMS
     )
     subgraphs: dict[str, Subgraph] = field(default_factory=dict)
+
+    @classmethod
+    def from_playgrounds_key(cls, pg_key: str):
+        if not pg_key.startswith("pg-"):
+            raise SubgroundsError(
+                "Invalid Playgrounds Key: key should start with 'pg-'.\n\n"
+                f"Go to {PLAYGROUNDS_APP_URL} to double check your API Key!"
+            )
+
+        return cls(headers={"Playgrounds-Api-Key": pg_key})
 
     def load(
         self,

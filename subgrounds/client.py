@@ -124,7 +124,7 @@ def get_schema(url: str, headers: dict[str, Any]) -> dict[str, Any]:
     resp = requests.post(
         url,
         json={"query": INTROSPECTION_QUERY},
-        headers=default_header() | headers,
+        headers=default_header(url) | headers,
     )
 
     resp.raise_for_status()
@@ -179,7 +179,7 @@ def query(
             if variables == {}
             else {"query": query_str, "variables": variables}
         ),
-        headers=default_header() | headers,
+        headers=default_header(url) | headers,
     )
 
     resp.raise_for_status()

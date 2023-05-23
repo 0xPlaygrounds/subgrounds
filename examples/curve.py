@@ -17,7 +17,7 @@ most_traded_pools = curve.Query.liquidityPools(
 #  the top 4 most traded tokens.
 # Mote that reuse of `most_traded_pools` in the partial FieldPath
 most_traded_snapshots = most_traded_pools.dailySnapshots(
-    orderBy=curve.LiquidityPoolDailySnapshot.dailyTotalRevenue,
+    orderBy=curve.LiquidityPoolDailySnapshot.dailyTotalRevenueUSD,
     orderDirection="desc",
     first=3,
 )

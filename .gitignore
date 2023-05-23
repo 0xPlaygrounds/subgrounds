@@ -4,14 +4,14 @@ dist/
 scratch/
 subgrounds.egg-info/
 *.json
-*.ipynb
 *.log
 .coverage
 .python-version
 !tests/schemas/*.json
 
-# top-level python scripts
+# top-level python scripts and notebooks
 /*.py
+/*.ipynb
 
 # apple
 .DS_Store

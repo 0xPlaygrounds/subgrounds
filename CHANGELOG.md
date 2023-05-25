@@ -2,6 +2,19 @@
 
 <!--next-version-placeholder-->
 
+## v1.6.0 (2023-05-25)
+### Feature
+* Add helpers for accessing the playgrounds gateway ([#21](https://github.com/0xPlaygrounds/subgrounds/issues/21)) ([`e44aee6`](https://github.com/0xPlaygrounds/subgrounds/commit/e44aee65649bff192321cfd82436b65da236d870))
+
+### Documentation
+* Add open in colab button ([`02ff722`](https://github.com/0xPlaygrounds/subgrounds/commit/02ff7226e54920f411a9817f1eb26c757e4a2a32))
+* Add gateway notebook as another example ([`98eab32`](https://github.com/0xPlaygrounds/subgrounds/commit/98eab32d4bb9fcae072dcceefae94a8692e10852))
+* Adjust example notebook for colab ([`6210556`](https://github.com/0xPlaygrounds/subgrounds/commit/62105568b61c3a155ee07c6077b4b1e1d81f27fd))
+* Adjust wording in example notebook ([`357c6d8`](https://github.com/0xPlaygrounds/subgrounds/commit/357c6d859aea36d680cfde7d728a24a66ae67193))
+* Add example notebook + swap binder for colab ([`06cc728`](https://github.com/0xPlaygrounds/subgrounds/commit/06cc72860e2d83fc200b1198519da5963a85b0c1))
+* Add CI status badge to README.md ([`4c6dca9`](https://github.com/0xPlaygrounds/subgrounds/commit/4c6dca90174cbbfd990dbf7906bf75ee50f4d65a))
+* Broken link in README ([#19](https://github.com/0xPlaygrounds/subgrounds/issues/19)) ([`211f965`](https://github.com/0xPlaygrounds/subgrounds/commit/211f965331225fb7287cff027c5dd01e8a4e5784))
+
 ## v1.5.2 (2023-05-17)
 ### Fix
 * Nested orderBy working with DSL ([`7e320e8`](https://github.com/0xPlaygrounds/subgrounds/commit/7e320e8c77c12ad3fcfa64f3aad4428ad1068539))

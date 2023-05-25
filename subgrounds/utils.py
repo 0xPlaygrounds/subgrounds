@@ -4,14 +4,13 @@ Utility module for Subgrounds
 
 import os
 import platform
+import warnings
 from functools import cache
 from itertools import accumulate as _accumulate
 from itertools import filterfalse
 from typing import Any, Callable, Iterator, Optional, Tuple, TypeVar
 
 from pipe import Pipe, map
-
-from subgrounds.errors import SubgroundsError
 
 PLAYGROUNDS_APP_URL = "https://app.playgrounds.network/"
 PLAYGROUNDS_API_URL = "https://api.playgrounds.network/"
@@ -221,13 +220,16 @@ def default_header(url: str):
 
     if url.startswith(PLAYGROUNDS_API_URL) and PLAYGROUNDS_ENV_VAR in os.environ:
         key = os.environ[PLAYGROUNDS_ENV_VAR]
-        if not key.startswith("pg-"):
-            raise SubgroundsError(
+        if key.startswith("pg-"):
+            return base | {"Playgrounds-Api-Key": key}
+
+        warnings.warn(
+            RuntimeWarning(
                 "Invalid Playgrounds Api Key at $PLAYGROUNDS_API_KEY:"
                 " Playgrounds api keys should start with 'pg-'.\n\n"
                 f"Go to {PLAYGROUNDS_APP_URL} to double check your API Key!"
             )
-        return base | {"Playgrounds-Api-Key": key}
+        )
 
     return base
 

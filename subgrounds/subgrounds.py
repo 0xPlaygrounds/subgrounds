@@ -63,14 +63,14 @@ class Subgrounds:
     subgraphs: dict[str, Subgraph] = field(default_factory=dict)
 
     @classmethod
-    def from_playgrounds_key(cls, pg_key: str):
-        if not pg_key.startswith("pg-"):
+    def from_pg_key(cls, key: str):
+        if not key.startswith("pg-"):
             raise SubgroundsError(
                 "Invalid Playgrounds Key: key should start with 'pg-'.\n\n"
                 f"Go to {PLAYGROUNDS_APP_URL} to double check your API Key!"
             )
 
-        return cls(headers={"Playgrounds-Api-Key": pg_key})
+        return cls(headers={"Playgrounds-Api-Key": key})
 
     def load(
         self,

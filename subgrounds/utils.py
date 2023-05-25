@@ -2,13 +2,19 @@
 Utility module for Subgrounds
 """
 
+import os
 import platform
+import warnings
 from functools import cache
 from itertools import accumulate as _accumulate
 from itertools import filterfalse
 from typing import Any, Callable, Iterator, Optional, Tuple, TypeVar
 
 from pipe import Pipe, map
+
+PLAYGROUNDS_APP_URL = "https://app.playgrounds.network/"
+PLAYGROUNDS_API_URL = "https://api.playgrounds.network/"
+PLAYGROUNDS_ENV_VAR = "PLAYGROUNDS_API_KEY"
 
 accumulate = Pipe(_accumulate)
 
@@ -201,10 +207,31 @@ def contains_list(data: dict | list | str | int | float | bool) -> bool:
 
 
 @cache
-def default_header():
-    """Contains the default header information for requests made by subgrounds"""
+def default_header(url: str):
+    """Contains the default header information for requests made by subgrounds
 
-    return {"Content-Type": "application/json", "User-Agent": user_agent()}
+    Inserts the Playgrounds API Key iff:
+      a) targetting the Playgrounds API
+      AND
+      b) if the `PLAYGROUNDS_API_KEY` environment variable is set
+    """
+
+    base = {"Content-Type": "application/json", "User-Agent": user_agent()}
+
+    if url.startswith(PLAYGROUNDS_API_URL) and PLAYGROUNDS_ENV_VAR in os.environ:
+        key = os.environ[PLAYGROUNDS_ENV_VAR]
+        if key.startswith("pg-"):
+            return base | {"Playgrounds-Api-Key": key}
+
+        warnings.warn(
+            RuntimeWarning(
+                "Invalid Playgrounds Api Key at $PLAYGROUNDS_API_KEY:"
+                " Playgrounds api keys should start with 'pg-'.\n\n"
+                f"Go to {PLAYGROUNDS_APP_URL} to double check your API Key!"
+            )
+        )
+
+    return base
 
 
 @cache

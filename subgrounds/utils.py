@@ -221,7 +221,7 @@ def default_header(url: str):
 
     if url.startswith(PLAYGROUNDS_API_URL) and PLAYGROUNDS_ENV_VAR in os.environ:
         key = os.environ[PLAYGROUNDS_ENV_VAR]
-        if not key.startswith(PLAYGROUNDS_API_URL):
+        if not key.startswith("pg-"):
             raise SubgroundsError(
                 "Invalid Playgrounds Api Key at $PLAYGROUNDS_API_KEY:"
                 " Playgrounds api keys should start with 'pg-'.\n\n"

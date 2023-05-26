@@ -19,11 +19,6 @@ from pipe import groupby, map, traverse
 import subgrounds.client as client
 from subgrounds.dataframe_utils import df_of_json
 from subgrounds.errors import SubgroundsError
-from subgrounds.pagination import (
-    LegacyStrategy,
-    PaginationStrategy,
-    paginate_iter,
-)
 from subgrounds.pagination import LegacyStrategy, PaginationStrategy, paginate_iter
 from subgrounds.pagination.utils import normalize_strategy
 from subgrounds.query import DataRequest, Document, Query

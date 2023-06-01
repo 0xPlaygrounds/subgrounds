@@ -19,8 +19,12 @@ from pipe import groupby, map, traverse
 import subgrounds.client as client
 from subgrounds.dataframe_utils import df_of_json
 from subgrounds.errors import SubgroundsError
-from subgrounds.pagination import LegacyStrategy, PaginationStrategy, paginate_iter
-from subgrounds.pagination.utils import normalize_strategy
+from subgrounds.pagination import (
+    LegacyStrategy,
+    PaginationStrategy,
+    normalize_strategy,
+    paginate_iter,
+)
 from subgrounds.query import DataRequest, Document, Query
 from subgrounds.schema import SchemaMeta
 from subgrounds.subgraph import FieldPath, Subgraph
@@ -197,10 +201,14 @@ class Subgrounds:
                 pagination_strategy=normalize_strategy(
                     pagination_strategy, self.subgraphs[doc.url]._is_subgraph
                 ),
+                headers=self.headers,
             )
 
-        yield from apply_request_transform(
-            self.subgraphs, self.global_transforms, req, execute_document
+        return list(
+            apply_request_transform(
+                self.subgraphs, self.global_transforms, req, execute_document
+            )
+            | traverse
         )
 
     def execute_iter(
@@ -484,6 +492,10 @@ class Subgrounds:
         ):
             data = tuple(fpaths | map(functools.partial(f, blob=page)))
 
+            if len(data) == 1:
+                yield data[0]
+            else:
+                yield data
             if len(data) == 1:
                 yield data[0]
             else:

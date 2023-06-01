@@ -4,9 +4,6 @@ from typing import overload
 
 from subgrounds.query import InputValue
 
-from .pagination import PaginationStrategy
-from .strategies import LegacyStrategy, SkipStrategy
-
 
 @overload
 def merge_input_value_object_metas(
@@ -52,12 +49,3 @@ def merge_input_value_object_metas(
 
         case val1, _:
             return val1
-
-
-def normalize_strategy(
-    strategy: type[PaginationStrategy] | None = LegacyStrategy, is_subgraph: bool = True
-):
-    if strategy is not None and is_subgraph:
-        return strategy
-
-    return SkipStrategy

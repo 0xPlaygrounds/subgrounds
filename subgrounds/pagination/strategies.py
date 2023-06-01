@@ -72,7 +72,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from functools import partial
 from itertools import count
-from typing import Any, Callable, Iterator, Literal, Optional
+from typing import Any, Callable, Iterator, Literal, Optional, Protocol
 
 from pipe import map, traverse
 
@@ -97,6 +97,44 @@ class StopPagination(Exception):
 class SkipPagination(Exception):
     def __init__(self, *args: object) -> None:
         super().__init__(*args)
+
+
+class PaginationStrategy(Protocol):
+    def __init__(self, schema: SchemaMeta, document: Document) -> None:
+        """Initializes the pagination strategy. If there is no need for pagination given
+        the provided :class:`Document` ``document``, then the constructor should raise a
+        :class:`SkipPagination` exception.
+
+        Args:
+            schema (SchemaMeta): The schema of the API against which ``document`` will
+              be executed
+            document (Document): The query document
+        """
+        ...
+
+    def step(
+        self, page_data: dict[str, Any] | None = None
+    ) -> tuple[Document, dict[str, Any]]:
+        """Returns the new query document and its variables which will be executed to
+        get the next page of data.
+
+        If this is the first query made as part of the pagination strategy, then
+          ``page_data`` will be ``None``.
+
+        If pagination should be interupted (e.g.: if enough entities have been queried),
+        then this method should raise a :class:`StopPagination` exception.
+
+        Args:
+            page_data (dict[str, Any] | None, optional): The previous query's response
+             data. If this is the first query (i.e.: the first page of data), then it
+             will be `None`. Defaults to None.
+
+        Returns:
+            tuple[Document, dict[str, Any]]: A tuple `(doc, vars)` where `doc` is the
+             query document that will be executed to fetch the next page of data and
+             `vars` are the variables for that document.
+        """
+        ...
 
 
 @dataclass
@@ -486,7 +524,7 @@ class ShallowStrategy:
 
     def step(
         self, page_data: Optional[dict[str, Any]] = None
-    ) -> Tuple[Document, dict[str, Any]]:
+    ) -> tuple[Document, dict[str, Any]]:
         args = self.arg_generator.step(page_data)
         trimmed_doc = prune_doc(self.normalized_doc, args)
         return (trimmed_doc, args)
@@ -506,3 +544,12 @@ class SkipStrategy:
         self, page_data: Optional[dict[str, Any]] = None
     ) -> tuple[Document, dict[str, Any]]:
         raise SkipPagination
+
+
+def normalize_strategy(
+    strategy: type[PaginationStrategy] | None = LegacyStrategy, is_subgraph: bool = True
+):
+    if strategy is not None and is_subgraph:
+        return strategy
+
+    return SkipStrategy

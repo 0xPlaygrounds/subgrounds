@@ -5,58 +5,20 @@ iterative) that make use of pagination strategies.
 from __future__ import annotations
 
 from functools import reduce
-from typing import Any, Iterator, Protocol, Type
+from typing import Any, Iterator, Type
 
 import subgrounds.client as client
 from subgrounds.query import Document
 from subgrounds.schema import SchemaMeta
 from subgrounds.utils import merge
 
-from .strategies import SkipPagination, StopPagination
+from .strategies import PaginationStrategy, SkipPagination, StopPagination
 
 
 class PaginationError(RuntimeError):
     def __init__(self, message: Any, strategy: PaginationStrategy):
         super().__init__(message)
         self.strategy = strategy
-
-
-class PaginationStrategy(Protocol):
-    def __init__(self, schema: SchemaMeta, document: Document) -> None:
-        """Initializes the pagination strategy. If there is no need for pagination given
-        the provided :class:`Document` ``document``, then the constructor should raise a
-        :class:`SkipPagination` exception.
-
-        Args:
-            schema (SchemaMeta): The schema of the API against which ``document`` will
-              be executed
-            document (Document): The query document
-        """
-        ...
-
-    def step(
-        self, page_data: dict[str, Any] | None = None
-    ) -> tuple[Document, dict[str, Any]]:
-        """Returns the new query document and its variables which will be executed to
-        get the next page of data.
-
-        If this is the first query made as part of the pagination strategy, then
-          ``page_data`` will be ``None``.
-
-        If pagination should be interupted (e.g.: if enough entities have been queried),
-        then this method should raise a :class:`StopPagination` exception.
-
-        Args:
-            page_data (dict[str, Any] | None, optional): The previous query's response
-             data. If this is the first query (i.e.: the first page of data), then it
-             will be `None`. Defaults to None.
-
-        Returns:
-            tuple[Document, dict[str, Any]]: A tuple `(doc, vars)` where `doc` is the
-             query document that will be executed to fetch the next page of data and
-             `vars` are the variables for that document.
-        """
-        ...
 
 
 def paginate(

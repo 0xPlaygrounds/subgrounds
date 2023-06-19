@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from functools import partial, reduce
 from hashlib import blake2b
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Callable, ClassVar
 
 from pipe import map, traverse
 from typing_extensions import Self  # 3.10 support
@@ -243,7 +243,7 @@ class FieldPath(FieldOperatorMixin):
     _subgraph: Subgraph
     _root_type: TypeRef.T
     _type: TypeRef.T
-    _path: list[Tuple[Optional[dict[str, Any]], TypeMeta.FieldMeta]]
+    _path: list[tuple[dict[str, Any] | None, TypeMeta.FieldMeta]]
 
     # Purely for testing
     __test_mode: ClassVar[bool] = False
@@ -253,7 +253,7 @@ class FieldPath(FieldOperatorMixin):
         subgraph: Subgraph,
         root_type: TypeRef.T,
         type_: TypeRef.T,
-        path: list[Tuple[Optional[dict[str, Any]], TypeMeta.FieldMeta]],
+        path: list[tuple[dict[str, Any] | None, TypeMeta.FieldMeta]],
     ) -> None:
         self._subgraph = subgraph
         self._root_type = root_type
@@ -354,7 +354,7 @@ class FieldPath(FieldOperatorMixin):
           list[str]: List of field names selected in the current :class:`FieldPath`
         """
 
-        def gen_alias(ele: Tuple[Optional[dict[str, Any]], TypeMeta.FieldMeta]) -> str:
+        def gen_alias(ele: tuple[dict[str, Any] | None, TypeMeta.FieldMeta]) -> str:
             if ele[0] != {} and ele[0] is not None:
                 return FieldPath._hash(ele[1].name + str(ele[0]))
             else:
@@ -412,7 +412,7 @@ class FieldPath(FieldOperatorMixin):
         """
 
         def f(
-            path: list[Tuple[Optional[dict[str, Any]], TypeMeta.FieldMeta]]
+            path: list[tuple[dict[str, Any] | None, TypeMeta.FieldMeta]]
         ) -> list[Selection]:
             match path:
                 case [
@@ -489,13 +489,15 @@ class FieldPath(FieldOperatorMixin):
           TypeError: [description]
           TypeError: [description]
         Returns:
-          FieldPath: A new FieldPath containing `fpath` extended with the field named `name`
+          FieldPath: A new FieldPath containing `fpath` extended with the field named
+            `name`
         """
         match self._schema.type_of_typeref(self._type):
             # If the FieldPath fpath
             case TypeMeta.EnumMeta() | TypeMeta.ScalarMeta():
                 raise TypeError(
-                    f"FieldPath: path {self} ends with a scalar field! cannot select field {name}"
+                    f"FieldPath: path {self} ends with a scalar field!"
+                    f" cannot select field {name}"
                 )
 
             case TypeMeta.ObjectMeta() | TypeMeta.InterfaceMeta() as obj:
@@ -521,12 +523,14 @@ class FieldPath(FieldOperatorMixin):
                         )
                     case _:
                         raise TypeError(
-                            f"FieldPath: field {name} is not a valid field for object {self._type.name} at path {self}"
+                            f"FieldPath: field {name} is not a valid field for object"
+                            f" {self._type.name} at path {self}"
                         )
 
             case _:
                 raise TypeError(
-                    f"FieldPath: Unexpected type {self._type.name} when selection {name} on {self}"
+                    f"FieldPath: Unexpected type {self._type.name}"
+                    f" when selection {name} on {self}"
                 )
 
     def _extend(self, ext: FieldPath) -> FieldPath:
@@ -560,7 +564,8 @@ class FieldPath(FieldOperatorMixin):
                             )
                         else:
                             raise TypeError(
-                                f"extend: FieldPath {ext} does not start at the same type from where FieldPath {self} ends"
+                                f"extend: FieldPath {ext} does not start at the"
+                                f" same type from where FieldPath {self} ends"
                             )
                     case _:
                         raise TypeError(f"extend: FieldPath {self} is not object field")
@@ -573,8 +578,11 @@ class FieldPath(FieldOperatorMixin):
     # When setting arguments
     def __call__(self, **kwargs: Any) -> Any:
         """Sets field arguments and expand subfields. The updated FieldPath is returned.
+
         Example:
-        >>> aaveV2 = sg.load_subgraph("https://api.thegraph.com/subgraphs/name/aave/protocol-v2")
+        >>> aaveV2 = sg.load_subgraph(
+        ...     "https://api.thegraph.com/subgraphs/name/aave/protocol-v2"
+        ... )
         >>> query = aaveV2.Query.borrows(
         ...   first=10,
         ...   order_by=aaveV2.Borrow.timestamp,
@@ -638,7 +646,8 @@ class FieldPath(FieldOperatorMixin):
         return ".".join(self._path | map(lambda ele: ele[1].name))
 
     def __repr__(self) -> str:
-        return f"FieldPath({self._subgraph._url}, {self._root_type.name}, {self._name_path()})"
+        vars = f"{self._subgraph._url}, {self._root_type.name}, {self._name_path()}"
+        return f"FieldPath({vars})"
 
 
 @dataclass
@@ -667,21 +676,22 @@ class SyntheticField(FieldOperatorMixin):
         def mk_deps(
             deps: list[FieldPath | SyntheticField],
             f: Callable,
-            acc: list[Tuple[Optional[Callable], int]] = [],
-        ) -> Tuple[Callable, list[FieldPath]]:
-            """If all dependencies are field paths, then this function does nothing. If the dependencies contain
-            one or more other synthetic fields, as is the case when chaining binary operators, then the synthetic
-            field tree is flattened to a single synthetic field containing all leaf dependencies.
+            acc: list[tuple[Callable | None, int]] = [],
+        ) -> tuple[Callable, list[FieldPath]]:
+            """If all dependencies are field paths, then this function does nothing.
+             If the dependencies contain one or more other synthetic fields, as is the
+             case when chaining binary operators, then the synthetic field tree is
+             flattened to a single synthetic field containing all leaf dependencies.
 
             Args:
-              deps (list): Initial dependencies for synthetic field
-              f (Callable): Function to apply to the values of those dependencies
-              acc (list[Tuple[Optional[Callable], list[FieldPath]]], optional): Accumulator. Defaults to [].
+              deps: Initial dependencies for synthetic field
+              f: Function to apply to the values of those dependencies
+              acc: Accumulator. Defaults to [].
 
             Returns:
-              Tuple[Callable, list[FieldPath]]: A tuple containing the potentially modified
-              function and dependency list.
+              A tuple containing the potentially modified function and dependency list.
             """
+
             match deps:
                 case []:
 
@@ -798,44 +808,48 @@ class SyntheticField(FieldOperatorMixin):
             # Query mints and burns. Notice that we merge the two entity tables by
             # setting `concat=True` and overwriting the column names (columns must
             # match the `FieldPaths`)
-            >>> df = sg.query_df([
-            ...     mints.transaction.id,
-            ...     mints.timestamp,
-            ...     mints.tx_type,
-            ...     mints.origin,
-            ...     mints.amountUSD,
-            ...     burns.transaction.id,
-            ...     burns.timestamp,
-            ...     burns.tx_type,
-            ...     burns.origin,
-            ...     burns.amountUSD,
-            ... ], columns=['tx_hash', 'timestamp', 'tx_type', 'origin', 'amount_USD'], concat=True)
+            >>> df = sg.query_df(
+            ...     [
+            ...         mints.transaction.id,
+            ...         mints.timestamp,
+            ...         mints.tx_type,
+            ...         mints.origin,
+            ...         mints.amountUSD,
+            ...         burns.transaction.id,
+            ...         burns.timestamp,
+            ...         burns.tx_type,
+            ...         burns.origin,
+            ...         burns.amountUSD,
+            ...     ],
+            ...     columns=['tx_hash', 'timestamp', 'tx_type', 'origin', 'amount_USD'],
+            ...     concat=True
+            ..  )
 
-            # Sort the DataFrame
+            # Sort the DataFrame (output is truncated)
             >>> df.sort_values(by=['timestamp'], ascending=False)
-                                                          tx_hash   timestamp tx_type                                      origin    amount_USD
-            0   0xcbe1bacacc1e64fe613ae5eef2063563bd0057d1e3df...  1656016553    MINT  0x3435e7946d40b1a83c0cf154326fc6b3ca908952  7.879784e+03
-            1   0xdddaaddf59e5a3abff4feadef83b3ceb023a74424ea7...  1656016284    MINT  0xc747962e7e416e2a582813b1d7ad59eb83077fa6  5.110840e+04
-            10  0xa7671452c34a3b083083ef81e364489c2c9ee801a3b8...  1656016284    BURN  0xd40db77990bbb30514276b5ac17c3ce5cc9c951f  2.804573e+05
-            2   0xc132e73975e77c2c2c91fcf332018dfb01aac0ca9471...  1656015853    MINT  0xc747962e7e416e2a582813b1d7ad59eb83077fa6  5.122569e+04
-            3   0x1444744f4021a2046787c1b7b88cd9ac21f071c65acc...  1656015773    MINT  0xd11aa2e3a000275ed12b87515c9ac0d67b32e7b9  8.897983e+03
-            4   0x3315617d426fc2b0db5d8dbccd549efaa8f1ae2969ca...  1656015693    MINT  0xb7dd4d134b1794ee848e1af1a62b85d7b2ea9301  0.000000e+00
-            11  0xcc713daa2dc58cd1f2218c8f438e7fcf04d2e9c7c83d...  1656015278    BURN  0xa7c43e2057d89b6946b8865efc8bee3a4ea7d28d  1.254942e+06
-            5   0x7bbfae86f0c3c983651bd0671557cd851fc301317c06...  1656015111    MINT  0xac56cee8ccd00d0c1d72ce3415140874552e80f4  3.432075e+04
-            12  0xea21c3a68a8f0c6a2721a3072e0c8b2edc77f4d2f0d9...  1656014785    BURN  0x0709b103d46d71458a71e5d81230dd688809a53d  2.059106e+04
-            6   0x3bd369bf45c55cab40c62db81bb3e0684fd85fe2b662...  1656014120    MINT  0x509984bfc0fb24e2d1377cfec224d3afec4c341e  2.517578e+03
-            13  0x1ea59da77c442479af8fb51501a931260d473e249de7...  1656014018    BURN  0x509984bfc0fb24e2d1377cfec224d3afec4c341e  0.000000e+00
-            7   0xb9d31ef78b8bf786b422d948dd1fba246710078abff8...  1656013998    MINT  0x22dfec183294d257f80c15d3c9cd47495bdc728c  8.365750e+04
-            14  0xc5e3ec84a2860e3c3a055ccdced435a67b4aff4dd3be...  1656013946    BURN  0xac56cee8ccd00d0c1d72ce3415140874552e80f4  3.363809e+04
-            8   0x7c736255d9a4ebf4781069a1b2a929ad89100f1af980...  1656013913    MINT  0x4ce6aea89f059915ae5efbf34a2a8adc544ae09e  4.837287e+04
-            15  0x95cf56b9eb69aa45048a9b7b3e472df5bc3bfad591cd...  1656013728    BURN  0x4ce6aea89f059915ae5efbf34a2a8adc544ae09e  5.110010e+04
-            9   0x76dd2bbf43485c224471dd823c2992178f031f27194b...  1656013599    MINT  0x234a644868c419ce0dcdd9fd539762eba47f3759  5.363896e+03
-            16  0x47e595b02fdcb51ff42a5008e53be7ee3bdf8063b580...  1656013580    BURN  0xaf0fdd39e5d92499b0ed9f68693da99c0ec1e92e  0.000000e+00
-            17  0xe20ec9702f455d74b3cc1f54fe2f3450604ca5037a72...  1656013455    BURN  0xaf0fdd39e5d92499b0ed9f68693da99c0ec1e92e  0.000000e+00
-            18  0xac3e95666be3a45fdfbbfa513a114136ea6ecffb9de2...  1656013237    BURN  0x665d2d2444f2384fb3d96aaa0ea3536b92984dce  2.254100e+05
-            19  0x01c3424a48c36104ea388482723347f15c0bc1bb1a80...  1656013034    BURN  0x0084ee6c8893c01e252198b56ec127443dc27464  0.000000e+00
-
+             tx_hash   timestamp    tx_type  origin     amount_USD
+            0xcbe1...  1656016553    MINT  0x3435....  7.879784e+03
+            0xddda...  1656016284    MINT  0xc747....  5.110840e+04
+            0xa767...  1656016284    BURN  0xd40d....  2.804573e+05
+            0xc132...  1656015853    MINT  0xc747....  5.122569e+04
+            0x1444...  1656015773    MINT  0xd11a....  8.897983e+03
+            0x3315...  1656015693    MINT  0xb7dd....  0.000000e+00
+            0xcc71...  1656015278    BURN  0xa7c4....  1.254942e+06
+            0x7bbf...  1656015111    MINT  0xac56....  3.432075e+04
+            0xea21...  1656014785    BURN  0x0709....  2.059106e+04
+            0x3bd3...  1656014120    MINT  0x5099....  2.517578e+03
+            0x1ea5...  1656014018    BURN  0x5099....  0.000000e+00
+            0xb9d3...  1656013998    MINT  0x22df....  8.365750e+04
+            0xc5e3...  1656013946    BURN  0xac56....  3.363809e+04
+            0x7c73...  1656013913    MINT  0x4ce6....  4.837287e+04
+            0x95cf...  1656013728    BURN  0x4ce6....  5.110010e+04
+            0x76dd...  1656013599    MINT  0x234a....  5.363896e+03
+            0x47e5...  1656013580    BURN  0xaf0f....  0.000000e+00
+            0xe20e...  1656013455    BURN  0xaf0f....  0.000000e+00
+            0xac3e...  1656013237    BURN  0x665d....  2.254100e+05
+            0x01c3...  1656013034    BURN  0x0084....  0.000000e+00
         """
+
         match value:
             case str():
                 return cls(lambda: value, cls.STRING, [])
@@ -905,7 +919,7 @@ class SyntheticField(FieldOperatorMixin):
         dict: dict[Any, Any],
         type_: TypeRef.T,
         fpath: FieldPath | SyntheticField,
-        default: Optional[Any] = None,
+        default: Any | None = None,
     ) -> Self:
         """Returns a SyntheticField that will map the values of ``fpath`` using the
         key value pairs in ``dict``. If a value is not in the dictionary, then

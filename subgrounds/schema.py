@@ -93,12 +93,10 @@ class TypeRef:
 
     @staticmethod
     def root_type_name(type_: TypeRef.T) -> str:
-        # warnings.warn("`TypeRef.root_type_name` will be deprecated! Use `TypeRef.T.name` instead", DeprecationWarning)
         return type_.name
 
     @staticmethod
     def is_non_null(type_: TypeRef.T) -> bool:
-        # warnings.warn("`TypeRef.is_non_null` will be deprecated! Use `TypeRef.T.is_non_null` instead", DeprecationWarning)
         return type_.is_non_null
 
     @staticmethod
@@ -164,7 +162,8 @@ class TypeMeta:
                 )
             except StopIteration:
                 raise SchemaError(
-                    f"TypeMeta.FieldMeta.type_of_arg: no argument named {argname} for field {self.name}"
+                    f"TypeMeta.FieldMeta.type_of_arg: no argument named {argname}"
+                    f" for field {self.name}"
                 )
 
     class ScalarMeta(T):
@@ -189,14 +188,16 @@ class TypeMeta:
             return True
 
         def field(self: TypeMeta.ObjectMeta, fname: str) -> TypeMeta.FieldMeta:
-            """Returns the field definition of object :attr:`self` with name :attr:`fname`, if any.
+            """Returns the field definition of object :attr:`self` with name
+             :attr:`fname`, if any.
 
             Args:
                 self (TypeMeta.ObjectMeta): The object type
                 fname (str): The name of the desired field definition
 
             Raises:
-                KeyError: If no field named :attr:`fname` is defined for object :attr:`self`.
+                KeyError: If no field named :attr:`fname` is defined for
+                 object :attr:`self`.
 
             Returns:
                 TypeMeta.FieldMeta: The field definition
@@ -206,18 +207,21 @@ class TypeMeta:
                 return next(self.fields | where(lambda fmeta: fmeta.name == fname))
             except StopIteration:
                 raise KeyError(
-                    f"TypeMeta.ObjectMeta.field: no field named {fname} for interface {self.name}"
+                    f"TypeMeta.ObjectMeta.field: no field named {fname} for"
+                    f" interface {self.name}"
                 )
 
         def type_of_field(self: TypeMeta.ObjectMeta, fname: str) -> TypeRef.T:
-            """Returns the type reference of the field of object :attr:`self` with name :attr:`fname`, if any.
+            """Returns the type reference of the field of object :attr:`self`
+             with name :attr:`fname`, if any.
 
             Args:
                 self (TypeMeta.ObjectMeta): The object type
                 fname (str): The name of the desired field type
 
             Raises:
-                KeyError: If no field named :attr:`fname` is defined for object :attr:`self`.
+                KeyError: If no field named :attr:`fname` is defined for object
+                 :attr:`self`.
 
             Returns:
                 TypeRef.T: The field type reference
@@ -231,7 +235,8 @@ class TypeMeta:
                 )
             except StopIteration:
                 raise KeyError(
-                    f"TypeMeta.ObjectMeta.type_of_field: no field named {fname} for object {self.name}"
+                    f"TypeMeta.ObjectMeta.type_of_field: no field named {fname}"
+                    f" for object {self.name}"
                 )
 
     class EnumValueMeta(T):
@@ -256,14 +261,16 @@ class TypeMeta:
             return False
 
         def field(self: TypeMeta.InterfaceMeta, fname: str) -> TypeMeta.FieldMeta:
-            """Returns the field definition of interface `self` with name `fname`, if any.
+            """Returns the field definition of interface `self` with name `fname`,
+             if any.
 
             Args:
                 self (TypeMeta.InterfaceMeta): The interface type
                 fname (str): The name of the desired field definition
 
             Raises:
-                KeyError: If no field named :attr:`fname` is defined for interface :attr:`self`.
+                KeyError: If no field named :attr:`fname` is defined for interface
+                  :attr:`self`.
 
             Returns:
                 TypeMeta.FieldMeta: The field definition
@@ -273,7 +280,8 @@ class TypeMeta:
                 return next(self.fields | where(lambda fmeta: fmeta.name == fname))
             except StopIteration:
                 raise KeyError(
-                    f"TypeMeta.InterfaceMeta.field: no field named {fname} for interface {self.name}"
+                    f"TypeMeta.InterfaceMeta.field: no field named {fname}"
+                    f" for interface {self.name}"
                 )
 
     class UnionMeta(T):
@@ -313,7 +321,8 @@ class TypeMeta:
                 )
             except StopIteration:
                 raise KeyError(
-                    f"TypeMeta.InputObjectMeta.type_of_input_field: no input field named {fname} for input object {self.name}"
+                    f"TypeMeta.InputObjectMeta.type_of_input_field: no input field"
+                    f" named {fname} for input object {self.name}"
                 )
 
 

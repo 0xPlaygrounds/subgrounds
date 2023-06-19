@@ -103,63 +103,6 @@ class DataFrameColumns:
         return pd.DataFrame(data=rows_data)
 
 
-# def columns_of_json(data: dict) -> list[str]:
-#   # Helper function to combine result of list items columns
-#   def merge(
-#     cols1: DataFrameColumns | list[DataFrameColumns],
-#     cols2: DataFrameColumns | list[DataFrameColumns]
-#   ) -> DataFrameColumns | list[DataFrameColumns]:
-#     # print(f'merge: cols1 = {cols1}, cols2 = {cols2}')
-#     match cols1, cols2:
-#       case list(), list():
-#         return list(zip(cols1, cols2) | map(lambda cols: merge(cols[0], cols[1])))
-#       case DataFrameColumns(), DataFrameColumns():
-#         return DataFrameColumns.combine(cols1, cols2)
-
-#   def columns_of_json(data: dict, keys: list[str] = [], fpaths: list[str] = []):
-#     # Subset of the `data` dictionary containing only key-value pairs whose value
-#     # if not a list, nor contains a nested list
-#     values_dict = flatten_dict({key: value for key, value in data.items() if not contains_list(value)})
-
-#     # List names identifiyng the values in `values_dict`
-#     values_fpaths = ['_'.join([*keys, key]) for key in values_dict]
-
-#     # Subset of the `data` dictionary containing only key-value pairs whose value
-#     # either is a list, or contains a nested list
-#     list_dict = {key: value for key, value in data.items() if contains_list(value) and value != []}
-
-#     if list_dict == {}:
-#       return [DataFrameColumns('_'.join(keys), values_fpaths + fpaths)]
-#     else:
-#       dfs: list[DataFrameColumns] = []
-#       for key, value in data.items():
-#         match value:
-#           case dict():
-#             dfs.append(columns_of_json(value, [*keys, key], fpaths + values_fpaths))
-#           case list() if len(value) == 0:
-#             continue
-#           case list() if len(value) == 1:
-#             dfs.append(columns_of_json(value[0], [*keys, key], fpaths + values_fpaths))
-#           case list():
-#             inner = list(
-#               value
-#               | map(partial(columns_of_json, keys=[*keys, key], fpaths=fpaths + values_fpaths))
-#               | map(lambda l: list(l | traverse) if type(l) == list else l)
-#             )
-#             dfs.append(reduce(
-#               merge,
-#               list(
-#                 value
-#                 | map(partial(columns_of_json, keys=[*keys, key], fpaths=fpaths + values_fpaths))
-#                 | map(lambda l: list(l | traverse) if type(l) == list else l)
-#               )
-#             ))
-
-#     return dfs
-
-#   return list(columns_of_json(data) | traverse)
-
-
 def columns_of_selections(selections: list[Selection]) -> list[DataFrameColumns]:
     """Generates a list of DataFrame columns specifications based on a list of
     :class:`Selection` trees.

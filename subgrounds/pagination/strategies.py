@@ -164,13 +164,14 @@ class LegacyStrategyArgGenerator:
         def is_leaf(self):
             return len(self.inner) == 0
 
-        def update(self, data: dict) -> None:
-            """Moves ``self`` cursor forward according to previous response data ``data``
+        def update(self, data: dict[str, Any]) -> None:
+            """Moves `self` cursor forward according to previous response data `data`
             Args:
               data (dict): Previous response data
             Raises:
               StopIteration: _description_
             """
+
             # Current node step
             index_field_data = list(
                 extract_data(
@@ -236,10 +237,12 @@ class LegacyStrategyArgGenerator:
                 return 1
 
         def args(self) -> dict:
-            """Returns the pagination arguments for the current state of the state machine
+            """Returns the pagination arguments for the current state of the
+             state machine
             Returns:
                 dict: _description_
             """
+
             args = {}
             args[f"first{self.page_node.node_idx}"] = self.first_arg_value()
 
@@ -316,18 +319,18 @@ class ShallowStrategyArgGenerator:
 
         Attributes:
           page_node: The ``PaginationNode`` object which this cursor is iterating
-            through.
-          inner: The cursors for nested ``PaginationNodes``, if any.
+            through
+          inner: The cursors for nested ``PaginationNodes``, if any
           inner_idx: The index of the inner ``PaginationNode`` through which this cursor
-            iterating.
-          filter_value: The previous page's index value used to query the next data page.
+            iterating
+          filter_value: The previous page's index value used to query the next data page
             Depends on ``page_node.filter_field``, e.g.: if ``page_node.filter_field``
             is ``timestamp_gt``, then ``filter_value`` will be the highest timestamp
             the entities returned in the previous data page.
-          queried_entities: Counter keeping track of the total number of queried entities.
-          stop: Flag indicating whether or not to stop the cursor.
-          page_count: Counter keeping track of the total number data pages queried.
-          keys: Set keeping track of the keys of all queried entities to avoid duplicates.
+          queried_entities: Counter for the total number of queried entities
+          stop: Flag indicating whether or not to stop the cursor
+          page_count: Counter keeping track of the total number data pages queried
+          keys: Set of keys of all queried entities to avoid duplicates
         """
         page_node: PaginationNode
 

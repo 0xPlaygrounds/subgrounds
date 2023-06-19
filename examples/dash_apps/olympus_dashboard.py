@@ -19,7 +19,6 @@ olympusDAO.ProtocolMetric.datetime = SyntheticField(
     olympusDAO.ProtocolMetric.timestamp,
 )
 
-# olympusDAO.ProtocolMetric.circ_supply_percent = 100 * olympusDAO.ProtocolMetric.ohmCirculatingSupply / olympusDAO.ProtocolMetric.totalSupply
 
 olympusDAO.ProtocolMetric.staked_supply_percent = (
     100

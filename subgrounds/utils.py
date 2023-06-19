@@ -9,7 +9,7 @@ from functools import cache
 from itertools import accumulate as _accumulate
 from itertools import filterfalse
 from operator import itemgetter
-from typing import Any, Callable, Iterator, Optional, Tuple, TypeVar, overload
+from typing import Any, Callable, Iterator, Tuple, TypeVar, overload
 
 from pipe import Pipe, map
 
@@ -141,12 +141,12 @@ def merge(data1: Container, data2: Container) -> Container:
 # ================================================================
 # Misc
 # ================================================================
-def filter_none(items: list[Optional[T]]) -> list[T]:
+def filter_none(items: list[T | None]) -> list[T]:
     return list(filter(None, items))
 
 
 @Pipe
-def filter_map(items: Iterator[T], mapping: Callable[[T], Optional[T]]) -> Iterator[T]:
+def filter_map(items: Iterator[T], mapping: Callable[[T], T | None]) -> Iterator[T]:
     for item in items:
         new_item = mapping(item)
         if new_item is not None:
@@ -216,7 +216,7 @@ def flatten_dict(data: dict[str, Any], keys: list[str] = []) -> dict:
     return flat_dict
 
 
-def contains_list(data: dict | list | str | int | float | bool) -> bool:
+def contains_list(data: dict[str, Any] | list[Any] | str | int | float | bool) -> bool:
     """Returns `True` if `data` contains a value of type `list` in its nested data
     and `False` otherwise
 

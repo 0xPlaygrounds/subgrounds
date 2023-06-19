@@ -26,7 +26,7 @@ import logging
 import warnings
 from dataclasses import dataclass, field, replace
 from functools import partial, reduce
-from typing import Any, Callable, Iterator, Literal, Optional, Protocol, TypeVar
+from typing import Any, Callable, Iterator, Literal, Protocol, TypeVar
 
 from pipe import map, take, traverse, where
 from typing_extensions import Self
@@ -273,7 +273,7 @@ class VariableDefinition:
 
     name: str
     type_: TypeRef.T
-    default: Optional[InputValue.T] = None
+    default: InputValue.T | None = None
 
     @property
     def graphql(self) -> str:
@@ -333,7 +333,7 @@ class Argument:
     def exists_vars(self, predicate: Callable[[InputValue.Variable], bool]) -> bool:
         return any(self.iter_vars() | map(predicate))
 
-    def find(self, predicate: Callable[[InputValue.T], bool]) -> Optional[InputValue.T]:
+    def find(self, predicate: Callable[[InputValue.T], bool]) -> InputValue.T | None:
         try:
             return next(self.iter() | where(predicate))
         except StopIteration:
@@ -341,7 +341,7 @@ class Argument:
 
     def find_var(
         self, predicate: Callable[[InputValue.Variable], bool]
-    ) -> Optional[InputValue.T]:
+    ) -> InputValue.T | None:
         try:
             return next(self.iter_vars() | where(predicate))
         except StopIteration:
@@ -365,7 +365,7 @@ class Selection:
     """
 
     fmeta: TypeMeta.FieldMeta
-    alias: Optional[str] = None
+    alias: str | None = None
     arguments: list[Argument] = field(default_factory=list)
     selection: list[Selection] = field(default_factory=list)
 
@@ -455,7 +455,7 @@ class Selection:
             for inner in self.selection:
                 yield from inner.iter_args()
 
-    def filter(self, predicate: Callable[[Selection], bool]) -> Optional[Selection]:
+    def filter(self, predicate: Callable[[Selection], bool]) -> Selection | None:
         """Returns a new ``Selection`` object containing all attributes of the current
         ``Selection`` if ``predicate(self) == True`` and ``None`` otherwise. The
         function if also applied recursively to inner ``Selections``.
@@ -464,7 +464,7 @@ class Selection:
             predicate (Callable[[Selection], bool]): _description_
 
         Returns:
-            Optional[Selection]: _description_
+            Selection | None: _description_
         """
         if predicate(self):
             return Selection(
@@ -559,8 +559,9 @@ class Selection:
         map_f: Callable[[Argument], Argument | list[Argument]],
         recurse: bool = True,
     ) -> Selection:
-        """Replaces each ``Argument`` ``arg`` in the current ``Selection`` with ``map_f(arg)``
-        and returns a new ``Selection`` object containinf the modified arguments.
+        """Replaces each ``Argument`` ``arg`` in the current ``Selection`` with
+         ``map_f(arg)`` and returns a new ``Selection`` object containing
+         the modified arguments.
 
         If ``recurse == True``, then the function is applied recursively to inner
         ``Selections``.
@@ -586,8 +587,8 @@ class Selection:
         )
 
     def filter_map(
-        self, map_f: Callable[[Selection], Optional[Selection]]
-    ) -> Optional[Selection]:
+        self, map_f: Callable[[Selection], Selection | None]
+    ) -> Selection | None:
         new_selection = map_f(self)
 
         if new_selection is not None:
@@ -605,7 +606,7 @@ class Selection:
 
     def filter_map_args(
         self,
-        map_f: Callable[[Argument], Optional[Argument | list[Argument]]],
+        map_f: Callable[[Argument], Argument | list[Argument | None]],
         recurse: bool = True,
     ) -> Selection:
         return Selection(
@@ -661,7 +662,7 @@ class Selection:
 
         return False
 
-    def find(self, predicate: Callable[[Selection], bool]) -> Optional[Selection]:
+    def find(self, predicate: Callable[[Selection], bool]) -> Selection | None:
         try:
             return next(self.iter() | where(predicate))
         except StopIteration:
@@ -669,7 +670,7 @@ class Selection:
 
     def find_args(
         self, predicate: Callable[[Argument], bool], recurse: bool = True
-    ) -> Optional[Argument]:
+    ) -> Argument | None:
         try:
             return next(self.iter_args(recurse=recurse) | where(predicate))
         except StopIteration:
@@ -705,7 +706,8 @@ class Selection:
           self (Selection): The selection to traverse
 
         Returns:
-          bool: True if selection or nested selections selects a list field. False otherwise.
+          bool: True if selection or nested selections selects a list field.
+                 False otherwise.
         """
 
         return self.exists(lambda select: select.fmeta.type_.is_list)
@@ -726,9 +728,12 @@ class Selection:
         ... ])
         >>> split(select)
         [
-          Selection('foo', inner=[Selection('bar', inner=[Selection('field0', inner=[])])]),
-          Selection('foo', inner=[Selection('bar', inner=[Selection('field1', inner=[])])]),
-          Selection('foo', inner=[Selection('x', inner=[])]),
+          Selection(
+            'foo', inner=[Selection('bar', inner=[Selection('field0', inner=[])])]),
+          Selection(
+            'foo', inner=[Selection('bar', inner=[Selection('field1', inner=[])])]),
+          Selection(
+            'foo', inner=[Selection('x', inner=[])]),
         ]
 
         Args:
@@ -801,7 +806,7 @@ class Selection:
 
         def combine(
             select: Selection, selection_to_remove: Selection
-        ) -> Optional[Selection]:
+        ) -> Selection | None:
             if selection_to_remove.selection == []:
                 return None
             else:
@@ -971,7 +976,7 @@ class Selection:
 
     def get_argument(
         self: Selection, argname: str, recurse: bool = True
-    ) -> Optional[Argument]:
+    ) -> Argument | None:
         """Returns an Argument object corresponding to the argument in the Selection
         object :attr:`select` with name :attr:`argname`. If :attr:`select` does not
         contain such an argument and :attr:`recurse` is True, then the function is
@@ -997,7 +1002,7 @@ class Selection:
 
     def get_argument_by_variable(
         self: Selection, varname: str, recurse: bool = True
-    ) -> Optional[Argument]:
+    ) -> Argument | None:
         """Returns an Argument object corresponding to the argument in the Selection
         object :attr:`select` whose value is a variable named :attr:`varname`. If
         :attr:`select` does not contain such an argument and :attr:`recurse` is True,
@@ -1074,7 +1079,7 @@ class Selection:
                 ),
             )
 
-    def prune_undefined(self, variables: Iterator[str]) -> Optional[Selection]:
+    def prune_undefined(self, variables: Iterator[str]) -> Selection | None:
         """Return a new ``Selection`` containing the subtree of the current
         ``Selection`` where all argument ``InputValues`` are defined,
         i.e.: each argument's ``InputValue`` is either
@@ -1105,7 +1110,7 @@ class Selection:
 
 @dataclass(frozen=True)
 class Query:
-    name: Optional[str] = None
+    name: str | None = None
     selection: list[Selection] = field(default_factory=list)
 
     # Variables as query arguments, not the values of those variables
@@ -1175,8 +1180,8 @@ class Query:
         )
 
     def filter_args(self, predicate: Callable[[Argument], bool]) -> Query:
-        """Returns a new ``Query`` object containing all selections arguments ``arg`` that satisfy
-        ``predicate(arg) == True``.
+        """Returns a new ``Query`` object containing all selections arguments ``arg``
+        that satisfy ``predicate(arg) == True``.
 
         Args:
             predicate (Callable[[Argument], bool]): _description_
@@ -1207,7 +1212,8 @@ class Query:
         priority: Literal["self"] | Literal["children"] = "self",
     ) -> Query:
         """Applies the function ``map_f`` to each ``Selection`` in the current
-        ``Query`` and returns a new ``Query`` object containing the resulting ``Selections``.
+         ``Query`` and returns a new ``Query`` object containing the resulting
+         ``Selections``.
 
         Args:
             map_f (Callable[[Selection], Selection]): Mapping function to apply
@@ -1228,7 +1234,8 @@ class Query:
 
     def map_args(self, map_f: Callable[[Argument], Argument]) -> Query:
         """Applies the function ``map_f`` to each ``Argument`` in the current
-        ``Query`` and returns a new ``Query`` object containing the resulting ``Arguments``.
+         ``Query`` and returns a new ``Query`` object containing the resulting
+         ``Arguments``.
 
         Args:
             map_f (Callable[[Argument], Argument]): _description_
@@ -1254,7 +1261,7 @@ class Query:
             variables=list(self.variables | map(map_f)),
         )
 
-    def filter_map(self, map_f: Callable[[Selection], Optional[Selection]]) -> Query:
+    def filter_map(self, map_f: Callable[[Selection], Selection | None]) -> Query:
         return Query(
             name=self.name,
             selection=list(
@@ -1263,7 +1270,7 @@ class Query:
             variables=self.variables,
         )
 
-    def filter_map_args(self, map_f: Callable[[Argument], Optional[Argument]]) -> Query:
+    def filter_map_args(self, map_f: Callable[[Argument], Argument | None]) -> Query:
         return Query(
             name=self.name,
             selection=list(
@@ -1273,7 +1280,7 @@ class Query:
         )
 
     def filter_map_vardefs(
-        self, map_f: Callable[[VariableDefinition], Optional[VariableDefinition]]
+        self, map_f: Callable[[VariableDefinition], VariableDefinition | None]
     ) -> Query:
         return Query(
             name=self.name,
@@ -1305,13 +1312,13 @@ class Query:
     def exists_vardefs(self, predicate: Callable[[VariableDefinition], bool]) -> bool:
         return any(self.variables | map(predicate))
 
-    def find(self, predicate: Callable[[Selection], bool]) -> Optional[Selection]:
+    def find(self, predicate: Callable[[Selection], bool]) -> Selection | None:
         try:
             return next(self.iter() | where(predicate))
         except StopIteration:
             return None
 
-    def find_args(self, predicate: Callable[[Argument], bool]) -> Optional[Argument]:
+    def find_args(self, predicate: Callable[[Argument], bool]) -> Argument | None:
         try:
             return next(self.iter_args() | where(predicate))
         except StopIteration:
@@ -1319,7 +1326,7 @@ class Query:
 
     def find_vardefs(
         self, predicate: Callable[[VariableDefinition], bool]
-    ) -> Optional[VariableDefinition]:
+    ) -> VariableDefinition | None:
         try:
             return next(self.iter_vardefs() | where(predicate))
         except StopIteration:
@@ -1390,16 +1397,86 @@ class Query:
 
         Example:
 
-        >>> og_selection = Selection(TypeMeta.FieldMeta('pair', description="", args=[], type=TypeRef.non_null_list("Pair", kind="OBJECT")), None, [], [
-        ...   Selection(TypeMeta.FieldMeta('token0', description="", args=[], type=TypeRef.Named(name="Token", kind="OBJECT")), None, [], [
-        ...     Selection(TypeMeta.FieldMeta('id', description="", args=[], type=TypeRef.Named(name="String", kind="SCALAR")), None, [], []),
-        ...     Selection(TypeMeta.FieldMeta('name', description="", args=[], type=TypeRef.Named(name="String", kind="SCALAR")), None, [], []),
-        ...     Selection(TypeMeta.FieldMeta('symbol', description="", args=[], type=TypeRef.Named(name="String", kind="SCALAR")), None, [], []),
-        ...   ])
-        ... ])
-        >>> selection_to_remove = Selection(TypeMeta.FieldMeta('token0', description="", args=[], type=TypeRef.Named(name="Token", kind="OBJECT")), None, [], [])
+        >>> og_selection = Selection(
+        ...     TypeMeta.FieldMeta(
+        ...         'pair',
+        ...         description="",
+        ...         args=[],
+        ...         type=TypeRef.non_null_list("Pair", kind="OBJECT")
+        ...     ),
+        ...     None,
+        ...     [],
+        ...     [
+        ...         Selection(
+        ...             TypeMeta.FieldMeta(
+        ...                 'token0',
+        ...                 description="",
+        ...                 args=[],
+        ...                 type=TypeRef.Named(name="Token", kind="OBJECT")
+        ...             ),
+        ...             None,
+        ...             [],
+        ...             [
+        ...                 Selection(
+        ...                     TypeMeta.FieldMeta(
+        ...                         'id',
+        ...                         description="",
+        ...                         args=[],
+        ...                         type=TypeRef.Named(name="String", kind="SCALAR")
+        ...                     ),
+        ...                     None,
+        ...                     [],
+        ...                     []
+        ...                 ),
+        ...                 Selection(
+        ...                     TypeMeta.FieldMeta(
+        ...                         'name',
+        ...                         description="",
+        ...                         args=[],
+        ...                         type=TypeRef.Named(name="String", kind="SCALAR")
+        ...                     ),
+        ...                     None,
+        ...                     [],
+        ...                     []
+        ...                 ),
+        ...                 Selection(
+        ...                     TypeMeta.FieldMeta(
+        ...                         'symbol',
+        ...                         description="",
+        ...                         args=[],
+        ...                         type=TypeRef.Named(name="String", kind="SCALAR")
+        ...                     ),
+        ...                     None,
+        ...                     [],
+        ...                     []
+        ...                 ),
+        ...             ]
+        ...         )
+        ...     ]
+        ... )
+        >>> selection_to_remove = Selection(
+        ...     TypeMeta.FieldMeta(
+        ...         'token0',
+        ...         description="",
+        ...         args=[],
+        ...         type=TypeRef.Named(name="Token", kind="OBJECT")
+        ...     ),
+        ...     None,
+        ...     [],
+        ...     []
+        ... )
         >>> og_selection.remove(selection_to_remove)
-        Selection(TypeMeta.FieldMeta('pair', description="", args=[], type=TypeRef.non_null_list("Pair", kind="OBJECT")), None, [], [])
+        Selection(
+            TypeMeta.FieldMeta(
+                'pair',
+                description="",
+                args=[],
+                type=TypeRef.non_null_list("Pair", kind="OBJECT")
+            ),
+            None,
+            [],
+            []
+        )
 
         Args:
           query (Query): The query to which a selection has to be removed
@@ -1413,7 +1490,7 @@ class Query:
 
         def combine(
             select: Selection, selection_to_remove: Selection
-        ) -> Optional[Selection]:
+        ) -> Selection | None:
             if selection_to_remove.selection == []:
                 return None
             else:
@@ -1475,7 +1552,7 @@ class Query:
     def contains_argument(self, argname: str) -> bool:
         return self.exists_args(lambda arg: arg.name == argname)
 
-    def get_argument(self, argname: str) -> Optional[Argument]:
+    def get_argument(self, argname: str) -> Argument | None:
         return self.find_args(lambda arg: arg.name == argname)
 
     # TODO: Replace substitute_arg calls by map_args call
@@ -1501,18 +1578,19 @@ class Query:
     # TODO: Cleanup select
     @staticmethod
     def contains(query: Query, other: Query) -> bool:
-        """Returns True i.f.f. all selections in `other` are contained in `query`. In other words,
-        returns true i.f.f. `other` is a subset of `query`.
+        """Returns True i.f.f. all selections in `other` are contained in `query`.
+        In other words, returns true i.f.f. `other` is a subset of `query`.
 
-        Note: `other` does not need to include "full" selections (i.e.: selections all the way to
-        leaves of the GraphQL schema).
+        Note: `other` does not need to include "full" selections
+        (i.e.: selections all the way to leaves of the GraphQL schema).
 
         Args:
           query (Query): The query that is to be checked
           other (Query): The query that has to be in `query`
 
         Returns:
-          bool: True i.f.f. all selections in `other` are contained in `query`, otherwise False
+          bool: True i.f.f. all selections in `other` are contained in `query`,
+           otherwise False
         """
 
         return all(other.selection | map(partial(Query.contains_selection, query)))
@@ -1655,7 +1733,7 @@ class Document:
             variables=self.variables,
         )
 
-    def filter_map(self, map_f: Callable[[Selection], Optional[Selection]]) -> Document:
+    def filter_map(self, map_f: Callable[[Selection], Selection | None]) -> Document:
         return Document(
             url=self.url,
             query=self.query.filter_map(map_f),
@@ -1847,12 +1925,12 @@ def input_value_of_argument(
 
 
 def arguments_of_field_args(
-    schema: SchemaMeta, field: TypeMeta.FieldMeta, args: Optional[dict[str, Any]]
+    schema: SchemaMeta, field: TypeMeta.FieldMeta, args: dict[str, Any] | None
 ) -> list[Argument]:
     if args is None:
         args = {}
 
-    def f(arg_meta: TypeMeta.ArgumentMeta) -> Optional[Argument]:
+    def f(arg_meta: TypeMeta.ArgumentMeta) -> Argument | None:
         if arg_meta.name in args:
             return Argument(
                 arg_meta.name,
@@ -1863,7 +1941,8 @@ def arguments_of_field_args(
                 return None
             else:
                 raise TypeError(
-                    f"arguments_of_field_args: Argument {arg_meta.name} of field {field.name} is required but not provided!"
+                    f"arguments_of_field_args: Argument {arg_meta.name} of field"
+                    f" {field.name} is required but not provided!"
                 )
 
     # TODO: Add warnings if arguments are not used
@@ -1874,5 +1953,6 @@ def arguments_of_field_args(
             return list(filter(lambda arg: arg is not None, args))
         case _:
             raise TypeError(
-                f"arguments_of_field_args: TypeMeta {field.name} is not of type FieldMeta"
+                f"arguments_of_field_args: TypeMeta {field.name}"
+                " is not of type FieldMeta"
             )

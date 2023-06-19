@@ -1,16 +1,24 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from functools import partial
 from typing import TYPE_CHECKING, Any, Callable
 
 from pipe import map, traverse
 
 from subgrounds.errors import TransformError
-from subgrounds.query import Document, Query, Selection
+from subgrounds.query import (
+    DataRequest,
+    DataResponse,
+    Document,
+    DocumentResponse,
+    Query,
+    Selection,
+)
 from subgrounds.schema import TypeMeta, TypeRef
 from subgrounds.utils import flatten
 
-from .abcs import DocumentTransform
+from .abcs import DocumentTransform, RequestTransform
 from .utils import select_data
 
 if TYPE_CHECKING:
@@ -38,7 +46,9 @@ class TypeTransform(DocumentTransform):
     def transform_document(self, doc: Document) -> Document:
         return doc
 
-    def transform_response(self, doc: Document, data: dict[str, Any]) -> dict[str, Any]:
+    def transform_response(
+        self, doc: Document, resp: DocumentResponse
+    ) -> DocumentResponse:
         def transform(select: Selection, data: dict[str, Any]) -> None:
             # TODO: Handle NonNull and List more graciously...
             #   (i.e.: without using `TypeRef.root_type_name``)
@@ -101,9 +111,9 @@ class TypeTransform(DocumentTransform):
                     )
 
         for select in doc.query.selection:
-            transform(select, data)
+            transform(select, resp.data)
 
-        return data
+        return resp
 
 
 class LocalSyntheticField(DocumentTransform):
@@ -205,7 +215,9 @@ class LocalSyntheticField(DocumentTransform):
         else:
             return doc
 
-    def transform_response(self, doc: Document, data: dict[str, Any]) -> dict[str, Any]:
+    def transform_response(
+        self, doc: Document, resp: DocumentResponse
+    ) -> DocumentResponse:
         def transform(select: Selection, data: dict) -> None:
             match (select, data):
                 case (
@@ -311,6 +323,37 @@ class LocalSyntheticField(DocumentTransform):
 
         if self.subgraph._url == doc.url:
             for select in doc.query.selection:
-                transform_on_type(select, data)
+                transform_on_type(select, resp.data)
 
-        return data
+        return resp
+
+
+class DocumentRequestTransform(RequestTransform):
+    def __init__(self, transform: DocumentTransform, url: str):
+        self.transform = transform
+        self.url = url
+
+    def transform_request(self, req: DataRequest):
+        return replace(
+            req,
+            documents=[
+                self.transform.transform_document(doc)
+                for doc in req.documents
+                if doc.url == self.url
+            ],
+        )
+
+    def transform_response(self, req: DataRequest, data: DataResponse):
+        """
+
+        Assumes 1 doc -> 1 resp, and ordering is correct via the `zip`
+        """
+
+        return replace(
+            data,
+            responses=[
+                self.transform.transform_response(doc, resp)
+                for doc, resp in zip(req.documents, data.responses)
+                if resp.url == self.url  # TODO: doc.url != resp.url, exception
+            ],
+        )

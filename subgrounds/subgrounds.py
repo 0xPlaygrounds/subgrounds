@@ -17,24 +17,20 @@ import pandas as pd
 from pipe import groupby, map, traverse
 
 import subgrounds.client as client
-from subgrounds.dataframe_utils import df_of_json
-from subgrounds.errors import SubgroundsError
-from subgrounds.pagination import (
-    LegacyStrategy,
-    PaginationStrategy,
-    normalize_strategy,
-    paginate_iter,
-)
-from subgrounds.query import DataRequest, Document, Query
-from subgrounds.schema import SchemaMeta
-from subgrounds.subgraph import FieldPath, Subgraph
-from subgrounds.transform import (
+
+from .dataframe_utils import df_of_json
+from .errors import SubgroundsError
+from .pagination import LegacyStrategy, PaginationStrategy, normalize_strategy, paginate
+from .query import DataRequest, DataResponse, Document, Query
+from .schema import SchemaMeta
+from .subgraph import FieldPath, Subgraph
+from .transform import (
     DEFAULT_GLOBAL_TRANSFORMS,
     DEFAULT_SUBGRAPH_TRANSFORMS,
     RequestTransform,
-    apply_request_transform,
+    apply_transforms,
 )
-from subgrounds.utils import PLAYGROUNDS_APP_URL
+from .utils import PLAYGROUNDS_APP_URL
 
 logger = logging.getLogger("subgrounds")
 warnings.simplefilter("default")
@@ -177,39 +173,41 @@ class Subgrounds:
         self,
         req: DataRequest,
         pagination_strategy: Type[PaginationStrategy] | None = LegacyStrategy,
-    ) -> list[dict]:
-        """Executes a :class:`DataRequest` object, sending the underlying
-        query(ies) to the server and returning a data blob (list of Python
-        dictionaries, one per actual query).
+    ) -> list[dict[str, Any]]:
+        """Same as `execute`, except that an iterator is returned which will iterate
+        the data pages.
 
         Args:
-            req (DataRequest): The :class:`DataRequest` object to be executed
-            pagination_strategy (Optional[Type[PaginationStrategy]], optional): A Class
-              implementing the :class:`PaginationStrategy` ``Protocol``. If ``None``,
-              then automatic pagination is disabled.
-
-              Defaults to :class:`LegacyStrategy`.
+          req (DataRequest): The :class:`DataRequest` object to be executed
+          pagination_strategy (Type[PaginationStrategy] | None, optional): A Class
+            implementing the :class:`PaginationStrategy` ``Protocol``. If ``None``, then
+            automatic pagination is disabled. Defaults to :class:`LegacyStrategy`.
 
         Returns:
-            list[dict]: The reponse data
+          list[dict[str, Any]]: A list over the reponse data pages
         """
 
-        def execute_document(doc: Document) -> Iterator[dict[str, Any]]:
-            return paginate_iter(
-                self.subgraphs[doc.url]._schema,
-                doc,
-                pagination_strategy=normalize_strategy(
-                    pagination_strategy, self.subgraphs[doc.url]._is_subgraph
-                ),
-                headers=self.headers,
-            )
-
-        return list(
-            apply_request_transform(
-                self.subgraphs, self.global_transforms, req, execute_document
-            )
-            | traverse
+        generator = apply_transforms(
+            self.global_transforms,
+            {url: subgraph._transforms for url, subgraph in self.subgraphs.items()},
+            req,
         )
+        strategy = normalize_strategy(pagination_strategy)
+
+        resps = []
+        for doc in next(generator).documents:
+            paginator = paginate(self.subgraphs[doc.url]._schema, doc, strategy)
+            resp = None
+            while True:
+                try:
+                    paginated_doc = paginator.send(resp)
+                except StopIteration:
+                    break
+                resp = client.query(paginated_doc, headers=self.headers)
+                resps.append(resp)
+
+        resp: DataResponse = generator.send(DataResponse(responses=resps))
+        return [doc.data for doc in resp.responses]
 
     def execute_iter(
         self,
@@ -229,19 +227,24 @@ class Subgrounds:
           Iterator[dict]: An iterator over the reponse data pages
         """
 
-        def execute_document(doc: Document) -> Iterator[dict[str, Any]]:
-            return paginate_iter(
-                self.subgraphs[doc.url]._schema,
-                doc,
-                pagination_strategy=normalize_strategy(
-                    pagination_strategy, self.subgraphs[doc.url]._is_subgraph
-                ),
-                headers=self.headers,
-            )
-
-        yield from apply_request_transform(
-            self.subgraphs, self.global_transforms, req, execute_document
+        generator = apply_transforms(
+            self.global_transforms,
+            {url: subgraph._transforms for url, subgraph in self.subgraphs.items()},
+            req,
         )
+        strategy = normalize_strategy(pagination_strategy)
+
+        for doc in next(generator).documents:
+            paginator = paginate(self.subgraphs[doc.url]._schema, doc, strategy)
+            resp = None
+            while True:
+                try:
+                    paginated_doc = paginator.send(resp)
+                except StopIteration:
+                    break
+                resp = client.query(paginated_doc, headers=self.headers)
+                data: DataResponse = generator.send(DataResponse(responses=[resp]))
+                yield data.responses[0]
 
     def query_json(
         self,
@@ -262,7 +265,9 @@ class Subgrounds:
           list[dict[str, Any]]: The reponse data
         """
 
-        return list(self.query_json_iter(fpaths, pagination_strategy))
+        fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)
+        req = self.mk_request(fpaths)
+        return self.execute(req, pagination_strategy=pagination_strategy)
 
     def query_json_iter(
         self,
@@ -496,6 +501,8 @@ class Subgrounds:
                 yield data[0]
             else:
                 yield data
+            data = tuple(fpaths | map(functools.partial(f, blob=page)))
+
             if len(data) == 1:
                 yield data[0]
             else:

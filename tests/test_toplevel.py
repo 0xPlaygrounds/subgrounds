@@ -1,8 +1,5 @@
 # import unittest
-from datetime import datetime
 
-import pandas as pd
-from pandas.testing import assert_frame_equal
 
 from subgrounds.query import (
     Argument,
@@ -13,7 +10,6 @@ from subgrounds.query import (
     Selection,
 )
 from subgrounds.schema import TypeMeta, TypeRef
-from subgrounds.subgraph import FieldPath, Subgraph
 from subgrounds.subgrounds import Subgrounds
 
 # from tests.conftest import *

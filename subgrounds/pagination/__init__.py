@@ -14,7 +14,6 @@ from subgrounds.pagination.pagination import (
     PaginationError,
     PaginationStrategy,
     paginate,
-    paginate_iter,
 )
 from subgrounds.pagination.preprocess import (
     PaginationNode,
@@ -32,7 +31,7 @@ __all__ = [
     "generate_pagination_nodes",
     "LegacyStrategy",
     "normalize_strategy",
-    "paginate_iter",
+    "paginate",
     "paginate",
     "PaginationError",
     "PaginationNode",

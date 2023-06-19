@@ -103,5 +103,5 @@ def test_parsing(raw_schema_path: str):
 
     try:
         SchemaMeta(**raw_schema["__schema"])
-    except ZeroDivisionError as exc:
+    except ZeroDivisionError:
         assert False

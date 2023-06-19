@@ -1,9 +1,8 @@
-import unittest
 from typing import Any, Callable
 
 import pytest
 
-from subgrounds.query import DataRequest, Document, Query, Selection
+from subgrounds.query import DataRequest, Document, DocumentResponse, Query, Selection
 from subgrounds.schema import TypeMeta, TypeRef
 from subgrounds.subgraph import Object, Subgraph
 from subgrounds.subgraph.fieldpath import FieldPath, SyntheticField
@@ -118,18 +117,21 @@ def datarequest(subgraph: Subgraph):
 
 @pytest.fixture
 def response():
-    return {
-        "swaps": [
-            {
-                "amount0In": "0.25",
-                "amount0Out": "0.0",
-                "amount1In": "0.0",
-                "amount1Out": "89820.904371079570860909",
-                "id": "0xf457e61e2aa310c8a7f01570bf96f24323fc317925c42f2a33d2061e1944df4d-0",
-                "timestamp": "1638554699",
-            }
-        ]
-    }
+    return DocumentResponse(
+        url="www.abc.xyz/graphql",
+        data={
+            "swaps": [
+                {
+                    "amount0In": "0.25",
+                    "amount0Out": "0.0",
+                    "amount1In": "0.0",
+                    "amount1Out": "89820.904371079570860909",
+                    "id": "0xf457e61e2aa310c8a7f01570bf96f24323fc317925c42f2a33d2061e1944df4d-0",
+                    "timestamp": "1638554699",
+                }
+            ]
+        },
+    )
 
 
 @pytest.mark.parametrize(
@@ -162,7 +164,7 @@ def response():
 def test_typetransform_roundtrip(
     mocker,
     datarequest: DataRequest,
-    response: list[dict[str, Any]],
+    response: DocumentResponse,
     subgraph: Subgraph,
     transforms: list[DocumentTransform],
     expected: list[dict[str, Any]],
@@ -414,18 +416,21 @@ def test_localsyntheticfield_literal_roundtrip1(
     ["response", "expected", "synthfield_f", "object_f", "fpaths_f"],
     [
         (
-            {
-                "swaps": [
-                    {
-                        "amount0In": "0.25",
-                        "amount0Out": "0.0",
-                        "amount1In": "0.0",
-                        "amount1Out": "89820.904371079570860909",
-                        "id": "0xf457e61e2aa310c8a7f01570bf96f24323fc317925c42f2a33d2061e1944df4d-0",
-                        "timestamp": "1638554699",
-                    }
-                ]
-            },
+            DocumentResponse(
+                url="www.abc.xyz/graphql",
+                data={
+                    "swaps": [
+                        {
+                            "amount0In": "0.25",
+                            "amount0Out": "0.0",
+                            "amount1In": "0.0",
+                            "amount1Out": "89820.904371079570860909",
+                            "id": "0xf457e61e2aa310c8a7f01570bf96f24323fc317925c42f2a33d2061e1944df4d-0",
+                            "timestamp": "1638554699",
+                        }
+                    ]
+                },
+            ),
             [
                 {
                     "swaps": [
@@ -447,7 +452,9 @@ def test_localsyntheticfield_literal_roundtrip1(
             lambda subgraph: [subgraph.Query.swaps.synthfield],
         ),
         (
-            {"xa6436bbcebab2a86": None},
+            DocumentResponse(
+                url="www.abc.xyz/graphql", data={"xa6436bbcebab2a86": None}
+            ),
             [{"xa6436bbcebab2a86": {"id": None, "synthfield": "FOO"}}],
             lambda _: SyntheticField.constant("FOO"),
             lambda subgraph: subgraph.Pair,

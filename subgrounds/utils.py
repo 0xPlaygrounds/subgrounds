@@ -238,19 +238,6 @@ def contains_list(data: dict | list | str | int | float | bool) -> bool:
             return False
 
 
-# def columns_of_json(data: dict, keys: list[str] = []) -> list[str]:
-#   columns: list[str] = []
-#   for key, value in data.items():
-#     match value:
-#       case dict():
-#         columns.append(columns_of_json(value, [*keys, key]))
-#       case list():
-#         columns.append(reduce(union, value | map(partial(columns_of_json, keys=[*keys, key])) | map(lambda x: list(x | traverse)), []))
-#       case value:
-#         columns.append('_'.join([*keys, key]))
-
-#   return columns
-
 # ================================================================
 # User Agent / Headers
 # ================================================================

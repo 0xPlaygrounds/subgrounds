@@ -328,7 +328,7 @@ class FieldPath(FieldOperatorMixin):
     @staticmethod
     def _merge(fpaths: list[FieldPath]) -> list[Selection]:
         """Returns a Selection tree containing all selection paths in `fpaths`.
-        This function assumes that all fieldpaths in `fpaths` belong to the same subgraph
+        Note: Assumes that all fieldpaths in `fpaths` belong to the same subgraph
 
         Args:
           fpaths (list[FieldPath]): _description_
@@ -336,6 +336,7 @@ class FieldPath(FieldOperatorMixin):
         Returns:
           list[Selection]: _description_
         """
+
         query = reduce(Query.add, fpaths | map(FieldPath._selection), Query())
         return query.selection
 
@@ -375,6 +376,7 @@ class FieldPath(FieldOperatorMixin):
         Returns:
           str: The generated name of the current :class:`FieldPath`.
         """
+
         return "_".join(self._name_path(use_aliases=use_aliases))
 
     def _auto_select(self) -> FieldPath | list[FieldPath]:

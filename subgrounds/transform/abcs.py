@@ -1,16 +1,11 @@
-from abc import ABC, abstractmethod
-from collections.abc import Iterator
-from typing import Any, Protocol
-
-from subgrounds.query import DataRequest, Document
+from subgrounds.query import DataRequest, DataResponse, Document, DocumentResponse
 
 
-class DocumentTransform(ABC):
+class DocumentTransform:
     """Abstract class representing a transformation layer to be applied to
     :class:`Document` objects.
     """
 
-    @abstractmethod
     def transform_document(self, doc: Document) -> Document:
         """Method that will be applied to all :class:`Document` objects that pass
         through the transformation layer.
@@ -22,8 +17,11 @@ class DocumentTransform(ABC):
           Document: The transformed document
         """
 
-    @abstractmethod
-    def transform_response(self, req: Document, data: dict[str, Any]) -> dict[str, Any]:
+        return doc
+
+    def transform_response(
+        self, req: Document, resp: DocumentResponse
+    ) -> DocumentResponse:
         """Method to be applied to all response data ``data`` of requests that pass
         through the transformation layer.
 
@@ -39,13 +37,14 @@ class DocumentTransform(ABC):
           dict[str, Any]: The transformed response data
         """
 
+        return resp
 
-class RequestTransform(ABC):
+
+class RequestTransform:
     """Abstract class representing a transformation layer to be applied to entire
     :class:`DataRequest` objects.
     """
 
-    @abstractmethod
     def transform_request(self, req: DataRequest) -> DataRequest:
         """Method that will be applied to all :class:`DataRequest` objects that
         pass through the transformation layer.
@@ -57,10 +56,9 @@ class RequestTransform(ABC):
           DataRequest: The transformed request object
         """
 
-    @abstractmethod
-    def transform_response(
-        self, req: DataRequest, data: list[dict[str, Any]]
-    ) -> list[dict[str, Any]]:
+        return req
+
+    def transform_response(self, req: DataRequest, resp: DataResponse) -> DataResponse:
         """Method to be applied to all response data ``data`` of requests that pass
         through the transformation layer.
 
@@ -69,14 +67,11 @@ class RequestTransform(ABC):
 
         Args:
           req (DataRequest): Initial data request object
-          data (list[dict[str, Any]]): JSON data blob resulting from the execution
+          data (list[DataResponse]): JSON data blob resulting from the execution
             of the transformed data request.
 
         Returns:
-          list[dict[str, Any]]: The transformed response data
+          list[DataResponse]: The transformed response data
         """
 
-
-class DocumentExecutor(Protocol):
-    def __call__(self, doc: Document) -> Iterator[dict[str, Any]]:
-        ...
+        return resp

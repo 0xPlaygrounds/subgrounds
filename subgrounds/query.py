@@ -24,11 +24,12 @@ from __future__ import annotations
 
 import logging
 import warnings
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from functools import partial, reduce
 from typing import Any, Callable, Iterator, Literal, Optional, Protocol, TypeVar
 
 from pipe import map, take, traverse, where
+from typing_extensions import Self
 
 from .errors import SubgroundsError
 from .schema import SchemaMeta, TypeMeta, TypeRef
@@ -37,6 +38,7 @@ from .utils import (
     filter_map,
     filter_none,
     identity,
+    merge,
     rel_complement,
     union,
 )
@@ -1709,6 +1711,16 @@ class Document:
 
 
 @dataclass(frozen=True)
+class DocumentResponse:
+    # TODO: update to recursive json dict w/ pydantic 2.0
+    url: str
+    data: dict[str, Any] = field(default_factory=dict)
+
+    def combine(self: Self, other: Self):
+        return replace(self, data=merge(self.data, other.data))
+
+
+@dataclass(frozen=True)
 class DataRequest:
     documents: list[Document] = field(default_factory=list)
 
@@ -1716,9 +1728,9 @@ class DataRequest:
     def graphql(self):
         return "\n".join(list(self.documents | map(lambda doc: doc.graphql)))
 
-    @staticmethod
-    def combine(req: DataRequest, other: DataRequest) -> DataRequest:
-        return DataRequest(
+    @classmethod
+    def combine(cls, req: DataRequest, other: DataRequest):
+        return cls(
             documents=union(
                 req.documents,
                 other.documents,
@@ -1727,23 +1739,28 @@ class DataRequest:
             )
         )
 
-    @staticmethod
-    def transform(req: DataRequest, f: Callable[[Document], Document]) -> DataRequest:
-        return DataRequest(documents=list(req.documents | map(f)))
+    @classmethod
+    def transform(cls, req: DataRequest, f: Callable[[Document], Document]):
+        return cls(documents=list(req.documents | map(f)))
 
-    @staticmethod
-    def single_query(url: str, query: Query) -> DataRequest:
-        return DataRequest([Document(url, query)])
+    @classmethod
+    def single_query(cls, url: str, query: Query):
+        return cls([Document(url, query)])
 
-    @staticmethod
-    def single_document(doc: Document) -> DataRequest:
-        return DataRequest([doc])
+    @classmethod
+    def single_document(cls, doc: Document):
+        return cls([doc])
 
-    @staticmethod
-    def add_documents(
-        self: DataRequest, docs: Document | list[Document]
-    ) -> DataRequest:
-        return DataRequest(list([self.documents, docs] | traverse))
+    def add_documents(self, docs: Document | list[Document]):
+        return replace(self, documents=list((self.documents, docs) | traverse))
+
+
+@dataclass(frozen=True)
+class DataResponse:
+    responses: list[DocumentResponse] = field(default_factory=list)
+
+    def add_responses(self, resps: DocumentResponse | list[DocumentResponse]):
+        return replace(self, responses=list((self.responses, resps) | traverse))
 
 
 # ================================================================

@@ -21,7 +21,7 @@ import subgrounds.client as client
 from .dataframe_utils import df_of_json
 from .errors import SubgroundsError
 from .pagination import LegacyStrategy, PaginationStrategy, normalize_strategy, paginate
-from .query import DataRequest, DataResponse, Document, Query
+from .query import DataRequest, DataResponse, Document, DocumentResponse, Query
 from .schema import SchemaMeta
 from .subgraph import FieldPath, Subgraph
 from .transform import (
@@ -173,7 +173,7 @@ class Subgrounds:
         self,
         req: DataRequest,
         pagination_strategy: Type[PaginationStrategy] | None = LegacyStrategy,
-    ) -> list[dict[str, Any]]:
+    ) -> DataResponse:
         """Same as `execute`, except that an iterator is returned which will iterate
         the data pages.
 
@@ -187,7 +187,7 @@ class Subgrounds:
           list[dict[str, Any]]: A list over the reponse data pages
         """
 
-        generator = apply_transforms(
+        transformer = apply_transforms(
             self.global_transforms,
             {url: subgraph._transforms for url, subgraph in self.subgraphs.items()},
             req,
@@ -195,7 +195,8 @@ class Subgrounds:
         strategy = normalize_strategy(pagination_strategy)
 
         resps = []
-        for doc in next(generator).documents:
+        req = next(transformer)
+        for doc in req.documents:
             paginator = paginate(self.subgraphs[doc.url]._schema, doc, strategy)
             resp = None
             while True:
@@ -206,14 +207,13 @@ class Subgrounds:
                 resp = client.query(paginated_doc, headers=self.headers)
                 resps.append(resp)
 
-        resp: DataResponse = generator.send(DataResponse(responses=resps))
-        return [doc.data for doc in resp.responses]
+        return transformer.send(DataResponse(responses=resps))
 
     def execute_iter(
         self,
         req: DataRequest,
         pagination_strategy: Type[PaginationStrategy] | None = LegacyStrategy,
-    ) -> Iterator[dict[str, Any]]:
+    ) -> Iterator[DocumentResponse]:
         """Same as `execute`, except that an iterator is returned which will iterate
         the data pages.
 
@@ -267,7 +267,7 @@ class Subgrounds:
 
         fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)
         req = self.mk_request(fpaths)
-        return self.execute(req, pagination_strategy=pagination_strategy)
+        return [doc.data for doc in self.execute(req, pagination_strategy).responses]
 
     def query_json_iter(
         self,
@@ -289,7 +289,7 @@ class Subgrounds:
 
         fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)
         req = self.mk_request(fpaths)
-        yield from self.execute_iter(req, pagination_strategy=pagination_strategy)
+        yield from (resp.data for resp in self.execute_iter(req, pagination_strategy))
 
     def query_df(
         self,

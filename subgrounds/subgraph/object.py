@@ -36,13 +36,13 @@ class Object:
         as a :class:`FieldPath`.
 
         Args:
-          name (str): The name of the field
+          name: The name of the field
 
         Raises:
           TypeError: _description_
 
         Returns:
-          FieldPath: _description_
+          _description_
         """
 
         field = self._object.field(name)

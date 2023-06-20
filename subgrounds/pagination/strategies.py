@@ -106,9 +106,8 @@ class PaginationStrategy(Protocol):
         :class:`SkipPagination` exception.
 
         Args:
-            schema (SchemaMeta): The schema of the API against which ``document`` will
-              be executed
-            document (Document): The query document
+            schema: The schema of the API against which ``document`` will be executed
+            document: The query document
         """
         ...
 
@@ -125,14 +124,13 @@ class PaginationStrategy(Protocol):
         then this method should raise a :class:`StopPagination` exception.
 
         Args:
-            page_data (dict[str, Any] | None, optional): The previous query's response
-             data. If this is the first query (i.e.: the first page of data), then it
-             will be `None`. Defaults to None.
+            page_data: The previous query's response data. If this is the first query
+              (i.e.: the first page of data), then it will be `None`. Defaults to None.
 
         Returns:
-            tuple[Document, dict[str, Any]]: A tuple `(doc, vars)` where `doc` is the
-             query document that will be executed to fetch the next page of data and
-             `vars` are the variables for that document.
+            tuple: A tuple `(doc, vars)` where `doc` is the query document that will be
+              executed to fetch the next page of data and `vars` are the variables for
+              that document.
         """
         ...
 
@@ -166,8 +164,10 @@ class LegacyStrategyArgGenerator:
 
         def update(self, data: dict[str, Any]) -> None:
             """Moves `self` cursor forward according to previous response data `data`
+
             Args:
-              data (dict): Previous response data
+              data: Previous response data
+
             Raises:
               StopIteration: _description_
             """
@@ -206,11 +206,12 @@ class LegacyStrategyArgGenerator:
             ):
                 raise StopPagination
 
-        def step(self, data: dict) -> None:
+        def step(self, data: dict[str, Any]) -> None:
             """Updates either ``self`` cursor or inner state machine depending on
             whether the inner state machine has reached its limit
+
             Args:
-              data (dict): _description_
+              data: _description_
             """
             if self.is_leaf:
                 self.update(data)
@@ -236,11 +237,12 @@ class LegacyStrategyArgGenerator:
             else:
                 return 1
 
-        def args(self) -> dict:
+        def args(self) -> dict[str, Any]:
             """Returns the pagination arguments for the current state of the
              state machine
+
             Returns:
-                dict: _description_
+              _description_
             """
 
             args = {}
@@ -261,6 +263,7 @@ class LegacyStrategyArgGenerator:
 
         def reset(self):
             """Reset state machine"""
+
             self.inner_idx = 0
             self.filter_value = self.page_node.filter_value
             self.queried_entities = 0
@@ -313,7 +316,6 @@ class LegacyStrategy:
 class ShallowStrategyArgGenerator:
     @dataclass
     class Cursor:
-        # TODO: Add GreedyStrategy doc
         """Class used to generate the pagination variables for a given tree of
         ``PaginationNode`` objects.
 
@@ -331,7 +333,10 @@ class ShallowStrategyArgGenerator:
           stop: Flag indicating whether or not to stop the cursor
           page_count: Counter keeping track of the total number data pages queried
           keys: Set of keys of all queried entities to avoid duplicates
+
+        # TODO: Add GreedyStrategy doc
         """
+
         page_node: PaginationNode
 
         inner: list[ShallowStrategyArgGenerator.Cursor]
@@ -382,7 +387,7 @@ class ShallowStrategyArgGenerator:
                 ShallowStrategyArgGenerator.Cursor,
             ],
             priority: Literal["self"] | Literal["children"] = "self",
-            counter: Optional(count[int]) = None,
+            counter: count[int] | None = None,
         ) -> ShallowStrategyArgGenerator.Cursor:
             if counter is None:
                 counter = count()
@@ -550,7 +555,8 @@ class SkipStrategy:
 
 
 def normalize_strategy(
-    strategy: type[PaginationStrategy] | None = LegacyStrategy, is_subgraph: bool = True
+    strategy: type[PaginationStrategy] | None = LegacyStrategy,
+    is_subgraph: bool = True,
 ):
     if strategy is not None and is_subgraph:
         return strategy

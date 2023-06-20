@@ -30,19 +30,18 @@ class PaginationNode:
     """Class representing the pagination config for a single GraphQL list field.
 
     Attributes:
-      node_idx (int): Index of PaginationNode, used to label pagination arguments
-        for this node.
-      filter_field (str): Name of the node's filter field, e.g.: if
-        ``filter_name`` is ``timestamp_gt``, then :attr:`filter_field`
-        is ``timestamp``
-      first_value (int): Initial value of the ``first`` argument
-      skip_value (int): Initial value of the ``skip`` argument
-      filter_value (Any): Initial value of the filter argument
+      node_idx: Index of PaginationNode, used to label pagination arguments for
+        this node.
+      filter_field : Name of the node's filter field, e.g.: if ``filter_name`` is
+        ``timestamp_gt``, then :attr:`filter_field` is ``timestamp``
+      first_value: Initial value of the ``first`` argument
+      skip_value: Initial value of the ``skip`` argument
+      filter_value: Initial value of the filter argument
         (i.e.: ``where: {filter: FILTER_VALUE}``)
-      filter_value_type (TypeRef.T): Type of the filter value
-      key_path (list[str]): Location in the list field to which this pagination
-        node refers to in the initial query
-      inner (list[PaginationNode]): Nested pagination nodes (if any).
+      filter_value_type: Type of the filter value
+      key_path: Location in the list field to which this pagination node refers to in
+        the initial query
+      inner: Nested pagination nodes (if any).
     """
 
     node_idx: int
@@ -56,16 +55,13 @@ class PaginationNode:
     key_path: list[str]
     inner: list[PaginationNode] = field(default_factory=list)
 
-    def get_vardefs(self: PaginationNode) -> list[VariableDefinition]:
+    def get_vardefs(self) -> list[VariableDefinition]:
         """Returns a list of variable definitions corresponding to this pagination
         node's pagination arguments as well as the variable definitions related
         to any nested pagination nodes.
 
-        Args:
-          self (PaginationNode): The current PaginationNode
-
         Returns:
-          list[VariableDefinition]: _description_
+          _description_
         """
         vardefs = [
             VariableDefinition(

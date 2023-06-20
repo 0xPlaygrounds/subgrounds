@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Generator
+from typing import Generator, cast
 
 from pipe import chain_with, map
 
@@ -11,12 +11,14 @@ from .abcs import DocumentTransform, RequestTransform
 from .transforms import DocumentRequestTransform
 
 logger = logging.getLogger("subgrounds")
-TransformGen = Generator[DataRequest | DataResponse, DataRequest | DataResponse, None]
+TransformGen = Generator[
+    None | DataRequest | DataResponse, DataRequest | DataResponse, None
+]
 
 
 def handle_transform(transform: RequestTransform) -> TransformGen:
-    req: DataRequest = yield
-    resp: DataResponse = yield transform.transform_request(req)
+    req = cast(DataRequest, (yield))
+    resp = cast(DataResponse, (yield transform.transform_request(req)))
     yield transform.transform_response(req, resp)
 
 
@@ -36,14 +38,14 @@ def apply_transforms(
      converted to specific `RequestTransforms` when applied.
     """
 
-    unique_urls = {doc.url for doc in req.documents}
+    unique_doc_urls = {doc.url for doc in req.documents}
 
     # Iterating through all unique document urls, get each document's transforms from
     #  the subgraph converting all `DocumentTransforms` into `DocumentRequestTransforms`
     # We do this to make it easier for us to only work with one type of transform.
     converted_transforms = (
         DocumentRequestTransform(transform, url)
-        for url in unique_urls
+        for url in unique_doc_urls
         for transform in document_transforms[url]
     )
 
@@ -55,7 +57,7 @@ def apply_transforms(
 
     for gen in stack:
         next(gen)  # advance generator
-        req: DataRequest = gen.send(req)
+        req = cast(DataRequest, gen.send(req))
 
     # yield the final transformed request (valid "graphql")
     # retrieve the response (from the `executor` governing this generator)
@@ -64,7 +66,7 @@ def apply_transforms(
     # Finally, using the response, iterate through the transforms in reverse order,
     #  transforming the raw response up back through the transforms
     for transform in reversed(stack):
-        resp: DataResponse = transform.send(resp)
+        resp = cast(DataResponse, transform.send(resp))
 
     # Take the final transformed response and send it back to the `executor`
     yield resp

@@ -128,7 +128,7 @@ class TypeMeta:
         """Base class of all GraphQL schema types."""
 
         name: str
-        description: str | None
+        description: str | None = ""
 
         @property
         def is_object(self) -> bool:
@@ -187,20 +187,19 @@ class TypeMeta:
         def is_object(self) -> bool:
             return True
 
-        def field(self: TypeMeta.ObjectMeta, fname: str) -> TypeMeta.FieldMeta:
+        def field(self, fname: str) -> TypeMeta.FieldMeta:
             """Returns the field definition of object :attr:`self` with name
              :attr:`fname`, if any.
 
             Args:
-                self (TypeMeta.ObjectMeta): The object type
-                fname (str): The name of the desired field definition
+                fname: The name of the desired field definition
 
             Raises:
-                KeyError: If no field named :attr:`fname` is defined for
-                 object :attr:`self`.
+                KeyError: If no field named :attr:`fname` is defined for object
+                  :attr:`self`.
 
             Returns:
-                TypeMeta.FieldMeta: The field definition
+                The field definition
             """
 
             try:
@@ -211,20 +210,19 @@ class TypeMeta:
                     f" interface {self.name}"
                 )
 
-        def type_of_field(self: TypeMeta.ObjectMeta, fname: str) -> TypeRef.T:
+        def type_of_field(self, fname: str) -> TypeRef.T:
             """Returns the type reference of the field of object :attr:`self`
              with name :attr:`fname`, if any.
 
             Args:
-                self (TypeMeta.ObjectMeta): The object type
-                fname (str): The name of the desired field type
+                fname: The name of the desired field type
 
             Raises:
                 KeyError: If no field named :attr:`fname` is defined for object
                  :attr:`self`.
 
             Returns:
-                TypeRef.T: The field type reference
+                The field type reference
             """
 
             try:
@@ -260,20 +258,20 @@ class TypeMeta:
         def is_object(self) -> bool:
             return False
 
-        def field(self: TypeMeta.InterfaceMeta, fname: str) -> TypeMeta.FieldMeta:
+        def field(self, fname: str) -> TypeMeta.FieldMeta:
             """Returns the field definition of interface `self` with name `fname`,
              if any.
 
             Args:
-                self (TypeMeta.InterfaceMeta): The interface type
-                fname (str): The name of the desired field definition
+                self: The interface type
+                fname: The name of the desired field definition
 
             Raises:
                 KeyError: If no field named :attr:`fname` is defined for interface
                   :attr:`self`.
 
             Returns:
-                TypeMeta.FieldMeta: The field definition
+                The field definition
             """
 
             try:
@@ -296,21 +294,18 @@ class TypeMeta:
         kind: Literal["INPUT_OBJECT"] = "INPUT_OBJECT"
         input_fields: list[TypeMeta.ArgumentMeta] = Field(alias="inputFields")
 
-        def type_of_input_field(
-            self: TypeMeta.InputObjectMeta, fname: str
-        ) -> TypeRef.T:
+        def type_of_input_field(self, fname: str) -> TypeRef.T:
             """Returns the type reference of the input field named `fname` in the
             input object `self`, if any.
 
             Args:
-                self (TypeMeta.InputObjectMeta): The input object
-                fname (str): The name of the input field
+                fname: The name of the input field
 
             Raises:
                 KeyError: If `fname` is not an input field of input object `self`
 
             Returns:
-                TypeRef.T: The type reference for input field `fname`
+                The type reference for input field `fname`
             """
 
             try:
@@ -391,21 +386,21 @@ class SchemaMeta(BaseModel):
 
         return values
 
-    def type_of_typeref(self: SchemaMeta, typeref: TypeRef.T) -> TypeMeta_T:
+    def type_of_typeref(self, typeref: TypeRef.T) -> TypeMeta_T:
         """Returns the type information of the type reference `typeref`
 
         Args:
-        self (SchemaMeta): The schema.
-        typeref (TypeRef.T): The type reference pointing to the type of interest.
+            typeref: The type reference pointing to the type of interest.
 
         Raises:
-        KeyError: If the type reference refers to a non-existant type
+            KeyError: If the type reference refers to a non-existant type
 
         Returns:
-        TypeMeta.T: _description_
+            Type information
         """
 
         tname = TypeRef.root_type_name(typeref)
+
         try:
             return self.type_map[tname]
         except KeyError:

@@ -11,6 +11,7 @@ from typing import Any
 
 import pandas as pd
 from pipe import dedup, groupby, map, traverse, where
+from typing_extensions import Self
 
 from subgrounds.query import Selection
 from subgrounds.subgraph import FieldPath
@@ -48,16 +49,15 @@ class DataFrameColumns:
     key: str
     fpaths: list[str]
 
-    def combine(self, other: DataFrameColumns) -> DataFrameColumns:
+    def combine(self, other: Self) -> Self:
         """Returns new DataFrameColumns containing the union of :attr:`self` and
         :attr:`other`'s columns
 
         Args:
-          other (DataFrameColumns): Columns to be combined to :attr:`self`
+          other: Columns to be combined to :attr:`self`
 
         Returns:
-          DataFrameColumns: New :class:`DataFrameColumns` containing the union of
-            :attr:`self` and :attr:`other`
+          New :class:`Self` containing the union of :attr:`self` and :attr:`other`
         """
         return DataFrameColumns(self.key, union(self.fpaths, other.fpaths))
 
@@ -68,11 +68,11 @@ class DataFrameColumns:
         defined in :attr:`self`.
 
         Args:
-          data (list[dict[str, Any]]): The JSON data to be formatted into a dataframe
-          path_map (dict[str, FieldPath]): A dictionary of :attr:`(key-FieldPath)` pairs
+          data: The JSON data to be formatted into a dataframe
+          path_map: A dictionary of :attr:`(key-FieldPath)` pairs
 
         Returns:
-          pd.DataFrame: The JSON data formatted into a DataFrame
+          The JSON data formatted into a DataFrame
         """
         cols_data = {
             col: path_map[col]._extract_data(data)
@@ -108,10 +108,10 @@ def columns_of_selections(selections: list[Selection]) -> list[DataFrameColumns]
     :class:`Selection` trees.
 
     Args:
-      selections (list[Selection]): The selection trees
+      selections: The selection trees
 
     Returns:
-      list[DataFrameColumns]: The list of DataFrame columns specifications
+      The list of DataFrame columns specifications
     """
 
     def columns_of_selections(
@@ -177,14 +177,14 @@ def df_of_json(
     argument).
 
     Args:
-      json_data (list[dict[str, Any]]): Response data
-      fpaths (list[FieldPath]): Fieldpaths that yielded the response data
-      columns (list[str] | None, optional): Column names. Defaults to None.
-      concat (bool, optional): Flag indicating whether or not to concatenate the
-        resulting dataframes, if there are more than one. Defaults to False.
+      json_data: Response data
+      fpaths: Fieldpaths that yielded the response data
+      columns: Column names. Defaults to None.
+      concat: Flag indicating whether or not to concatenate the resulting dataframes,
+        if there are more than one. Defaults to False.
 
     Returns:
-      pd.DataFrame | list[pd.DataFrame]: The resulting dataframe(s)
+      The resulting dataframe(s)
     """
 
     if columns is None:

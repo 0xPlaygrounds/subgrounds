@@ -11,10 +11,10 @@ class DocumentTransform:
         through the transformation layer.
 
         Args:
-          doc (Document): The initial document
+          doc: The initial document
 
         Returns:
-          Document: The transformed document
+          The transformed document
         """
 
         return doc
@@ -29,12 +29,11 @@ class DocumentTransform:
         resulting JSON data ``data``.
 
         Args:
-          doc (Document): Initial document
-          data (dict[str, Any]): JSON data blob resulting from the execution of the
-            transformed document.
+          doc: Initial document
+          data: Response resulting from the execution of the transformed document.
 
         Returns:
-          dict[str, Any]: The transformed response data
+          The transformed response data
         """
 
         return resp
@@ -50,10 +49,10 @@ class RequestTransform:
         pass through the transformation layer.
 
         Args:
-          req (DataRequest): The initial request object
+          req: The initial request object
 
         Returns:
-          DataRequest: The transformed request object
+          The transformed request object
         """
 
         return req
@@ -66,12 +65,11 @@ class RequestTransform:
         resulting JSON data ``data``.
 
         Args:
-          req (DataRequest): Initial data request object
-          data (list[DataResponse]): JSON data blob resulting from the execution
-            of the transformed data request.
+          req: Initial data request object
+          data: Response resulting from the execution of the transformed data request.
 
         Returns:
-          list[DataResponse]: The transformed response data
+          The transformed response data
         """
 
         return resp

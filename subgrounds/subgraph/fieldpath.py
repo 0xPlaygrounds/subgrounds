@@ -218,11 +218,11 @@ def fieldpaths_of_object(
     GraphQL Object of Interface :attr:`object_`.
 
     Args:
-      schema (SchemaMeta): _description_
-      object_ (TypeMeta.ObjectMeta | TypeMeta.InterfaceMeta): _description_
+      schema: _description_
+      object_: _description_
 
     Yields:
-      _type_: _description_
+      _description_
     """
     for fmeta in object_.fields:
         if not fmeta.type_.is_list and len(fmeta.arguments) == 0:
@@ -303,8 +303,7 @@ class FieldPath(FieldOperatorMixin):
         :class:`FieldPath`
 
         Returns:
-          TypeMeta.FieldMeta: Type information of the root field of the current
-          :class:`FieldPath`
+          Type information of the root field of the current :class:`FieldPath`
         """
         return self._path[0][1]
 
@@ -314,8 +313,7 @@ class FieldPath(FieldOperatorMixin):
         :class:`FieldPath`
 
         Returns:
-          TypeMeta.FieldMeta: Type information of the leaf field of the current
-          :class:`FieldPath`
+          Type information of the leaf field of the current :class:`FieldPath`
         """
         return self._path[-1][1]
 
@@ -331,10 +329,10 @@ class FieldPath(FieldOperatorMixin):
         Note: Assumes that all fieldpaths in `fpaths` belong to the same subgraph
 
         Args:
-          fpaths (list[FieldPath]): _description_
+          fpaths: _description_
 
         Returns:
-          list[Selection]: _description_
+          _description_
         """
 
         query = reduce(Query.add, fpaths | map(FieldPath._selection), Query())
@@ -347,11 +345,11 @@ class FieldPath(FieldOperatorMixin):
         returned.
 
         Args:
-          use_aliases (bool, optional): Flag indicating wether of not to use the
-          fields' automatically generated alias (if present). Defaults to False.
+          use_aliases: Flag indicating wether of not to use the fields' automatically
+            generated alias (if present). Defaults to False.
 
         Returns:
-          list[str]: List of field names selected in the current :class:`FieldPath`
+          List of field names selected in the current :class:`FieldPath`
         """
 
         def gen_alias(ele: tuple[dict[str, Any] | None, TypeMeta.FieldMeta]) -> str:
@@ -370,11 +368,11 @@ class FieldPath(FieldOperatorMixin):
         an automatically generated alias, the alias will be used.
 
         Args:
-          use_aliases (bool, optional): Flag indicating wether of not to use the
-          fields' automatically generated alias (if present). Defaults to False.
+          use_aliases: Flag indicating wether of not to use the fields' automatically
+            generated alias (if present). Defaults to False.
 
         Returns:
-          str: The generated name of the current :class:`FieldPath`.
+          The generated name of the current :class:`FieldPath`.
         """
 
         return "_".join(self._name_path(use_aliases=use_aliases))
@@ -390,16 +388,18 @@ class FieldPath(FieldOperatorMixin):
             case _:
                 return self
 
-    def _extract_data(self, data: dict | list[dict]) -> list[Any] | Any:
+    def _extract_data(
+        self, data: dict[str, Any] | list[dict[str, Any]]
+    ) -> list[Any] | Any:
         """Extract the data corresponding to the current :class:`FieldPath` from
         the dictionary :attr:`data`.
 
         Args:
-          data (dict | list[dict]): Data dictionary that contains the data
-          corresponding to the current :class:`FieldPath`.
+          data: Data dictionary that contains the data corresponding to the current
+            :class:`FieldPath`.
 
         Returns:
-          list[Any] | Any: Data corresponding to the current :class:`FieldPath`.
+          Data corresponding to the current :class:`FieldPath`.
         """
         return extract_data(self._name_path(use_aliases=True), data)
 
@@ -448,11 +448,11 @@ class FieldPath(FieldOperatorMixin):
         method returns the :attr:`self`.
 
         Args:
-          args (dict[str, Any]): _description_
-          selection (list[FieldPath], optional): _description_. Defaults to [].
+          args: _description_
+          selection: _description_. Defaults to [].
 
         Returns:
-          FieldPath: _description_
+          _description_
         """
 
         def fmt_arg(name, raw_arg):
@@ -482,15 +482,17 @@ class FieldPath(FieldOperatorMixin):
     def _select(self, name: str) -> FieldPath:
         """Returns a new FieldPath corresponding to the FieldPath `self` extended with
         an additional selection on the field named `name`.
+
         Args:
-          name (str): The name of the field to expand on the leaf of `fpath`
+          name: The name of the field to expand on the leaf of `fpath`
+
         Raises:
           TypeError: [description]
           TypeError: [description]
           TypeError: [description]
+
         Returns:
-          FieldPath: A new FieldPath containing `fpath` extended with the field named
-            `name`
+          A new FieldPath containing `fpath` extended with the field named `name`
         """
         match self._schema.type_of_typeref(self._type):
             # If the FieldPath fpath
@@ -538,7 +540,7 @@ class FieldPath(FieldOperatorMixin):
         :attr:`ext`. :attr:`ext` must start where the current :class:`FieldPath` ends.
 
         Args:
-          ext (FieldPath): The :class:`FieldPath` representing the extension
+          ext: The :class:`FieldPath` representing the extension
 
         Raises:
           TypeError: [description]
@@ -546,8 +548,8 @@ class FieldPath(FieldOperatorMixin):
           TypeError: [description]
 
         Returns:
-          FieldPath: A new :class:`FieldPath` containing the initial current
-          :class:`FieldPath` extended with :attr:`ext`
+          A new :class:`FieldPath` containing the initial current :class:`FieldPath`
+            extended with :attr:`ext`
         """
         match self._leaf:
             case TypeMeta.FieldMeta() as fmeta:
@@ -593,10 +595,10 @@ class FieldPath(FieldOperatorMixin):
         ...     aaveV2.Borrow.amount
         ...   ]
         ... )
+
         Returns:
-          FieldPath | list[FieldPath]: The updated field path if :attr:`selection`
-            is not specified, or a list of fieldpaths when :attr:`selection` is
-            specified.
+          The updated field path if :attr:`selection` is not specified, or a list of
+            fieldpaths when :attr:`selection` is specified.
         """
         selection = kwargs.pop("selection", [])
         return self._set_arguments(kwargs, selection)
@@ -773,10 +775,10 @@ class SyntheticField(FieldOperatorMixin):
         Useful for injecting additional static data to a schema or merging entities.
 
         Args:
-          value (str | int | float | bool): The constant field's value
+          value: The constant field's value
 
         Returns:
-          SyntheticField: The constant ``SyntheticField``
+          The constant ``SyntheticField``
 
         Example:
 
@@ -866,11 +868,10 @@ class SyntheticField(FieldOperatorMixin):
         ``timestamp`` into a human-readable ISO8601 string.
 
         Args:
-          timestamp (FieldPath | SyntheticField): A ``FieldPath`` representing a
-              Unix timestamp field.
+          timestamp: A ``FieldPath`` representing a Unix timestamp field.
 
         Returns:
-          SyntheticField: An ISO8601 datetime string ``SyntheticField``.
+          An ISO8601 datetime string ``SyntheticField``.
 
         Example:
 
@@ -926,16 +927,14 @@ class SyntheticField(FieldOperatorMixin):
         ``default`` will be used instead.
 
         Args:
-          dict (dict[Any, Any]): The dictionary containing the key value pairs used
-              to map ``fpath``'s values
-          type_ (TypeRef.T): The type of the resulting field
-          fpath (FieldPath | SyntheticField): The FieldPath whose values will be
-              mapped using the dictionary
-          default (Optional[Any]): Default value used when a value is not in the
-              provided dictionary
+          dict: The dictionary containing the key value pairs used to map
+            ``fpath``'s values
+          type_: The type of the resulting field
+          fpath: The FieldPath whose values will be mapped using the dictionary
+          default: Default value used when a value is not in the provided dictionary
 
         Returns:
-            SyntheticField: A map SyntheticField
+            A map SyntheticField
 
         Example:
 

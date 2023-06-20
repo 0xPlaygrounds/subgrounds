@@ -29,10 +29,9 @@ class TypeTransform(DocumentTransform):
     """Transform to be applied to scalar fields on a per-type basis.
 
     Attributes:
-      type_ (TypeRef.T): Type indicating which scalar values (i.e.: values of that
-        type) should be transformed using the function ``f``
-      f (Callable[[Any], Any]): Function to be applied to scalar values of type
-        ``type_`` in the response data.
+      type_: Type indicating which scalar values (i.e.: values of that type) should be
+        transformed using the function ``f``
+      f: Function to be applied to scalar values of type ``type_`` in the response data.
     """
 
     type_: TypeRef.T
@@ -128,16 +127,14 @@ class LocalSyntheticField(DocumentTransform):
     the argument selections :attr:`args` and places the result in the response.
 
     Attributes:
-      subgraph (Subgraph): The subgraph to which the synthetic field's object
-        belongs.
-      fmeta (TypeMeta.FieldMeta): The synthetic field
-      type_ (TypeMeta.ObjectMeta | TypeMeta.InterfaceMeta): The object for which
-        the synthetic field is defined
-      f (Callable): The function to be applied to the argument fields
-      default (Any): The default value of the synthetic field used in case of
-        exceptions (e.g.: division by zero)
-      args (list[Selection]): The selections of the fields used as arguments to
-        compute the synthetic field
+      subgraph: The subgraph to which the synthetic field's object belongs.
+      fmeta: The synthetic field.
+      type_: The object for which the synthetic field is defined.
+      f: The function to be applied to the argument fields.
+      default: The default value of the synthetic field used in case of exceptions
+        (e.g.: division by zero).
+      args: The selections of the fields used as arguments to compute the
+        synthetic field.
     """
 
     subgraph: Subgraph
@@ -290,7 +287,9 @@ class LocalSyntheticField(DocumentTransform):
                         f" for data {data}"
                     )
 
-        def transform_on_type(select: Selection, data: dict) -> None:
+        def transform_on_type(
+            select: Selection, data: list[Any] | dict[str, Any]
+        ) -> None:
             match select:
                 case Selection(TypeMeta.FieldMeta(type_=type_), None, _, _) | Selection(
                     TypeMeta.FieldMeta(type_=type_), _, _, _
@@ -329,6 +328,14 @@ class LocalSyntheticField(DocumentTransform):
 
 
 class DocumentRequestTransform(RequestTransform):
+    """This class serves as a wrapper for :class:`DocumentTransform` for ease of use.
+
+    Internally, we convert all :class:`DocumentTransform`s to
+     :class:`DocumentRequestTransform`s due to the relative ease it has on our
+     implementation. We merely iterate through the documents within a request and
+     response iterating them thru the relevant documents (based upon url).
+    """
+
     def __init__(self, transform: DocumentTransform, url: str):
         self.transform = transform
         self.url = url

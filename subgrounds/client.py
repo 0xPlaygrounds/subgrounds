@@ -5,7 +5,6 @@ GraphQL http requests.
 import logging
 from typing import Any
 
-import aiohttp
 import requests
 
 from subgrounds.query import Document, DocumentResponse
@@ -113,7 +112,7 @@ def get_schema(url: str, headers: dict[str, Any]) -> dict[str, Any]:
     the error message is thrown.
 
     Args:
-      url (str): The url of the GraphQL API
+      url: The url of the GraphQL API
 
     Raises:
       HttpError: If the request response resulted in an error
@@ -121,7 +120,7 @@ def get_schema(url: str, headers: dict[str, Any]) -> dict[str, Any]:
       GraphQLError: If the GraphQL query failed or other grapql server errors
 
     Returns:
-      dict[str, Any]: The GraphQL API's schema in JSON
+      The GraphQL API's schema in JSON
     """
 
     resp = requests.post(
@@ -155,10 +154,9 @@ def query(doc: Document, headers: dict[str, Any] = {}) -> DocumentResponse:
     thrown.
 
     Args:
-      url (str): The URL of the GraphQL API
-      query_str (str): The GraphQL query string
-      variables (dict[str, Any], optional): Variables for the GraphQL query.
-        Defaults to {}.
+      url: The URL of the GraphQL API
+      query_str: The GraphQL query string
+      variables: Variables for the GraphQL query. Defaults to {}.
 
     Raises:
       HttpError: If the request response resulted in an error
@@ -166,7 +164,7 @@ def query(doc: Document, headers: dict[str, Any] = {}) -> DocumentResponse:
       GraphQLError: If the GraphQL query failed or other grapql server errors
 
     Returns:
-      dict[str, Any]: Response data
+      Response data
     """
 
     logger.info(
@@ -197,55 +195,3 @@ def query(doc: Document, headers: dict[str, Any] = {}) -> DocumentResponse:
         raise GraphQLError(raw_data.get("errors", "Unknown Error(s) Found"))
 
     return DocumentResponse(data=data, url=doc.url)
-
-
-async def async_query(doc: Document, headers: dict[str, Any] = {}) -> DocumentResponse:
-    """Executes the GraphQL query :attr:`query_str` with variables
-    :attr:`variables` against the API served at :attr:`url` and returns the
-    response data. In case of errors, an exception containing the error message is
-    thrown.
-
-    Args:
-      url (str): The URL of the GraphQL API
-      query_str (str): The GraphQL query string
-      variables (dict[str, Any], optional): Variables for the GraphQL query.
-        Defaults to {}.
-
-    Raises:
-      HttpError: If the request response resulted in an error
-      ServerError: If server responds back non-json content
-      GraphQLError: If the GraphQL query failed or other grapql server errors
-
-    Returns:
-      dict[str, Any]: Response data
-    """
-
-    logger.info(
-        f"client.query: url = {doc.url}, variables = {doc.variables}\n{doc.graphql}"
-    )
-
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
-            doc.url,
-            json=(
-                {"query": doc.graphql}
-                | ({"variables": doc.variables} if doc.variables else {})
-            ),
-            headers=default_header(doc.url) | headers,
-        ) as resp:
-            resp.raise_for_status()
-
-            try:
-                raw_data = await resp.json()
-
-            except requests.JSONDecodeError:
-                raise ServerError(
-                    f"Server ({doc.url}) did not respond with proper JSON"
-                    f"\nDid you query a proper GraphQL endpoint?"
-                    f"\n\n{resp.content}"
-                )
-
-            if (data := raw_data.get("data")) is None:
-                raise GraphQLError(raw_data.get("errors", "Unknown Error(s) Found"))
-
-            return DocumentResponse(data=data, url=doc.url)

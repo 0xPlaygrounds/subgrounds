@@ -126,16 +126,16 @@ class Subgrounds:
         self, url: str, save_schema: bool = False, cache_dir: str = "schemas/"
     ) -> Subgraph:
         """Performs introspection on the provided GraphQL API ``url`` to get the
-        schema, stores the schema if ``save_schema`` is ``True`` and returns a
-        generated class representing the GraphQL endpoint with all its entities.
+         schema, stores the schema if ``save_schema`` is ``True`` and returns a
+         generated class representing the GraphQL endpoint with all its entities.
 
         Args:
-          url (str): The url of the API
-          save_schema (bool, optional): Flag indicating whether or not the schema
-            should be saved to disk. Defaults to False.
+          url: The url of the API
+          save_schema: Flag indicating whether or not the schema should be saved
+           to disk. Defaults to False.
 
         Returns:
-          Subgraph: A generated class representing the subgraph and its entities
+          A generated class representing the subgraph and its entities
         """
 
         return self.load(url, save_schema, cache_dir, False)
@@ -145,11 +145,11 @@ class Subgrounds:
         :class:`FieldPath` objects.
 
         Args:
-          fpaths (FieldPath | list[FieldPath]): One or more :class:`FieldPath`
-            objects that should be included in the request
+          fpaths: One or more :class:`FieldPath` objects that should be included
+           in the request
 
         Returns:
-          DataRequest: A new :class:`DataRequest` object
+          Brand new request
         """
 
         fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)
@@ -178,13 +178,13 @@ class Subgrounds:
         the data pages.
 
         Args:
-          req (DataRequest): The :class:`DataRequest` object to be executed
-          pagination_strategy (Type[PaginationStrategy] | None, optional): A Class
-            implementing the :class:`PaginationStrategy` ``Protocol``. If ``None``, then
-            automatic pagination is disabled. Defaults to :class:`LegacyStrategy`.
+          req: The :class:`DataRequest` object to be executed
+          pagination_strategy: A Class implementing the :class:`PaginationStrategy`
+            ``Protocol``. If ``None``, then automatic pagination is disabled.
+            Defaults to :class:`LegacyStrategy`.
 
         Returns:
-          list[dict[str, Any]]: A list over the reponse data pages
+          A :class:`DataResponse` object representing the response
         """
 
         transformer = apply_transforms(
@@ -218,13 +218,17 @@ class Subgrounds:
         the data pages.
 
         Args:
-          req (DataRequest): The :class:`DataRequest` object to be executed
-          pagination_strategy (Type[PaginationStrategy] | None, optional): A Class
-            implementing the :class:`PaginationStrategy` ``Protocol``. If ``None``, then
-            automatic pagination is disabled. Defaults to :class:`LegacyStrategy`.
+          req: The :class:`DataRequest` object to be executed
+          pagination_strategy: A Class implementing the :class:`PaginationStrategy`
+           ``Protocol``. If ``None``, then automatic pagination is disabled.
+           Defaults to :class:`LegacyStrategy`.
 
         Returns:
-          Iterator[dict]: An iterator over the reponse data pages
+          An iterator over the :class:`DocumentResponse` pages.
+
+        ⚠️ DOES NOT apply global transforms across multiple documents or their pages.
+         Since we yield each page as we get it, it's not possible to accurately perform
+         the transforms since we don't collect the pages.
         """
 
         generator = apply_transforms(
@@ -255,14 +259,14 @@ class Subgrounds:
          ``Subgrounds.execute(Subgrounds.mk_request(fpaths), pagination_strategy)``.
 
         Args:
-          fpaths (FieldPath | list[FieldPath]): One or more :class:`FieldPath` objects
+          fpaths: One or more :class:`FieldPath` objects
             that should be included in the request.
-          pagination_strategy (Type[PaginationStrategy] | None, optional): A Class
-            implementing the :class:`PaginationStrategy` ``Protocol``. If ``None``, then
-            automatic pagination is disabled. Defaults to :class:`LegacyStrategy`.
+          pagination_strategy: A Class implementing the :class:`PaginationStrategy`
+            ``Protocol``. If ``None``, then automatic pagination is disabled.
+            Defaults to :class:`LegacyStrategy`.
 
         Returns:
-          list[dict[str, Any]]: The reponse data
+          The reponse data
         """
 
         fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)
@@ -277,11 +281,11 @@ class Subgrounds:
         """Same as `query_json` returns an iterator over the response data pages.
 
         Args:
-          fpaths (FieldPath | list[FieldPath]): One or more :class:`FieldPath` objects
-            that should be included in the request.
-          pagination_strategy (Type[PaginationStrategy] | None, optional): A Class
-            implementing the :class:`PaginationStrategy` ``Protocol``. If ``None``, then
-            automatic pagination is disabled. Defaults to :class:`LegacyStrategy`.
+          fpaths: One or more :class:`FieldPath` objects that should be included
+            in the request.
+          pagination_strategy: A Class implementing the :class:`PaginationStrategy`
+            ``Protocol``. If ``None``, then automatic pagination is disabled.
+            Defaults to :class:`LegacyStrategy`.
 
         Returns:
           list[dict[str, Any]]: The reponse data
@@ -316,16 +320,15 @@ class Subgrounds:
         ``columns`` argument).
 
         Args:
-          fpaths (FieldPath | list[FieldPath]): One or more `FieldPath` objects that
-            should be included in the request.
-          columns (list[str] | None, optional): The column labels. Defaults to None.
-          merge (bool, optional): Whether or not to merge resulting dataframes.
-          pagination_strategy (Type[PaginationStrategy] | None, optional): A Class
-            implementing the :class:`PaginationStrategy` ``Protocol``. If ``None``, then
-            automatic pagination is disabled. Defaults to :class:`LegacyStrategy`.
+          fpaths: One or more `FieldPath` objects that should be included in the request
+          columns: The column labels. Defaults to None.
+          merge: Whether or not to merge resulting dataframes.
+          pagination_strategy: A Class implementing the :class:`PaginationStrategy`
+            ``Protocol``. If ``None``, then automatic pagination is disabled.
+            Defaults to :class:`LegacyStrategy`.
 
         Returns:
-          pd.DataFrame | list[pd.DataFrame]: A DataFrame containing the reponse data
+          A :class:`pandas.DataFrame` containing the reponse data.
 
         Example:
 
@@ -377,17 +380,15 @@ class Subgrounds:
         """Same as `query_df` except returns an iterator over the response data pages
 
         Args:
-          fpaths (FieldPath | list[FieldPath]): One or more `FieldPath` objects that
-            should be included in the request
-          columns (Optional[list[str]], optional): The column labels. Defaults to None.
-          merge (bool, optional): Whether or not to merge resulting dataframes.
-          pagination_strategy (Optional[Type[PaginationStrategy]], optional): A Class
-            implementing the :class:`PaginationStrategy` ``Protocol``. If ``None``, then
-            automatic pagination is disabled. Defaults to :class:`LegacyStrategy`.
+          fpaths: One or more `FieldPath` objects that should be included in the request
+          columns: The column labels. Defaults to None.
+          merge: Whether or not to merge resulting dataframes.
+          pagination_strategy: A Class implementing the :class:`PaginationStrategy`
+            ``Protocol``. If ``None``, then automatic pagination is disabled.
+            Defaults to :class:`LegacyStrategy`.
 
         Returns:
-          Iterator[pd.DataFrame]: An iterator over the response data pages,
-            each as a DataFrame
+          An iterator over the response data pages, each as a :class:`pandas.DataFrame`.
         """
 
         fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)
@@ -406,11 +407,10 @@ class Subgrounds:
         data (as a tuple if multiple ``FieldPath`` objects are provided).
 
         Args:
-          fpaths (FieldPath | list[FieldPath]): One or more ``FieldPath`` object(s)
-            to query.
-          unwrap (bool, optional): Flag indicating whether or not, in the case where
-            the returned data is a list of one element, the element itself should be
-            returned instead of the list. Defaults to ``True``.
+          fpaths: One or more ``FieldPath`` object(s) to query.
+          unwrap: Flag indicating whether or not, in the case where the returned data
+            is a list of one element, the element itself should be returned instead of
+            the list. Defaults to ``True``.
           pagination_strategy (Type[PaginationStrategy] | None, optional): A Class
             implementing the :class:`PaginationStrategy` ``Protocol``. If ``None``, then
             automatic pagination is disabled. Defaults to :class:`LegacyStrategy`.
@@ -467,21 +467,20 @@ class Subgrounds:
         fpaths: FieldPath | list[FieldPath],
         unwrap: bool = True,
         pagination_strategy: Type[PaginationStrategy] | None = LegacyStrategy,
-    ) -> Iterator[str | int | float | bool | list | tuple | None]:
+    ) -> Iterator[str | int | float | bool | list[Any] | tuple | None]:
         """Same as `query` except an iterator over the resonse data pages is returned.
 
         Args:
-          fpath (FieldPath | list[FieldPath]): One or more ``FieldPath`` object(s)
-            to query.
-          unwrap (bool, optional): Flag indicating whether or not, in the case where
+          fpath: One or more ``FieldPath`` object(s) to query.
+          unwrap: Flag indicating whether or not, in the case where
             the returned data is a list of one element, the element itself should be
             returned instead of the list. Defaults to ``True``.
-          pagination_strategy (Type[PaginationStrategy] | None, optional): A Class
-            implementing the :class:`PaginationStrategy` ``Protocol``. If ``None``, then
-            automatic pagination is disabled. Defaults to :class:`LegacyStrategy`.
+          pagination_strategy: A Class implementing the :class:`PaginationStrategy`
+            ``Protocol``. If ``None``, then automatic pagination is disabled.
+            Defaults to :class:`LegacyStrategy`.
 
         Returns:
-          Iterator[type]: An iterator over the ``FieldPath`` object(s)' data pages
+          An iterator over the ``FieldPath`` object(s)' data pages
         """
 
         def f(fpath: FieldPath, blob: dict[str, Any]) -> dict[str, Any]:
@@ -492,9 +491,7 @@ class Subgrounds:
                 return data
 
         fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)
-        for page in self.query_json_iter(
-            fpaths, pagination_strategy=pagination_strategy
-        ):
+        for page in self.query_json_iter(fpaths, pagination_strategy):
             data = tuple(fpaths | map(functools.partial(f, blob=page)))
 
             if len(data) == 1:

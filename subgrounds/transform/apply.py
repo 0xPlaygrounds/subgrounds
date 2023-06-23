@@ -18,14 +18,14 @@ def handle_transform(
     transform: RequestTransform,
 ) -> Generator[None | DataRequest | DataResponse, DataRequest | DataResponse, None]:
     """This function bundles the transform request and response as a generator.
-    
+
     The follow is as follows:
     -> :class:`subgrounds.query.DataRequest` is sent in
     -> It is transformed, and then sent out
     -> Then, in an infinite loop:
       -> :class:`subgrounds.query.DataResponse` is sent in
       -> It is transformed, then sent out
-    
+
     The infinite loop allows us to continously transform responses,
       - Needed by `execute_iter`
     """

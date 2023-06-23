@@ -9,7 +9,17 @@ from functools import cache
 from itertools import accumulate as _accumulate
 from itertools import filterfalse
 from operator import itemgetter
-from typing import Any, Callable, Iterator, Tuple, TypeVar, overload
+from typing import (
+    Any,
+    Callable,
+    Generator,
+    Iterator,
+    ParamSpec,
+    Tuple,
+    TypeVar,
+    cast,
+    overload,
+)
 
 from pipe import Pipe, map
 
@@ -29,6 +39,10 @@ def identity(x):
 
 
 T = TypeVar("T")
+U = TypeVar("U")
+V = TypeVar("V")
+P = ParamSpec("P")
+
 Container = list[T] | dict[str, T]
 
 
@@ -236,6 +250,31 @@ def contains_list(data: dict[str, Any] | list[Any] | str | int | float | bool) -
             return any(data | map(contains_list))
         case str() | int() | float() | bool():
             return False
+
+
+def coroutine_generator(
+    func: Callable[..., Generator[T | None, U, V]]
+) -> Callable[..., Generator[T, U, V]]:
+    """This defines a coroutine styled generator.
+
+    All this does is *start* the generator via a `next` call allowing you to use `.send`
+     immediately instead of needing to use `gen.send(None)` or `next` first.
+
+    Inspired from: http://www.dabeaz.com/coroutines/Coroutines.pdf (p. 27)
+
+    Essentially, the logic is as follows:
+    >>> def start(*args, **kwargs):
+    ...     gen = func(*args, **kwargs)
+    ...     next(gen)
+    ...     return gen
+    """
+
+    def start(*args: P.args, **kwargs: P.kwargs) -> Generator[T, U, V]:
+        gen = func(*args, **kwargs)
+        next(gen)
+        return cast(Generator[T, U, V], gen)
+
+    return start
 
 
 # ================================================================

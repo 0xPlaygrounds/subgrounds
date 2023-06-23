@@ -11,22 +11,38 @@ from .abcs import DocumentTransform, RequestTransform
 from .transforms import DocumentRequestTransform
 
 logger = logging.getLogger("subgrounds")
-TransformGen = Generator[
-    None | DataRequest | DataResponse, DataRequest | DataResponse, None
-]
+TransformGen = Generator[DataRequest | DataResponse, DataRequest | DataResponse, None]
 
 
-def handle_transform(transform: RequestTransform) -> TransformGen:
+def handle_transform(
+    transform: RequestTransform,
+) -> Generator[None | DataRequest | DataResponse, DataRequest | DataResponse, None]:
+    """This function bundles the transform request and response as a generator.
+    
+    The follow is as follows:
+    -> :class:`subgrounds.query.DataRequest` is sent in
+    -> It is transformed, and then sent out
+    -> Then, in an infinite loop:
+      -> :class:`subgrounds.query.DataResponse` is sent in
+      -> It is transformed, then sent out
+    
+    The infinite loop allows us to continously transform responses,
+      - Needed by `execute_iter`
+    """
+
     req = cast(DataRequest, (yield))
-    resp = cast(DataResponse, (yield transform.transform_request(req)))
-    yield transform.transform_response(req, resp)
+    yield transform.transform_request(req)
+
+    while True:
+        resp = cast(DataResponse, (yield))
+        yield transform.transform_response(req, resp)
 
 
 def apply_transforms(
     request_transforms: list[RequestTransform],
     document_transforms: dict[str, list[DocumentTransform]],
     req: DataRequest,
-) -> Generator[DataRequest | DataResponse, DataResponse, None]:
+) -> Generator[None | DataRequest | DataResponse, DataResponse, None]:
     """Apply all `RequestTransforms` and `DocumentTransforms` to a `DataRequest` and a
      corresponding `DataResponse`.
 
@@ -55,18 +71,25 @@ def apply_transforms(
         request_transforms | chain_with(converted_transforms) | map(handle_transform)
     )
 
-    for gen in stack:
-        next(gen)  # advance generator
-        req = cast(DataRequest, gen.send(req))
+    # Go through every transform in the stack and transform the request
+    for transform in stack:
+        next(transform)  # ditch `None`
+        req = cast(DataRequest, transform.send(req))
 
     # yield the final transformed request (valid "graphql")
-    # retrieve the response (from the `executor` governing this generator)
-    resp = yield req
+    yield req
 
-    # Finally, using the response, iterate through the transforms in reverse order,
-    #  transforming the raw response up back through the transforms
-    for transform in reversed(stack):
-        resp = cast(DataResponse, transform.send(resp))
+    # We enter an infinite loop here to allow multiple documents to be transformed
+    #  back up the stack since `execute_iter` produces them page-by-page to be streamed.
+    while True:
+        # retrieve the response (from the `executor` governing this generator)
+        resp = yield
 
-    # Take the final transformed response and send it back to the `executor`
-    yield resp
+        # Finally, using the response, iterate through the transforms in reverse order,
+        #  transforming the raw response up back through the transforms
+        for transform in reversed(stack):
+            next(transform)  # ditch `None`
+            resp = cast(DataResponse, transform.send(resp))
+
+        # Take the final transformed response and send it back to the `executor`
+        yield resp

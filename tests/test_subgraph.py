@@ -5,14 +5,6 @@ from subgrounds.subgrounds import Subgrounds
 from subgrounds.utils import identity
 from tests.conftest import fieldpath_test_mode
 
-# class TestAddType(unittest.TestCase):
-#   def setUp(self):
-#     self.schema = schema()
-#     self.subgraph = Subgraph("", self.schema)
-
-#   def tearDown(self) -> None:
-#     SyntheticField.counter = 0
-
 
 def test_add_synthetic_field_1(subgraph: Subgraph):
     sfield = SyntheticField(identity, SyntheticField.FLOAT, subgraph.Pair.reserveUSD)

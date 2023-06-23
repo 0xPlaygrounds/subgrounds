@@ -90,13 +90,19 @@ PAGE_SIZE = 900
 
 
 class StopPagination(Exception):
-    def __init__(self, *args: object) -> None:
-        super().__init__(*args)
+    """Raise within :class:`PaginationStategy` when pagination is completed, usually
+    within :func:`subgrounds.pagination.pagination.PaginationStrategy.step`.
+
+    Causes :func:`subgrounds.pagination.pagination.paginate` to be stopped.
+    """
 
 
 class SkipPagination(Exception):
-    def __init__(self, *args: object) -> None:
-        super().__init__(*args)
+    """Raise within :class:`PaginationStategy` should be skipped, usually within
+    :func:`subgrounds.pagination.pagination.PaginationStrategy.__init___`.
+
+    Causes :func:`subgrounds.pagination.pagination.paginate` to be skipped.
+    """
 
 
 class PaginationStrategy(Protocol):
@@ -305,11 +311,11 @@ class LegacyStrategy:
         self.normalized_doc = normalize(schema, document, pagination_nodes)
 
     def step(
-        self, page_data: Optional[dict[str, Any]] = None
+        self, page_data: dict[str, Any] | None = None
     ) -> tuple[Document, dict[str, Any]]:
         args = self.arg_generator.step(page_data)
         trimmed_doc = prune_doc(self.normalized_doc, args)
-        return (trimmed_doc, args)
+        return trimmed_doc, args
 
 
 @dataclass
@@ -531,7 +537,7 @@ class ShallowStrategy:
         self.normalized_doc = normalize(schema, document, pagination_nodes)
 
     def step(
-        self, page_data: Optional[dict[str, Any]] = None
+        self, page_data: dict[str, Any] | None = None
     ) -> tuple[Document, dict[str, Any]]:
         args = self.arg_generator.step(page_data)
         trimmed_doc = prune_doc(self.normalized_doc, args)

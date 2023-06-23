@@ -11,7 +11,7 @@ import warnings
 from dataclasses import dataclass, field
 from functools import reduce
 from pathlib import Path
-from typing import Any, Iterator, Type
+from typing import Any, Iterator, Type, cast
 
 import pandas as pd
 from pipe import groupby, map, traverse
@@ -187,27 +187,33 @@ class Subgrounds:
           A :class:`DataResponse` object representing the response
         """
 
-        transformer = apply_transforms(
-            self.global_transforms,
-            {url: subgraph._transforms for url, subgraph in self.subgraphs.items()},
-            req,
-        )
+        document_transforms = {
+            url: subgraph._transforms for url, subgraph in self.subgraphs.items()
+        }
+        transformer = apply_transforms(self.global_transforms, document_transforms, req)
         strategy = normalize_strategy(pagination_strategy)
 
-        resps = []
-        req = next(transformer)
-        for doc in req.documents:
+        data_resp = DataResponse(responses=[])
+        data_req = cast(DataRequest, next(transformer))
+
+        for doc in data_req.documents:
             paginator = paginate(self.subgraphs[doc.url]._schema, doc, strategy)
-            resp = None
+            paginated_doc = next(paginator)
+            doc_resp = DocumentResponse(url=doc.url, data={})
+
             while True:
+                resp = client.query(paginated_doc, headers=self.headers)
+                doc_resp = doc_resp.combine(resp)
+
                 try:
                     paginated_doc = paginator.send(resp)
                 except StopIteration:
                     break
-                resp = client.query(paginated_doc, headers=self.headers)
-                resps.append(resp)
 
-        return transformer.send(DataResponse(responses=resps))
+            data_resp = data_resp.add_responses(doc_resp)
+
+        next(transformer)  # toss empty None
+        return cast(DataResponse, transformer.send(data_resp))
 
     def execute_iter(
         self,
@@ -228,27 +234,33 @@ class Subgrounds:
 
         ⚠️ DOES NOT apply global transforms across multiple documents or their pages.
          Since we yield each page as we get it, it's not possible to accurately perform
-         the transforms since we don't collect the pages.
+         the transforms since we don't collect the pages. This means transforms
+         expecting multiple documents or pages of documents will be inaccurate.
         """
 
-        generator = apply_transforms(
-            self.global_transforms,
-            {url: subgraph._transforms for url, subgraph in self.subgraphs.items()},
-            req,
-        )
+        document_transforms = {
+            url: subgraph._transforms for url, subgraph in self.subgraphs.items()
+        }
+        transformer = apply_transforms(self.global_transforms, document_transforms, req)
         strategy = normalize_strategy(pagination_strategy)
 
-        for doc in next(generator).documents:
+        data_req = cast(DataRequest, next(transformer))
+        for doc in data_req.documents:
             paginator = paginate(self.subgraphs[doc.url]._schema, doc, strategy)
-            resp = None
+            paginated_doc = next(paginator)
             while True:
+                resp = client.query(paginated_doc, headers=self.headers)
+
+                next(transformer)  # toss empty None
+                data_resp = cast(
+                    DataResponse, transformer.send(DataResponse(responses=[resp]))
+                )
+                yield from data_resp.responses  # should only be one
+
                 try:
                     paginated_doc = paginator.send(resp)
                 except StopIteration:
                     break
-                resp = client.query(paginated_doc, headers=self.headers)
-                data: DataResponse = generator.send(DataResponse(responses=[resp]))
-                yield data.responses[0]
 
     def query_json(
         self,
@@ -411,12 +423,12 @@ class Subgrounds:
           unwrap: Flag indicating whether or not, in the case where the returned data
             is a list of one element, the element itself should be returned instead of
             the list. Defaults to ``True``.
-          pagination_strategy (Type[PaginationStrategy] | None, optional): A Class
-            implementing the :class:`PaginationStrategy` ``Protocol``. If ``None``, then
-            automatic pagination is disabled. Defaults to :class:`LegacyStrategy`.
+          pagination_strategy: A Class implementing the :class:`PaginationStrategy`
+            ``Protocol``. If ``None``, then automatic pagination is disabled.
+            Defaults to :class:`LegacyStrategy`.
 
         Returns:
-          [type]: The ``FieldPath`` object(s) data
+          The ``FieldPath`` object(s) data
 
         Example:
 

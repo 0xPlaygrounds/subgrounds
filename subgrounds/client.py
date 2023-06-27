@@ -3,9 +3,15 @@ GraphQL http requests.
 """
 
 import logging
+from functools import cache
+from importlib import resources
 from typing import Any
 
-import requests
+from gql import Client, gql
+from gql.transport import AsyncTransport, Transport
+from gql.transport.exceptions import TransportQueryError
+from gql.transport.requests import RequestsHTTPTransport
+from gql.transport.aiohttp import AIOHTTPTransport
 
 from subgrounds.query import Document, DocumentResponse
 
@@ -15,99 +21,21 @@ from .utils import default_header
 logger = logging.getLogger("subgrounds")
 
 
-INTROSPECTION_QUERY: str = """
-  query IntrospectionQuery {
-    __schema {
-      queryType { name }
-      mutationType { name }
-      types {
-        ...FullType
-      }
-      directives {
-        name
-        description
-        locations
-        args {
-          ...InputValue
-        }
-      }
-    }
-  }
-  fragment FullType on __Type {
-    kind
-    name
-    description
-    fields(includeDeprecated: true) {
-      name
-      description
-      args {
-        ...InputValue
-      }
-      type {
-        ...TypeRef
-      }
-      isDeprecated
-      deprecationReason
-    }
-    inputFields {
-      ...InputValue
-    }
-    interfaces {
-      ...TypeRef
-    }
-    enumValues(includeDeprecated: true) {
-      name
-      description
-      isDeprecated
-      deprecationReason
-    }
-    possibleTypes {
-      ...TypeRef
-    }
-  }
-  fragment InputValue on __InputValue {
-    name
-    description
-    type { ...TypeRef }
-    defaultValue
-  }
-  fragment TypeRef on __Type {
-    kind
-    name
-    ofType {
-      kind
-      name
-      ofType {
-        kind
-        name
-        ofType {
-          kind
-          name
-          ofType {
-            kind
-            name
-            ofType {
-              kind
-              name
-              ofType {
-                kind
-                name
-                ofType {
-                  kind
-                  name
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-"""
+INTROSPECTION_QUERY = (
+    resources.files("subgrounds") / "resources" / "introspection.graphgql"
+)
+
+
+@cache
+def get_client(transport: AsyncTransport | Transport | None = None):
+    # Create a GraphQL client using the defined transport
+    return Client(
+        transport=transport, fetch_schema_from_transport=False  # type: ignore
+    )
 
 
 def get_schema(url: str, headers: dict[str, Any]) -> dict[str, Any]:
-    """Runs the introspection query on the GraphQL API served localed at
+    """Runs the introspection query on the GraphQL API served located at
     :attr:`url` and returns the result. In case of errors, an exception containing
     the error message is thrown.
 
@@ -123,28 +51,20 @@ def get_schema(url: str, headers: dict[str, Any]) -> dict[str, Any]:
       The GraphQL API's schema in JSON
     """
 
-    resp = requests.post(
-        url,
-        json={"query": INTROSPECTION_QUERY},
-        headers=default_header(url) | headers,
-    )
-
-    resp.raise_for_status()
+    introspection = gql(INTROSPECTION_QUERY.read_text())
+    client = get_client(RequestsHTTPTransport(url, headers))
 
     try:
-        raw_data = resp.json()
+        resp = client.execute(introspection)
 
-    except requests.JSONDecodeError:
+    except TransportQueryError:
         raise ServerError(
             f"Server ({url}) did not respond with proper JSON"
             f"\nDid you query a proper GraphQL endpoint?"
             f"\n\n{resp.content}"
         )
 
-    if (data := raw_data.get("data")) is None:
-        raise GraphQLError(raw_data.get("errors", "Unknown Error(s) Found"))
-
-    return data
+    return resp["data"]
 
 
 def query(doc: Document, headers: dict[str, Any] = {}) -> DocumentResponse:
@@ -170,6 +90,7 @@ def query(doc: Document, headers: dict[str, Any] = {}) -> DocumentResponse:
     logger.info(
         f"client.query: url = {doc.url}, variables = {doc.variables}\n{doc.graphql}"
     )
+    client = get_client()
     resp = requests.post(
         doc.url,
         json=(

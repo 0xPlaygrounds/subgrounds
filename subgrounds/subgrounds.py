@@ -174,8 +174,52 @@ class Subgrounds:
         req: DataRequest,
         pagination_strategy: Type[PaginationStrategy] | None = LegacyStrategy,
     ) -> DataResponse:
-        """Same as `execute`, except that an iterator is returned which will iterate
-        the data pages.
+        """Executes a :class:`DataRequest` and returns a :class:`DataResponse`.
+
+        Args:
+          req: The :class:`DataRequest` object to be executed.
+          pagination_strategy: A Class implementing the :class:`PaginationStrategy`
+            ``Protocol``. If ``None``, then automatic pagination is disabled.
+            Defaults to :class:`LegacyStrategy`.
+
+        Returns:
+          A :class:`DataResponse` object representing the response
+        """
+
+        document_transforms = {
+            url: subgraph._transforms for url, subgraph in self.subgraphs.items()
+        }
+        transformer = apply_transforms(self.global_transforms, document_transforms, req)
+        strategy = normalize_strategy(pagination_strategy)
+
+        data_resp = DataResponse(responses=[])
+        data_req = cast(DataRequest, next(transformer))
+
+        for doc in data_req.documents:
+            paginator = paginate(self.subgraphs[doc.url]._schema, doc, strategy)
+            paginated_doc = next(paginator)
+            doc_resp = DocumentResponse(url=doc.url, data={})
+
+            while True:
+                resp = client.query(paginated_doc, headers=self.headers)
+                doc_resp = doc_resp.combine(resp)
+
+                try:
+                    paginated_doc = paginator.send(resp)
+                except StopIteration:
+                    break
+
+            data_resp = data_resp.add_responses(doc_resp)
+
+        next(transformer)  # toss empty None
+        return cast(DataResponse, transformer.send(data_resp))
+
+    async def async_execute(
+        self,
+        req: DataRequest,
+        pagination_strategy: Type[PaginationStrategy] | None = LegacyStrategy,
+    ) -> DataResponse:
+        """Executes a :class:`DataRequest` and returns a :class:`DataResponse`.
 
         Args:
           req: The :class:`DataRequest` object to be executed

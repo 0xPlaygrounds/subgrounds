@@ -2749,4 +2749,4 @@ pyodide = ["pyodide-http"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "49498ef2e45c6af828157351d1160bf000bdf0a01b533d65911a62768734daa8"
+content-hash = "babc43b8ce4b03b3081a8930c2483a3d3ef7b2abf71bd1e7b9fbc9833590d5fd"

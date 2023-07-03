@@ -9,10 +9,11 @@ import json
 import logging
 import warnings
 from dataclasses import dataclass, field
-from functools import reduce
+from functools import cached_property, reduce
 from pathlib import Path
 from typing import Any, Iterator, Type, cast
 
+import httpx
 import pandas as pd
 from pipe import groupby, map, traverse
 
@@ -34,6 +35,8 @@ from .utils import PLAYGROUNDS_APP_URL
 
 logger = logging.getLogger("subgrounds")
 warnings.simplefilter("default")
+
+HTTP2_SUPPORT = True
 
 
 def store_schema(schema: dict[str, Any], path: Path):
@@ -87,20 +90,21 @@ class Subgrounds:
             if schema_path.exists():
                 schema = load_schema(schema_path)
             else:
-                schema = client.get_schema(url, headers=self.headers)
+                schema = client.get_schema(
+                    url, client=self._client, headers=self.headers
+                )
                 store_schema(schema, schema_path)
 
         else:
-            schema = client.get_schema(url, headers=self.headers)
+            schema = client.get_schema(url, client=self._client, headers=self.headers)
 
-        subgraph = Subgraph(
+        self.subgraphs[url] = Subgraph(
             url,
             SchemaMeta(**schema["__schema"]),
             DEFAULT_SUBGRAPH_TRANSFORMS,
             is_subgraph,
         )
-        self.subgraphs[url] = subgraph
-        return subgraph
+        return self.subgraphs[url]
 
     def load_subgraph(
         self, url: str, save_schema: bool = False, cache_dir: str = "schemas/"
@@ -139,6 +143,79 @@ class Subgrounds:
         """
 
         return self.load(url, save_schema, cache_dir, False)
+
+    async def async_load(
+        self,
+        url: str,
+        save_schema: bool = False,
+        cache_dir: str = "schemas/",
+        is_subgraph: bool = True,
+    ):
+        if save_schema:
+            cache_path = Path(cache_dir)
+            if not cache_path.exists():
+                cache_path.mkdir(parents=True)
+
+            schema_path = cache_path / (subgraph_slug(url) + ".json")
+
+            if schema_path.exists():
+                schema = load_schema(schema_path)
+            else:
+                schema = await client.async_get_schema(
+                    url, client=self._async_client, headers=self.headers
+                )
+                store_schema(schema, schema_path)
+
+        else:
+            schema = await client.async_get_schema(
+                url, client=self._async_client, headers=self.headers
+            )
+
+        self.subgraphs[url] = Subgraph(
+            url,
+            SchemaMeta(**schema["__schema"]),
+            DEFAULT_SUBGRAPH_TRANSFORMS,
+            is_subgraph,
+        )
+        return self.subgraphs[url]
+
+    async def async_load_subgraph(
+        self, url: str, save_schema: bool = False, cache_dir: str = "schemas/"
+    ) -> Subgraph:
+        """Performs introspection on the provided GraphQL API ``url`` to get the
+        schema, stores the schema if ``save_schema`` is ``True`` and returns a
+        generated class representing the subgraph with all its entities.
+
+        Args:
+          url (str): The url of the API
+          save_schema (bool, optional): Flag indicating whether or not the schema
+            should be cached to disk. Defaults to False.
+          cache_dir (str, optional): If ``save_schema == True``, then subgraph schemas
+            will be stored under ``cache_dir``. Defaults to ``schemas/``
+
+        Returns:
+          Subgraph: A generated class representing the subgraph and its entities
+        """
+
+        return await self.async_load(url, save_schema, cache_dir, True)
+
+    async def async_load_api(
+        self, url: str, save_schema: bool = False, cache_dir: str = "schemas/"
+    ) -> Subgraph:
+        """Performs introspection on the provided GraphQL API ``url`` to get the
+         schema, stores the schema if ``save_schema`` is ``True`` and returns a
+         generated class representing the GraphQL endpoint with all its entities.
+
+        Args:
+          url: The url of the API
+          save_schema: Flag indicating whether or not the schema should be saved
+           to disk. Defaults to False.
+
+        Returns:
+          A generated class representing the subgraph and its entities
+        """
+
+        return await self.async_load(url, save_schema, cache_dir, False)
 
     def mk_request(self, fpaths: FieldPath | list[FieldPath]) -> DataRequest:
         """Creates a :class:`DataRequest` object by combining one or more
@@ -201,7 +278,9 @@ class Subgrounds:
             doc_resp = DocumentResponse(url=doc.url, data={})
 
             while True:
-                resp = client.query(paginated_doc, headers=self.headers)
+                resp = client.query(
+                    paginated_doc, client=self._client, headers=self.headers
+                )
                 doc_resp = doc_resp.combine(resp)
 
                 try:
@@ -246,7 +325,9 @@ class Subgrounds:
             doc_resp = DocumentResponse(url=doc.url, data={})
 
             while True:
-                resp = client.query(paginated_doc, headers=self.headers)
+                resp = await client.async_query(
+                    paginated_doc, client=self._async_client, headers=self.headers
+                )
                 doc_resp = doc_resp.combine(resp)
 
                 try:
@@ -293,7 +374,9 @@ class Subgrounds:
             paginator = paginate(self.subgraphs[doc.url]._schema, doc, strategy)
             paginated_doc = next(paginator)
             while True:
-                resp = client.query(paginated_doc, headers=self.headers)
+                resp = client.query(
+                    paginated_doc, client=self._client, headers=self.headers
+                )
 
                 next(transformer)  # toss empty None
                 data_resp = cast(
@@ -327,7 +410,8 @@ class Subgrounds:
 
         fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)
         req = self.mk_request(fpaths)
-        return [doc.data for doc in self.execute(req, pagination_strategy).responses]
+        data = self.execute(req, pagination_strategy)
+        return [doc.data for doc in data.responses]
 
     def query_json_iter(
         self,
@@ -349,7 +433,31 @@ class Subgrounds:
 
         fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)
         req = self.mk_request(fpaths)
-        yield from (resp.data for resp in self.execute_iter(req, pagination_strategy))
+        responses = self.execute_iter(req, pagination_strategy)
+        yield from (resp.data for resp in responses)
+
+    async def async_query_json(
+        self,
+        fpaths: FieldPath | list[FieldPath],
+        pagination_strategy: Type[PaginationStrategy] | None = LegacyStrategy,
+    ) -> list[dict[str, Any]]:
+        """See :func:`~subgrounds.Subgrounds.query_json`.
+
+        Args:
+          fpaths: One or more :class:`FieldPath` objects
+            that should be included in the request.
+          pagination_strategy: A Class implementing the :class:`PaginationStrategy`
+            ``Protocol``. If ``None``, then automatic pagination is disabled.
+            Defaults to :class:`LegacyStrategy`.
+
+        Returns:
+          The reponse data
+        """
+
+        fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)
+        req = self.mk_request(fpaths)
+        data = await self.async_execute(req, pagination_strategy)
+        return [doc.data for doc in data.responses]
 
     def query_df(
         self,
@@ -452,6 +560,35 @@ class Subgrounds:
             fpaths, pagination_strategy=pagination_strategy
         ):
             yield df_of_json(page, fpaths, None, False)
+
+    async def async_query_df(
+        self,
+        fpaths: FieldPath | list[FieldPath],
+        columns: list[str] | None = None,
+        concat: bool = False,
+        pagination_strategy: Type[PaginationStrategy] | None = LegacyStrategy,
+    ) -> pd.DataFrame | list[pd.DataFrame]:
+        """See :func:`~subgrounds.Subgrounds.query_df`.
+
+        Args:
+          fpaths: One or more `FieldPath` objects that should be included in the request
+          columns: The column labels. Defaults to None.
+          merge: Whether or not to merge resulting dataframes.
+          pagination_strategy: A Class implementing the :class:`PaginationStrategy`
+            ``Protocol``. If ``None``, then automatic pagination is disabled.
+            Defaults to :class:`LegacyStrategy`.
+
+        Returns:
+          A :class:`pandas.DataFrame` containing the reponse data.
+
+
+        """
+
+        fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)
+        json_data = await self.async_query_json(
+            fpaths, pagination_strategy=pagination_strategy
+        )
+        return df_of_json(json_data, fpaths, columns, concat)
 
     def query(
         self,
@@ -560,3 +697,65 @@ class Subgrounds:
                 yield data[0]
             else:
                 yield data
+
+    async def async_query(
+        self,
+        fpaths: FieldPath | list[FieldPath],
+        unwrap: bool = True,
+        pagination_strategy: Type[PaginationStrategy] | None = LegacyStrategy,
+    ) -> str | int | float | bool | list | tuple | None:
+        """See :func:`~subgrounds.Subgrounds.query`.
+
+        Args:
+          fpaths: One or more ``FieldPath`` object(s) to query.
+          unwrap: Flag indicating whether or not, in the case where the returned data
+            is a list of one element, the element itself should be returned instead of
+            the list. Defaults to ``True``.
+          pagination_strategy: A Class implementing the :class:`PaginationStrategy`
+            ``Protocol``. If ``None``, then automatic pagination is disabled.
+            Defaults to :class:`LegacyStrategy`.
+
+        Returns:
+          The ``FieldPath`` object(s) data
+        """
+
+        fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)
+        blob = self.query_json(fpaths, pagination_strategy=pagination_strategy)
+
+        def f(fpath: FieldPath) -> dict[str, Any]:
+            data = fpath._extract_data(blob)
+            if type(data) == list and len(data) == 1 and unwrap:
+                return data[0]
+            else:
+                return data
+
+        data = tuple(fpaths | map(f))
+
+        if len(data) == 1:
+            return data[0]
+        else:
+            return data
+
+    @cached_property
+    def _client(self):
+        return httpx.Client(http2=HTTP2_SUPPORT)
+
+    @cached_property
+    def _async_client(self):
+        return httpx.AsyncClient(http2=HTTP2_SUPPORT)
+
+    def __enter__(self):
+        self._client.__enter__()
+        return self
+
+    def __exit__(self, *args):
+        self._client.__exit__(*args)
+        return self
+
+    async def __aenter__(self):
+        await self._async_client.__aenter__()
+        return self
+
+    async def __aexit__(self, *args):
+        await self._async_client.__aexit__(*args)
+        return self

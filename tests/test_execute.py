@@ -220,14 +220,13 @@ async def test_async_execute_roundtrip(
     def _lambda():  # honestly, I don't know why this is like this..
         async def inner(*args):
             return response_f()
+
         return inner
 
     mocker.patch.object(AsyncSubgrounds, "_query", new_callable=_lambda)
 
     subgraph._transforms = transforms
-    sg = AsyncSubgrounds(
-        global_transforms=[], subgraphs={subgraph._url: subgraph}
-    )
+    sg = AsyncSubgrounds(global_transforms=[], subgraphs={subgraph._url: subgraph})
 
     req = datarequest_f(sg, subgraph)
     actual = await sg.execute(req)

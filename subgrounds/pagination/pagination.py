@@ -26,7 +26,7 @@ def paginate(
     schema: SchemaMeta, doc: Document, pagination_strategy: type[PaginationStrategy]
 ) -> PaginateGenerator:
     """Evaluates a :class:`PaginationStrategy` against a document based upon a schema.
-    
+
     Produces a stream of :class:`Document`s until pagination is completed. Documents are
      executed outside the this function and data is transfered via the generator scheme.
 

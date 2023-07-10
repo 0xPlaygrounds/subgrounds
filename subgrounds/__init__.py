@@ -1,9 +1,10 @@
+from subgrounds.client import AsyncSubgrounds, Subgrounds
 from subgrounds.subgraph import FieldPath, Subgraph, SyntheticField
-from subgrounds.subgrounds import Subgrounds
 
 __version__ = "1.6.0"
 
 __all__ = [
+    "AsyncSubgrounds",
     "FieldPath",
     "Subgraph",
     "Subgrounds",

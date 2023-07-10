@@ -1,6 +1,7 @@
 # import unittest
 
 
+from subgrounds import Subgrounds
 from subgrounds.query import (
     Argument,
     DataRequest,
@@ -10,7 +11,6 @@ from subgrounds.query import (
     Selection,
 )
 from subgrounds.schema import TypeMeta, TypeRef
-from subgrounds.subgrounds import Subgrounds
 
 # from tests.conftest import *
 

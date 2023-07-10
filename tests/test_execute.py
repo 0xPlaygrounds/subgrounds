@@ -1,14 +1,15 @@
 import random
 from collections.abc import Callable, Iterator
+from typing import Any
 
 import pytest
 from pytest_mock import MockerFixture
 
+from subgrounds import Subgrounds
 from subgrounds.pagination.strategies import PAGE_SIZE
 from subgrounds.query import DataRequest, DataResponse, DocumentResponse
 from subgrounds.schema import TypeRef
 from subgrounds.subgraph import Subgraph
-from subgrounds.subgrounds import Subgrounds
 from subgrounds.transform import DocumentTransform, TypeTransform
 
 SEED = 1
@@ -58,23 +59,17 @@ def make_datarequest1(sg: Subgrounds, subgraph: Subgraph) -> DataRequest:
     )
 
 
-def make_docresponse0(*args, **kwargs) -> DocumentResponse:
-    return DocumentResponse(
-        url="www.abc.xyz/graphql",
-        data={"swaps": [{"id": hex(random.getrandbits(32))} | BASE_DATA_RAW]},
-    )
+def make_queryresponse0(*args, **kwargs) -> dict[str, Any]:
+    return {"swaps": [{"id": hex(random.getrandbits(32))} | BASE_DATA_RAW]}
 
 
-def make_docresponse1(*args, **kwargs) -> DocumentResponse:
-    return DocumentResponse(
-        url="www.abc.xyz/graphql",
-        data={
-            "xa11d4bcf61e1567a": [
-                {"id": hex(random.getrandbits(32))} | BASE_DATA_RAW
-                for _ in range(PAGE_SIZE)
-            ]
-        },
-    )
+def make_queryresponse1(*args, **kwargs) -> dict[str, Any]:
+    return {
+        "xa11d4bcf61e1567a": [
+            {"id": hex(random.getrandbits(32))} | BASE_DATA_RAW
+            for _ in range(PAGE_SIZE)
+        ]
+    }
 
 
 def make_docexpected0():
@@ -136,7 +131,7 @@ def make_iter_docexpected1():
     ["response_f", "transforms", "datarequest_f", "expected_f"],
     [
         (
-            make_docresponse0,
+            make_queryresponse0,
             [
                 TypeTransform(
                     TypeRef.Named(name="BigDecimal", kind="SCALAR"),
@@ -147,7 +142,7 @@ def make_iter_docexpected1():
             make_docexpected0,
         ),
         (
-            make_docresponse1,
+            make_queryresponse1,
             [
                 TypeTransform(
                     TypeRef.Named(name="BigDecimal", kind="SCALAR"),
@@ -162,13 +157,13 @@ def make_iter_docexpected1():
 def test_execute_roundtrip(
     mocker: MockerFixture,
     datarequest_f: Callable[[Subgrounds, Subgraph], DataRequest],
-    response_f: Callable[..., DocumentResponse],
+    response_f: Callable[..., dict[str, Any]],
     subgraph: Subgraph,
     transforms: list[DocumentTransform],
     expected_f: Callable[..., DocumentResponse],
 ) -> None:
     random.seed(SEED)
-    mocker.patch("subgrounds.client.query", new_callable=lambda: response_f)
+    mocker.patch.object(Subgrounds, "_query", new_callable=lambda *args: response_f)
 
     subgraph._transforms = transforms
     sg = Subgrounds(global_transforms=[], subgraphs={subgraph._url: subgraph})
@@ -188,7 +183,7 @@ def test_execute_roundtrip(
     ["response_f", "transforms", "datarequest_f", "expected_f"],
     [
         (
-            make_docresponse0,
+            make_queryresponse0,
             [
                 TypeTransform(
                     TypeRef.Named(name="BigDecimal", kind="SCALAR"),
@@ -199,7 +194,7 @@ def test_execute_roundtrip(
             make_iter_docexpected0,
         ),
         (
-            make_docresponse1,
+            make_queryresponse1,
             [
                 TypeTransform(
                     TypeRef.Named(name="BigDecimal", kind="SCALAR"),
@@ -214,14 +209,14 @@ def test_execute_roundtrip(
 def test_execute_iter_roundtrip(
     mocker,
     datarequest_f: Callable[[Subgrounds, Subgraph], DataRequest],
-    response_f: Callable[..., DocumentResponse],
+    response_f: Callable[..., dict[str, Any]],
     subgraph: Subgraph,
     transforms: list[DocumentTransform],
     expected_f: Callable[..., Iterator[DocumentResponse]],
 ) -> None:
     random.seed(SEED)
-    mocker.patch("subgrounds.client.query", new_callable=lambda: response_f)
 
+    mocker.patch.object(Subgrounds, "_query", new_callable=lambda *args: response_f)
     subgraph._transforms = transforms
     sg = Subgrounds(global_transforms=[], subgraphs={subgraph._url: subgraph})
 

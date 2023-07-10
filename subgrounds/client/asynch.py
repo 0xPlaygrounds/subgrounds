@@ -112,12 +112,12 @@ class AsyncSubgrounds(SubgroundsBase):
         try:
             executor = self._execute(req, pagination_strategy)
 
+            doc = next(executor)
             while True:
-                doc = next(executor)
                 data = await self._query(
                     doc.url, {"query": doc.graphql, "variables": doc.variables}
                 )
-                executor.send(DocumentResponse(url=doc.url, data=data))
+                doc = executor.send(DocumentResponse(url=doc.url, data=data))
 
         except StopIteration as e:
             return e.value

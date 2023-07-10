@@ -5,7 +5,8 @@ from typing import Any
 import pytest
 from pytest_mock import MockerFixture
 
-from subgrounds import Subgrounds
+from subgrounds import AsyncSubgrounds, Subgrounds
+from subgrounds.client import SubgroundsBase
 from subgrounds.pagination.strategies import PAGE_SIZE
 from subgrounds.query import DataRequest, DataResponse, DocumentResponse
 from subgrounds.schema import TypeRef
@@ -170,6 +171,66 @@ def test_execute_roundtrip(
 
     req = datarequest_f(sg, subgraph)
     actual = sg.execute(req)
+
+    random.seed(SEED)
+    expected = expected_f()
+
+    assert type(actual) is type(expected)
+
+    assert actual == expected
+
+
+@pytest.mark.parametrize(
+    ["response_f", "transforms", "datarequest_f", "expected_f"],
+    [
+        (
+            make_queryresponse0,
+            [
+                TypeTransform(
+                    TypeRef.Named(name="BigDecimal", kind="SCALAR"),
+                    lambda bigdecimal: float(bigdecimal),
+                )
+            ],
+            make_datarequest0,
+            make_docexpected0,
+        ),
+        (
+            make_queryresponse1,
+            [
+                TypeTransform(
+                    TypeRef.Named(name="BigDecimal", kind="SCALAR"),
+                    lambda bigdecimal: float(bigdecimal),
+                )
+            ],
+            make_datarequest1,
+            make_docexpected1,
+        ),
+    ],
+)
+async def test_async_execute_roundtrip(
+    mocker: MockerFixture,
+    datarequest_f: Callable[[SubgroundsBase, Subgraph], DataRequest],
+    response_f: Callable[..., dict[str, Any]],
+    subgraph: Subgraph,
+    transforms: list[DocumentTransform],
+    expected_f: Callable[..., DocumentResponse],
+) -> None:
+    random.seed(SEED)
+
+    def _lambda():  # honestly, I don't know why this is like this..
+        async def inner(*args):
+            return response_f()
+        return inner
+
+    mocker.patch.object(AsyncSubgrounds, "_query", new_callable=_lambda)
+
+    subgraph._transforms = transforms
+    sg = AsyncSubgrounds(
+        global_transforms=[], subgraphs={subgraph._url: subgraph}
+    )
+
+    req = datarequest_f(sg, subgraph)
+    actual = await sg.execute(req)
 
     random.seed(SEED)
     expected = expected_f()

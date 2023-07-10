@@ -19,7 +19,8 @@ pydantic = "^1.10.2"
 dash = { version = "^2.3.1", optional = true }
 plotly = { version = "^5.14.1", optional = true }
 pyodide-http = { version = "^0.2.1", optional = true }
-httpx = {extras = ["http2"], version = "^0.24.1"}
+httpx = { extras = ["http2"], version = "^0.24.1" }
+pytest-asyncio = "^0.21.0"
 
 [tool.poetry.extras]
 dash = ["dash"]
@@ -64,6 +65,9 @@ build_command = "poetry build"
 "tests/*" = ["E501"]
 "subgrounds/plotly_wrappers" = ["F405", "F403"]
 "subgrounds/dash_wrappers" = ["F405", "F403"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

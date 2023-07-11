@@ -9,24 +9,18 @@ import logging
 import warnings
 from collections.abc import Iterator
 from contextlib import suppress
-from functools import cached_property, reduce
+from functools import cached_property
 from json import JSONDecodeError
 from typing import Any, Type, cast
 
 import httpx
 import pandas as pd
-from pipe import groupby, map, traverse
+from pipe import map, traverse
 
 from subgrounds.dataframe_utils import df_of_json
 from subgrounds.errors import GraphQLError, ServerError
 from subgrounds.pagination import LegacyStrategy, PaginationStrategy
-from subgrounds.query import (
-    DataRequest,
-    DataResponse,
-    Document,
-    DocumentResponse,
-    Query,
-)
+from subgrounds.query import DataRequest, DataResponse, Document, DocumentResponse
 from subgrounds.subgraph import FieldPath, Subgraph
 from subgrounds.utils import default_header
 
@@ -100,35 +94,6 @@ class Subgrounds(SubgroundsBase):
         """
 
         return self.load(url, save_schema, cache_dir, False)
-
-    def mk_request(self, fpaths: FieldPath | list[FieldPath]) -> DataRequest:
-        """Creates a :class:`DataRequest` object by combining one or more
-        :class:`FieldPath` objects.
-
-        Args:
-          fpaths: One or more :class:`FieldPath` objects that should be included
-           in the request
-
-        Returns:
-          Brand new request
-        """
-
-        fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)
-
-        return DataRequest(
-            documents=list(
-                fpaths
-                | groupby(lambda fpath: fpath._subgraph._url)
-                | map(
-                    lambda group: Document(
-                        url=group[0],
-                        query=reduce(
-                            Query.add, group[1] | map(FieldPath._selection), Query()
-                        ),
-                    )
-                )
-            )
-        )
 
     def execute(
         self,

@@ -46,7 +46,7 @@ class AsyncSubgrounds(SubgroundsBase):
         try:
             loader = self._load(url, save_schema, is_subgraph)
             url, query = next(loader)  # if this fails, schema is loaded from cache
-            data = await self._query(url, {"query": query})
+            data = await self._fetch(url, {"query": query})
             loader.send(data)
 
         except StopIteration as e:
@@ -114,7 +114,7 @@ class AsyncSubgrounds(SubgroundsBase):
 
             doc = next(executor)
             while True:
-                data = await self._query(
+                data = await self._fetch(
                     doc.url, {"query": doc.graphql, "variables": doc.variables}
                 )
                 doc = executor.send(DocumentResponse(url=doc.url, data=data))
@@ -212,7 +212,7 @@ class AsyncSubgrounds(SubgroundsBase):
         else:
             return data
 
-    async def _query(self, url: str, blob: dict[str, Any]) -> dict[str, Any]:
+    async def _fetch(self, url: str, blob: dict[str, Any]) -> dict[str, Any]:
         resp = await self._client.post(
             url, json=blob, headers=default_header(url) | self.headers
         )

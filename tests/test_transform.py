@@ -178,7 +178,7 @@ def test_typetransform_roundtrip(
     transforms: list[DocumentTransform],
     expected: list[dict[str, Any]],
 ) -> None:
-    mocker.patch.object(Subgrounds, "_query", return_value=response)
+    mocker.patch.object(Subgrounds, "_fetch", return_value=response)
 
     subgraph._transforms = transforms
     sg = Subgrounds(global_transforms=[], subgraphs={subgraph._url: subgraph})
@@ -193,7 +193,7 @@ def test_localsyntheticfield_literal_roundtrip1(
     response: list[dict[str, Any]],
     subgraph: Subgraph,
 ):
-    mocker.patch.object(Subgrounds, "_query", return_value=response)
+    mocker.patch.object(Subgrounds, "_fetch", return_value=response)
 
     expected = DataResponse(
         responses=[
@@ -495,7 +495,7 @@ def test_localsyntheticfield_toplevel_roundtrip(
     fpaths_f: Callable[[Subgraph], list[FieldPath]],
     subgraph: Subgraph,
 ):
-    mocker.patch.object(Subgrounds, "_query", return_value=response)
+    mocker.patch.object(Subgrounds, "_fetch", return_value=response)
 
     sg = Subgrounds(global_transforms=[], subgraphs={subgraph._url: subgraph})
 

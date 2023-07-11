@@ -60,11 +60,11 @@ def make_datarequest1(sg: Subgrounds, subgraph: Subgraph) -> DataRequest:
     )
 
 
-def make_queryresponse0(*args, **kwargs) -> dict[str, Any]:
+def make_fetchresponse0(*args, **kwargs) -> dict[str, Any]:
     return {"swaps": [{"id": hex(random.getrandbits(32))} | BASE_DATA_RAW]}
 
 
-def make_queryresponse1(*args, **kwargs) -> dict[str, Any]:
+def make_fetchresponse1(*args, **kwargs) -> dict[str, Any]:
     return {
         "xa11d4bcf61e1567a": [
             {"id": hex(random.getrandbits(32))} | BASE_DATA_RAW
@@ -132,7 +132,7 @@ def make_iter_docexpected1():
     ["response_f", "transforms", "datarequest_f", "expected_f"],
     [
         (
-            make_queryresponse0,
+            make_fetchresponse0,
             [
                 TypeTransform(
                     TypeRef.Named(name="BigDecimal", kind="SCALAR"),
@@ -143,7 +143,7 @@ def make_iter_docexpected1():
             make_docexpected0,
         ),
         (
-            make_queryresponse1,
+            make_fetchresponse1,
             [
                 TypeTransform(
                     TypeRef.Named(name="BigDecimal", kind="SCALAR"),
@@ -164,7 +164,7 @@ def test_execute_roundtrip(
     expected_f: Callable[..., DocumentResponse],
 ) -> None:
     random.seed(SEED)
-    mocker.patch.object(Subgrounds, "_query", new_callable=lambda *args: response_f)
+    mocker.patch.object(Subgrounds, "_fetch", new_callable=lambda *args: response_f)
 
     subgraph._transforms = transforms
     sg = Subgrounds(global_transforms=[], subgraphs={subgraph._url: subgraph})
@@ -184,7 +184,7 @@ def test_execute_roundtrip(
     ["response_f", "transforms", "datarequest_f", "expected_f"],
     [
         (
-            make_queryresponse0,
+            make_fetchresponse0,
             [
                 TypeTransform(
                     TypeRef.Named(name="BigDecimal", kind="SCALAR"),
@@ -195,7 +195,7 @@ def test_execute_roundtrip(
             make_docexpected0,
         ),
         (
-            make_queryresponse1,
+            make_fetchresponse1,
             [
                 TypeTransform(
                     TypeRef.Named(name="BigDecimal", kind="SCALAR"),
@@ -223,7 +223,7 @@ async def test_async_execute_roundtrip(
 
         return inner
 
-    mocker.patch.object(AsyncSubgrounds, "_query", new_callable=_lambda)
+    mocker.patch.object(AsyncSubgrounds, "_fetch", new_callable=_lambda)
 
     subgraph._transforms = transforms
     sg = AsyncSubgrounds(global_transforms=[], subgraphs={subgraph._url: subgraph})
@@ -243,7 +243,7 @@ async def test_async_execute_roundtrip(
     ["response_f", "transforms", "datarequest_f", "expected_f"],
     [
         (
-            make_queryresponse0,
+            make_fetchresponse0,
             [
                 TypeTransform(
                     TypeRef.Named(name="BigDecimal", kind="SCALAR"),
@@ -254,7 +254,7 @@ async def test_async_execute_roundtrip(
             make_iter_docexpected0,
         ),
         (
-            make_queryresponse1,
+            make_fetchresponse1,
             [
                 TypeTransform(
                     TypeRef.Named(name="BigDecimal", kind="SCALAR"),
@@ -276,7 +276,7 @@ def test_execute_iter_roundtrip(
 ) -> None:
     random.seed(SEED)
 
-    mocker.patch.object(Subgrounds, "_query", new_callable=lambda *args: response_f)
+    mocker.patch.object(Subgrounds, "_fetch", new_callable=lambda *args: response_f)
     subgraph._transforms = transforms
     sg = Subgrounds(global_transforms=[], subgraphs={subgraph._url: subgraph})
 

@@ -7,7 +7,7 @@ from pipe import chain_with, map
 
 from subgrounds.query import DataRequest, DataResponse
 
-from .abcs import DocumentTransform, RequestTransform
+from .base import DocumentTransform, RequestTransform
 from .transforms import DocumentRequestTransform
 
 logger = logging.getLogger("subgrounds")

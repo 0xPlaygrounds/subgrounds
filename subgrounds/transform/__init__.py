@@ -1,4 +1,4 @@
-from .abcs import DocumentTransform, RequestTransform
+from .base import DocumentTransform, RequestTransform
 from .apply import apply_transforms
 from .defaults import DEFAULT_GLOBAL_TRANSFORMS, DEFAULT_SUBGRAPH_TRANSFORMS
 from .transforms import LocalSyntheticField, TypeTransform

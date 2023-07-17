@@ -1,7 +1,7 @@
-""" Toplevel Subgrounds module
+""" `SubgroundsBase`
 
-This module implements the toplevel API that most developers will be using when
-querying The Graph with Subgrounds.
+This module implements the base API that developers can use to build custom clients for
+ allowing for intricate customization of subgrounds feature set.
 """
 
 import json
@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from functools import reduce
 from importlib import resources
 from pathlib import Path
-from typing import Any, Type, cast
+from typing import Annotated, Any, Type, cast
 
 from pipe import groupby, map, traverse
 
@@ -50,6 +50,7 @@ INTROSPECTION_QUERY = (
 class SubgroundsBase(ABC):
     """A base instance for all `Subgrounds` (should not be used directly)"""
 
+    timeout: Annotated[int, "seconds"] = 30
     headers: dict[str, Any] = field(default_factory=dict)
     global_transforms: list[RequestTransform] = field(
         default_factory=lambda: DEFAULT_GLOBAL_TRANSFORMS.copy()
@@ -153,7 +154,16 @@ class SubgroundsBase(ABC):
     def _load(
         self, url: str, save_schema: bool = False, is_subgraph: bool = True
     ) -> Generator[tuple[str, str], dict[str, Any], Subgraph]:
-        """Loads thingy into thingy"""
+        """Loads a subgraph / graphql API by fetching the schema.
+
+        If `save_schema` is set `True`, grabs schema from disk and skips query made to
+          url.
+
+        ```{note}
+        This method utilizes the sans-io generator pattern.
+        More on that [here](/subgrounds/advanced_topics/custom_clients/#methodology).
+        ```
+        """
 
         if not save_schema or (schema := self.fetch_schema(url)) is None:
             # TODO Yield `Document` once we have graphql -> AST converter
@@ -187,26 +197,35 @@ class SubgroundsBase(ABC):
           A :class:`DataResponse` object representing the response
         """
 
+        strategy = normalize_strategy(pagination_strategy)
+
+        # Setup the main transformation pipeline via `apply_transforms`
         document_transforms = {
             url: subgraph._transforms for url, subgraph in self.subgraphs.items()
         }
         transformer = apply_transforms(self.global_transforms, document_transforms, req)
-        strategy = normalize_strategy(pagination_strategy)
 
-        data_resp = DataResponse(responses=[])
+        # start with the base request and the response we'll be building iteratively
         data_req = cast(DataRequest, next(transformer))
+        data_resp = DataResponse(responses=[])
 
+        # for each top-level document (generally 1 per subgraph URL):
+        #   define the pagination pipeline
+        #   setup the starting doc req and the response we'll be building iteratively
+        #   until pagination is complete:
+        #       
         for doc in data_req.documents:
             paginator = paginate(self.subgraphs[doc.url]._schema, doc, strategy)
-            paginated_doc = next(paginator)
+
+            doc_req = next(paginator)
             doc_resp = DocumentResponse(url=doc.url, data={})
 
             while True:
-                resp = yield paginated_doc
+                resp = yield doc_req
                 doc_resp = doc_resp.combine(resp)
 
                 try:
-                    paginated_doc = paginator.send(resp)
+                    doc_req = paginator.send(resp)
                 except StopIteration:
                     break
 

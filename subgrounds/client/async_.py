@@ -34,7 +34,7 @@ class AsyncSubgrounds(SubgroundsBase):
     def _client(self):
         """Cached client"""
 
-        return httpx.AsyncClient(http2=HTTP2_SUPPORT, timeout=30.0)
+        return httpx.AsyncClient(http2=HTTP2_SUPPORT, timeout=self.timeout)
 
     async def load(
         self,

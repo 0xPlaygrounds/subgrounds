@@ -37,15 +37,18 @@ class Subgrounds(SubgroundsBase):
     def _client(self):
         """Cached client"""
 
-        return httpx.Client(http2=HTTP2_SUPPORT, timeout=30.0)
+        return httpx.Client(http2=HTTP2_SUPPORT, timeout=self.timeout)
 
     def load(
         self,
         url: str,
         save_schema: bool = False,
-        cache_dir: str = "schemas/",
+        cache_dir: str | None = None,
         is_subgraph: bool = True,
     ) -> Subgraph:
+        if cache_dir is not None:
+            warnings.warn("This will be depreciated", DeprecationWarning)
+
         try:
             loader = self._load(url, save_schema, is_subgraph)
             url, query = next(loader)  # if this fails, schema is loaded from cache
@@ -58,18 +61,16 @@ class Subgrounds(SubgroundsBase):
         assert False
 
     def load_subgraph(
-        self, url: str, save_schema: bool = False, cache_dir: str = "schemas/"
+        self, url: str, save_schema: bool = False, cache_dir: str | None = None
     ) -> Subgraph:
         """Performs introspection on the provided GraphQL API ``url`` to get the
         schema, stores the schema if ``save_schema`` is ``True`` and returns a
         generated class representing the subgraph with all its entities.
 
         Args:
-          url (str): The url of the API
-          save_schema (bool, optional): Flag indicating whether or not the schema
-            should be cached to disk. Defaults to False.
-          cache_dir (str, optional): If ``save_schema == True``, then subgraph schemas
-            will be stored under ``cache_dir``. Defaults to ``schemas/``
+          url The url of the API.
+          save_schema: Flag indicating whether or not the schema should be cached to
+            disk.
 
         Returns:
           Subgraph: A generated class representing the subgraph and its entities
@@ -78,16 +79,16 @@ class Subgrounds(SubgroundsBase):
         return self.load(url, save_schema, cache_dir, True)
 
     def load_api(
-        self, url: str, save_schema: bool = False, cache_dir: str = "schemas/"
+        self, url: str, save_schema: bool = False, cache_dir: str | None = None
     ) -> Subgraph:
         """Performs introspection on the provided GraphQL API ``url`` to get the
          schema, stores the schema if ``save_schema`` is ``True`` and returns a
          generated class representing the GraphQL endpoint with all its entities.
 
         Args:
-          url: The url of the API
+          url: The url of the API.
           save_schema: Flag indicating whether or not the schema should be saved
-           to disk. Defaults to False.
+           to disk.
 
         Returns:
           A generated class representing the subgraph and its entities

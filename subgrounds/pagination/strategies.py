@@ -91,17 +91,17 @@ PAGE_SIZE = 900
 
 class StopPagination(Exception):
     """Raise within :class:`PaginationStategy` when pagination is completed, usually
-    within :func:`subgrounds.pagination.pagination.PaginationStrategy.step`.
+    within :func:`~subgrounds.pagination.pagination.PaginationStrategy.step`.
 
-    Causes :func:`subgrounds.pagination.pagination.paginate` to be stopped.
+    Causes :func:`~subgrounds.pagination.pagination.paginate` to be stopped.
     """
 
 
 class SkipPagination(Exception):
     """Raise within :class:`PaginationStategy` should be skipped, usually within
-    :func:`subgrounds.pagination.pagination.PaginationStrategy.__init___`.
+    :func:`~subgrounds.pagination.pagination.PaginationStrategy.__init___`.
 
-    Causes :func:`subgrounds.pagination.pagination.paginate` to be skipped.
+    Causes :func:`~subgrounds.pagination.pagination.paginate` to be skipped.
     """
 
 
@@ -557,7 +557,7 @@ class SkipStrategy:
     def step(
         self, page_data: Optional[dict[str, Any]] = None
     ) -> tuple[Document, dict[str, Any]]:
-        raise SkipPagination
+        raise StopPagination
 
 
 def normalize_strategy(

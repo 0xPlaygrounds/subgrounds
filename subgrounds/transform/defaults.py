@@ -1,6 +1,6 @@
 from subgrounds.schema import TypeRef
 
-from .abcs import DocumentTransform, RequestTransform
+from .base import DocumentTransform, RequestTransform
 from .transforms import TypeTransform
 
 DEFAULT_GLOBAL_TRANSFORMS: list[RequestTransform] = []

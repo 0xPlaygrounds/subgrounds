@@ -1,156 +1,37 @@
-""" Subgrounds request/response transformation layers module
-
-This module defines interfaces (abstract classes) for transformation layers.
-Transformation layers, or transforms, can be applied to entire
-requests (see :class:`RequestTransform`) or on a per-document basis (see
-:class:`DocumentTransform`). Classes that implement either type of transforms
-can be used to perform modifications to queries and their response data.
-
-For example, the :class:`TypeTransform` class is used to tranform the response
-data of ``BigInt`` and ``BigDecimal`` fields (which are represented as
-strings in the response JSON data) to python ``int`` and ``float``
-respectively (see the actual transforms in ``DEFAULT_SUBGRAPH_TRANSFORMS``).
-
-Transforms are also used to apply :class:`SyntheticField` to queries and the
-response data (see :class:`LocalSyntheticField` transform class). Each
-:class:`SyntheticField` defined on a subgraph creates a new transformation layer
-by instantiating a new :class:`LocalSyntheticField` object.
-"""
-
 from __future__ import annotations
 
-import logging
-from abc import ABC, abstractmethod
+from dataclasses import replace
 from functools import partial
 from typing import TYPE_CHECKING, Any, Callable
 
 from pipe import map, traverse
 
-from .errors import TransformError
-from .query import DataRequest, Document, Query, Selection
-from .schema import TypeMeta, TypeRef
-from .utils import flatten, union
+from subgrounds.errors import TransformError
+from subgrounds.query import (
+    DataRequest,
+    DataResponse,
+    Document,
+    DocumentResponse,
+    Query,
+    Selection,
+)
+from subgrounds.schema import TypeMeta, TypeRef
+from subgrounds.utils import flatten
+
+from .abcs import DocumentTransform, RequestTransform
+from .utils import select_data
 
 if TYPE_CHECKING:
-    from .subgraph import Subgraph
-
-logger = logging.getLogger("subgrounds")
-
-
-def select_data(select: Selection, data: dict) -> list[Any]:
-    match (select, data):
-        case (
-            Selection(TypeMeta.FieldMeta(name=name), None, _, [] | None)
-            | Selection(TypeMeta.FieldMeta(), name, _, [] | None),
-            dict() as data,
-        ) if name in data:
-            return [data[name]]
-
-        case (
-            Selection(TypeMeta.FieldMeta(name=name), None, _, inner_select)
-            | Selection(TypeMeta.FieldMeta(), name, _, inner_select),
-            dict() as data,
-        ) if name in data:
-            return list(
-                inner_select | map(partial(select_data, data=data[name])) | traverse
-            )
-
-        case (select, data):
-            raise TransformError(
-                f"select_data: invalid selection {select} for data {data}"
-            )
-
-    assert False  # Suppress mypy missing return statement warning
-
-
-class RequestTransform(ABC):
-    """Abstract class representing a transformation layer to be applied to entire
-    :class:`DataRequest` objects.
-    """
-
-    @abstractmethod
-    def transform_request(self, req: DataRequest) -> DataRequest:
-        """Method that will be applied to all :class:`DataRequest` objects that
-        pass through the transformation layer.
-
-        Args:
-          req (DataRequest): The initial request object
-
-        Returns:
-          DataRequest: The transformed request object
-        """
-
-        return req
-
-    @abstractmethod
-    def transform_response(
-        self, req: DataRequest, data: list[dict[str, Any]]
-    ) -> list[dict[str, Any]]:
-        """Method to be applied to all response data ``data`` of requests that pass
-        through the transformation layer.
-
-        ``req`` is the initial :class:`DataRequest` object that yielded the
-        resulting JSON data ``data``.
-
-        Args:
-          req (DataRequest): Initial data request object
-          data (list[dict[str, Any]]): JSON data blob resulting from the execution
-            of the transformed data request.
-
-        Returns:
-          list[dict[str, Any]]: The transformed response data
-        """
-
-        return data
-
-
-class DocumentTransform(ABC):
-    """Abstract class representing a transformation layer to be applied to
-    :class:`Document` objects.
-    """
-
-    @abstractmethod
-    def transform_document(self, doc: Document) -> Document:
-        """Method that will be applied to all :class:`Document` objects that pass
-        through the transformation layer.
-
-        Args:
-          doc (Document): The initial document
-
-        Returns:
-          Document: The transformed document
-        """
-
-        return doc
-
-    @abstractmethod
-    def transform_response(self, req: Document, data: dict[str, Any]) -> dict[str, Any]:
-        """Method to be applied to all response data ``data`` of requests that pass
-        through the transformation layer.
-
-        ``doc`` is the initial :class:`Document` object that yielded the
-        resulting JSON data ``data``.
-
-        Args:
-          doc (Document): Initial document
-          data (dict[str, Any]): JSON data blob resulting from the execution of the
-            transformed document.
-
-        Returns:
-          dict[str, Any]: The transformed response data
-        """
-
-        return data
+    from subgrounds.subgraph import Subgraph
 
 
 class TypeTransform(DocumentTransform):
     """Transform to be applied to scalar fields on a per-type basis.
 
     Attributes:
-      type_ (TypeRef.T): Type indicating which scalar values (i.e.: values of that
-        type) should be transformed using the function ``f``
-      f (Callable[[Any], Any]): Function to be applied to scalar values of type
-        ``type_`` in the response data.
+      type_: Type indicating which scalar values (i.e.: values of that type) should be
+        transformed using the function ``f``
+      f: Function to be applied to scalar values of type ``type_`` in the response data.
     """
 
     type_: TypeRef.T
@@ -161,13 +42,15 @@ class TypeTransform(DocumentTransform):
         self.f = f
         super().__init__()
 
-    def transform_document(self: TypeTransform, doc: Document) -> Document:
+    def transform_document(self, doc: Document) -> Document:
         return doc
 
-    def transform_response(self, doc: Document, data: dict[str, Any]) -> dict[str, Any]:
+    def transform_response(
+        self, doc: Document, resp: DocumentResponse
+    ) -> DocumentResponse:
         def transform(select: Selection, data: dict[str, Any]) -> None:
-            # TODO: Handle NonNull and List more graciously
-            #  (i.e.: without using TypeRef.root_type_name)
+            # TODO: Handle NonNull and List more graciously...
+            #   (i.e.: without using `TypeRef.root_type_name``)
             match (select, data):
                 # Type matches
                 case (
@@ -222,14 +105,14 @@ class TypeTransform(DocumentTransform):
 
                 case (select, data):
                     raise TransformError(
-                        f"transform_data_type: invalid selection {select}"
-                        f" for data {data}"
+                        f"transform_data_type:"
+                        f" invalid selection {select} for data {data}"
                     )
 
         for select in doc.query.selection:
-            transform(select, data)
+            transform(select, resp.data)
 
-        return data
+        return resp
 
 
 class LocalSyntheticField(DocumentTransform):
@@ -244,16 +127,14 @@ class LocalSyntheticField(DocumentTransform):
     the argument selections :attr:`args` and places the result in the response.
 
     Attributes:
-      subgraph (Subgraph): The subgraph to which the synthetic field's object
-        belongs.
-      fmeta (TypeMeta.FieldMeta): The synthetic field
-      type_ (TypeMeta.ObjectMeta | TypeMeta.InterfaceMeta): The object for which
-        the synthetic field is defined
-      f (Callable): The function to be applied to the argument fields
-      default (Any): The default value of the synthetic field used in case of
-        exceptions (e.g.: division by zero)
-      args (list[Selection]): The selections of the fields used as arguments to
-        compute the synthetic field
+      subgraph: The subgraph to which the synthetic field's object belongs.
+      fmeta: The synthetic field.
+      type_: The object for which the synthetic field is defined.
+      f: The function to be applied to the argument fields.
+      default: The default value of the synthetic field used in case of exceptions
+        (e.g.: division by zero).
+      args: The selections of the fields used as arguments to compute the
+        synthetic field.
     """
 
     subgraph: Subgraph
@@ -282,7 +163,8 @@ class LocalSyntheticField(DocumentTransform):
     def transform_document(self, doc: Document) -> Document:
         def transform(select: Selection) -> Selection | list[Selection]:
             match select:
-                # case Selection(TypeMeta.FieldMeta(name) as fmeta, _, _, [] | None) if name == self.fmeta.name and fmeta.type_.name == self.type_.name:
+                # case Selection(TypeMeta.FieldMeta(name) as fmeta, _, _, [] | None)
+                #  if name == self.fmeta.name and fmeta.type_.name == self.type_.name:
                 case Selection(
                     TypeMeta.FieldMeta(name=name), _, _, [] | None
                 ) if name == self.fmeta.name:
@@ -302,8 +184,6 @@ class LocalSyntheticField(DocumentTransform):
                         f"transform_document: unhandled selection {select}"
                     )
 
-            assert False  # Suppress mypy missing return statement warning
-
         def transform_on_type(select: Selection) -> Selection:
             match select:
                 case Selection(
@@ -322,8 +202,6 @@ class LocalSyntheticField(DocumentTransform):
                         fmeta, alias, args, list(inner_select | map(transform_on_type))
                     )
 
-            assert False  # Suppress mypy missing return statement warning
-
         if self.subgraph._url == doc.url:
             return Document.transform(
                 doc,
@@ -334,7 +212,9 @@ class LocalSyntheticField(DocumentTransform):
         else:
             return doc
 
-    def transform_response(self, doc: Document, data: dict[str, Any]) -> dict[str, Any]:
+    def transform_response(
+        self, doc: Document, resp: DocumentResponse
+    ) -> DocumentResponse:
         def transform(select: Selection, data: dict) -> None:
             match (select, data):
                 case (
@@ -342,12 +222,12 @@ class LocalSyntheticField(DocumentTransform):
                     | Selection(TypeMeta.FieldMeta(), name, _, [] | None),
                     dict() as data,
                 ) if name == self.fmeta.name and name not in data:
-                    # Case where the selection selects a the syntheticfield of the
-                    #  current transform that is not in the data blob and there are
-                    #  no inner selections
+                    # Case where the selection selects a the synthetic field of
+                    #  the current transform that is not in the data blob
+                    #  and there are no inner selections
 
-                    # Try to grab the arguments to the synthetic field transform in
-                    #  the data blob
+                    # Try to grab the arguments to the synthetic field
+                    #  transform in the data blob
                     arg_values = flatten(
                         list(self.args | map(partial(select_data, data=data)))
                     )
@@ -371,8 +251,8 @@ class LocalSyntheticField(DocumentTransform):
                     | Selection(TypeMeta.FieldMeta(), name, _, [] | None),
                     dict() as data,
                 ):
-                    # Case where the selection selects a regular field and there are
-                    #  no inner selections (nothing to do)
+                    # Case where the selection selects a regular field
+                    #  and there are no inner selections (nothing to do)
                     pass
 
                 case (
@@ -407,7 +287,9 @@ class LocalSyntheticField(DocumentTransform):
                         f" for data {data}"
                     )
 
-        def transform_on_type(select: Selection, data: dict) -> None:
+        def transform_on_type(
+            select: Selection, data: list[Any] | dict[str, Any]
+        ) -> None:
             match select:
                 case Selection(TypeMeta.FieldMeta(type_=type_), None, _, _) | Selection(
                     TypeMeta.FieldMeta(type_=type_), _, _, _
@@ -440,88 +322,45 @@ class LocalSyntheticField(DocumentTransform):
 
         if self.subgraph._url == doc.url:
             for select in doc.query.selection:
-                transform_on_type(select, data)
+                transform_on_type(select, resp.data)
 
-        return data
-
-
-# TODO: Decide if necessary
-class SplitTransform(RequestTransform):
-    def __init__(self, query: Query) -> None:
-        self.query = query
-
-    def transform_request(self, req: DataRequest) -> DataRequest:
-        def split(doc: Document) -> list[Document]:
-            if Query.contains(doc.query, self.query):
-                return [
-                    Document(
-                        doc.url, Query.remove(doc.query, self.query), doc.fragments
-                    ),
-                    Document(
-                        doc.url, Query.select(doc.query, self.query), doc.fragments
-                    ),
-                ]
-            else:
-                return [doc]
-
-        return DataRequest(documents=list(req.documents | map(split) | traverse))
-
-    # TODO: Fix transform_response
-    def transform_response(
-        self, req: DataRequest, data: list[dict[str, Any]]
-    ) -> list[dict[str, Any]]:
-        def merge_data(
-            data1: dict | list | Any, data2: dict | list | Any
-        ) -> dict | list | Any:
-            match (data1, data2):
-                case (dict() as data1, dict() as data2):
-                    return dict(
-                        union(
-                            list(data1.items()),
-                            list(data2.items()),
-                            key=lambda item: item[0],
-                            combine=lambda item1, item2: (
-                                item1[0],
-                                merge_data(item1[1], item2[1]),
-                            ),
-                        )
-                    )
-
-                case (list(), list()):
-                    return list(
-                        zip(data1, data2) | map(lambda tup: merge_data(tup[0], tup[1]))
-                    )
-
-                case (value, _):
-                    return value
-
-            assert False  # Suppress mypy missing return statement warning
-
-        def transform(
-            docs: list[Document], data: list[dict[str, Any]], acc: list[dict[str, Any]]
-        ) -> list[dict[str, Any]]:
-            match (docs, data):
-                case ([doc, *docs_rest], [d1, d2, *data_rest]) if Query.contains(
-                    doc.query, self.query
-                ):
-                    return transform(docs_rest, data_rest, [*acc, merge_data(d1, d2)])
-
-                case ([], []):
-                    return acc
-
-            assert False  # Suppress mypy missing return statement warning
-
-        return transform(req.documents, data, [])
+        return resp
 
 
-DEFAULT_GLOBAL_TRANSFORMS: list[RequestTransform] = []
+class DocumentRequestTransform(RequestTransform):
+    """This class serves as a wrapper for :class:`DocumentTransform` for ease of use.
 
-DEFAULT_SUBGRAPH_TRANSFORMS: list[DocumentTransform] = [
-    TypeTransform(
-        TypeRef.Named(name="BigDecimal", kind="SCALAR"),
-        lambda bigdecimal: float(bigdecimal),
-    ),
-    TypeTransform(
-        TypeRef.Named(name="BigInt", kind="SCALAR"), lambda bigint: int(bigint)
-    ),
-]
+    Internally, we convert all :class:`DocumentTransform`s to
+     :class:`DocumentRequestTransform`s due to the relative ease it has on our
+     implementation. We merely iterate through the documents within a request and
+     response iterating them thru the relevant documents (based upon url).
+    """
+
+    def __init__(self, transform: DocumentTransform, url: str):
+        self.transform = transform
+        self.url = url
+
+    def transform_request(self, req: DataRequest):
+        return replace(
+            req,
+            documents=[
+                self.transform.transform_document(doc)
+                for doc in req.documents
+                if doc.url == self.url
+            ],
+        )
+
+    def transform_response(self, req: DataRequest, data: DataResponse):
+        """
+
+        Assumes 1 doc -> 1 resp, and ordering is correct via the `zip`
+        """
+
+        return replace(
+            data,
+            responses=[
+                self.transform.transform_response(doc, resp)
+                for doc, resp in zip(req.documents, data.responses)
+                if resp.url == self.url  # TODO: doc.url != resp.url, exception
+            ],
+        )

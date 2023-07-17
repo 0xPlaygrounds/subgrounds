@@ -1984,7 +1984,7 @@ def test_gen_pagination_nodes(
                                                     ),
                                                     "symbol_gt": InputValue.Variable(
                                                         "lastOrderingValue0"
-                                                    )
+                                                    ),
                                                 }
                                             )
                                         }

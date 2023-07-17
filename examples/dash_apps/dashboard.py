@@ -1,16 +1,15 @@
 import dash
 from dash import html
 
+from subgrounds import Subgrounds
 from subgrounds.contrib.dash import AutoUpdate, Graph
 from subgrounds.contrib.plotly import Bar, Figure, Indicator
-from subgrounds import Subgrounds
 
 sg = Subgrounds()
 uniswapV2 = sg.load_subgraph(
     "https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2"
 )
 aaveV2 = sg.load_subgraph("https://api.thegraph.com/subgraphs/name/aave/protocol-v2")
-# klima_markets = sg.load_subgraph("https://api.thegraph.com/subgraphs/name/0xplaygrounds/playgrounds-klima-markets")
 
 # Define formatted token amounts on Borrow and Repay entities
 aaveV2.Borrow.adjusted_amount = (
@@ -26,23 +25,6 @@ wbtc_usdc_last_price = uniswapV2.Query.pair(
     id="0x004375dff511095cc5a197a54140a24efef3a416",
 ).token1Price
 
-# klima_usdc_last_close = klima_markets.Query.trades(
-#   orderBy=klima_markets.Trade.timestamp,
-#   orderDirection='desc',
-#   first=1,
-#   where=[
-#     klima_markets.Trade.pair == "0x5786b267d35f9d011c4750e0b0ba584e1fdbead1"
-#   ]
-# ).close
-
-# bct_usdc_last_close = klima_markets.Query.trades(
-#   orderBy=klima_markets.Trade.timestamp,
-#   orderDirection='desc',
-#   first=1,
-#   where=[
-#     klima_markets.Trade.pair == "0x1e67124681b402064cd0abe8ed1b5c79d2e02f64"
-#   ]
-# ).close
 
 borrows = aaveV2.Query.borrows(
     orderBy=aaveV2.Borrow.timestamp,
@@ -101,36 +83,6 @@ app.layout = html.Div(
                     ],
                     style={"width": "25%", "display": "inline-block"},
                 ),
-                # html.Div([
-                #   html.H4('KLIMA price (USDC) (Sushiswap-matic)'),
-                #   AutoUpdate(
-                #     app,
-                #     sec_interval=20,
-                #     children=[
-                #       Graph(Figure(
-                #         subgrounds=sg,
-                #         traces=[
-                #           Indicator(value=klima_usdc_last_close)
-                #         ]
-                #       ))
-                #     ]
-                #   )
-                # ], style={'width': '25%', 'display': 'inline-block'}),
-                # html.Div([
-                #   html.H4('BCT price (USDC) (Sushiswap-matic)'),
-                #   AutoUpdate(
-                #     app,
-                #     sec_interval=20,
-                #     children=[
-                #       Graph(Figure(
-                #         subgrounds=sg,
-                #         traces=[
-                #           Indicator(value=bct_usdc_last_close)
-                #         ]
-                #       ))
-                #     ]
-                #   )
-                # ], style={'width': '25%', 'display': 'inline-block'})
             ]
         ),
         html.H3("Aave V2 stuff"),

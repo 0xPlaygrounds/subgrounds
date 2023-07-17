@@ -76,18 +76,14 @@ jobs:
       run: poetry install --all-extras
 
 
-    # # ---------------------------------------------
-    # # -----           Lint and Test           -----
-    # # ---------------------------------------------
-    # - name: Lint with ruff and black
-    #   run: poetry poe check
+    # ---------------------------------------------
+    # -----           Lint and Test           -----
+    # ---------------------------------------------
+    - name: Lint with ruff and black
+      run: poetry poe check
 
     - name: Run unit tests
       run: poetry poe test
-
-    # - name: Run examples smoke tests
-    #   shell: bash
-    #   run: sh tests/test_examples.sh
 
     # ---------------------------------------------
     # -----          Release Package          -----

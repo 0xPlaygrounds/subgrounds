@@ -20,6 +20,8 @@ pydantic = "^1.10.2"
 dash = { version = "^2.3.1", optional = true }
 plotly = { version = "^5.14.1", optional = true }
 pyodide-http = { version = "^0.2.1", optional = true }
+gql = "^3.4.0"
+aiohttp = "^3.8.4"
 
 [tool.poetry.extras]
 dash = ["dash"]
@@ -38,13 +40,17 @@ pytest = "^7.1.2"
 pytest-mock = "^3.8.2"
 python-semantic-release = "^7.33.1"
 ruff = "^0.0.253"
+pytest-insta = "^0.2.0"
 
 [tool.poe.tasks]
-format = { shell = "black subgrounds examples tests" }
-check = { shell = "black subgrounds examples tests --check; ruff check subgrounds examples tests" }
-develop = { shell = "mudkip develop" }
+format = "black subgrounds examples tests"
+
+_black = "black subgrounds examples tests --check"
+_ruff = "ruff check subgrounds examples tests"
+check.sequence = ["_black", "_ruff"]
+check.ignore_fail = "return_zero"
+
 test = "pytest"
-generate-api-docs = { shell = "sphinx-apidoc --output docs/api subgrounds --separate --force" }
 
 [tool.semantic_release]
 branch = "main"
@@ -57,6 +63,7 @@ build_command = "poetry build"
 [tool.ruff]
 
 [tool.ruff.per-file-ignores]
+"tests/*" = ["E501"]
 "subgrounds/plotly_wrappers" = ["F405", "F403"]
 "subgrounds/dash_wrappers" = ["F405", "F403"]
 

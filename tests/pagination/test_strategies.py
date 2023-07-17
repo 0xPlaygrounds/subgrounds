@@ -1,6 +1,5 @@
-from pprint import pprint
 from random import randint
-from typing import Any, Optional, Tuple, Type
+from typing import Any, Type
 
 import pytest
 
@@ -35,7 +34,7 @@ def generate_pairs(n):
 def __test_args(
     strategy: PaginationStrategy,
     expected: list[dict[str, Any]],
-    data_and_exception: list[Tuple[dict[str, Any], Optional[Type]]],
+    data_and_exception: list[tuple[dict[str, Any], Type | None]],
 ):
     args_ = strategy.step()
     for args, (data, exn) in zip(expected, data_and_exception):
@@ -369,7 +368,7 @@ def __test_args(
 )
 def test_legacy_strategy(
     page_nodes: list[PaginationNode],
-    data_and_exception: list[Tuple[dict[str, Any], Optional[Exception]]],
+    data_and_exception: list[tuple[dict[str, Any], Exception | None]],
     expected: list[dict[str, Any]],
 ):
     strategy = LegacyStrategyArgGenerator(page_nodes)
@@ -610,7 +609,7 @@ def test_legacy_strategy(
 )
 def test_greedy_strategy(
     page_nodes: list[PaginationNode],
-    data_and_exception: list[Tuple[dict[str, Any], Optional[Exception]]],
+    data_and_exception: list[tuple[dict[str, Any], Exception | None]],
     expected: list[dict[str, Any]],
 ):
     strategy = ShallowStrategyArgGenerator(page_nodes)

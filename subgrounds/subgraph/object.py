@@ -36,13 +36,13 @@ class Object:
         as a :class:`FieldPath`.
 
         Args:
-          name (str): The name of the field
+          name: The name of the field
 
         Raises:
           TypeError: _description_
 
         Returns:
-          FieldPath: _description_
+          _description_
         """
 
         field = self._object.field(name)
@@ -63,7 +63,8 @@ class Object:
 
             case TypeMeta.T as type_:
                 raise TypeError(
-                    f"Object: Unexpected type {type_.name} when selection {name} on {self}"
+                    f"Object: Unexpected type {type_.name}"
+                    f" when selection {name} on {self}"
                 )
 
         assert False  # Suppress mypy missing return statement warning
@@ -78,7 +79,10 @@ class Object:
         # sfield_deps = [fpath.leaf.name for fpath in sfield.deps]
         # for dep in sfield_deps:
         #   if dep not in obj_fields:
-        #     raise Exception(f'SyntheticField {obj.object_.name}.{name}: {obj.object_.name} does not have the field {dep}')
+        #     raise Exception(
+        #       f'SyntheticField {obj.object_.name}.{name}: {obj.object_.name}'
+        #        ' does not have the field {dep}'
+        #     )
 
         def f(
             obj_: TypeMeta.ObjectMeta | TypeMeta.InterfaceMeta, path: list[str]
@@ -93,7 +97,8 @@ class Object:
                         f(self._schema.type_map[field.type_.name], rest)
                     except StopIteration:
                         raise Exception(
-                            f"SyntheticField {self._object.name}.{name}: {obj_.name} does not have the field {field_name}"
+                            f"SyntheticField {self._object.name}.{name}: {obj_.name}"
+                            f" does not have the field {field_name}"
                         )
                 case []:
                     return

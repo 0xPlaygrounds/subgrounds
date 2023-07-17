@@ -24,11 +24,12 @@ from __future__ import annotations
 
 import logging
 import warnings
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from functools import partial, reduce
-from typing import Any, Callable, Iterator, Literal, Optional, Protocol, TypeVar
+from typing import Any, Callable, Iterator, Literal, Protocol, TypeVar
 
 from pipe import map, take, traverse, where
+from typing_extensions import Self
 
 from .errors import SubgroundsError
 from .schema import SchemaMeta, TypeMeta, TypeRef
@@ -37,6 +38,7 @@ from .utils import (
     filter_map,
     filter_none,
     identity,
+    merge,
     rel_complement,
     union,
 )
@@ -55,7 +57,7 @@ class InputValue:
             """Returns a GraphQL string representation of the input value
 
             Returns:
-              str: The GraphQL string representation of the input value
+              The GraphQL string representation of the input value
             """
             ...
 
@@ -64,7 +66,7 @@ class InputValue:
             """Returns True i.f.f. the input value is of type Variable
 
             Returns:
-              bool: True i.f.f. the input value is of type Variable, otherwise False
+              True i.f.f. the input value is of type Variable, otherwise False
             """
             ...
 
@@ -73,7 +75,7 @@ class InputValue:
             """Returns True i.f.f. the input value is of type Float or Int
 
             Returns:
-              bool: True i.f.f. the input value is of type Float or Int, otherwise False
+              True i.f.f. the input value is of type Float or Int, otherwise False
             """
             ...
 
@@ -263,15 +265,14 @@ class VariableDefinition:
     """Representation of a GraphQL variable definition
 
     Attributes:
-      name (str): Name of the argument
-      type_ (TypeRef.T): GraphQL type of the argument
-      default (InputValue.T, optional): Default value of the variable.
-        Defaults to None.
+      name: Name of the argument
+      type_: GraphQL type of the argument
+      default: Default value of the variable. Defaults to None.
     """
 
     name: str
     type_: TypeRef.T
-    default: Optional[InputValue.T] = None
+    default: InputValue.T | None = None
 
     @property
     def graphql(self) -> str:
@@ -288,7 +289,7 @@ class VariableDefinition:
         $foo: Int! = 100
 
         Returns:
-            str: The GraphQL string representation of the variable definition
+          The GraphQL string representation of the variable definition
         """
 
         if self.default is None:
@@ -331,7 +332,7 @@ class Argument:
     def exists_vars(self, predicate: Callable[[InputValue.Variable], bool]) -> bool:
         return any(self.iter_vars() | map(predicate))
 
-    def find(self, predicate: Callable[[InputValue.T], bool]) -> Optional[InputValue.T]:
+    def find(self, predicate: Callable[[InputValue.T], bool]) -> InputValue.T | None:
         try:
             return next(self.iter() | where(predicate))
         except StopIteration:
@@ -339,7 +340,7 @@ class Argument:
 
     def find_var(
         self, predicate: Callable[[InputValue.Variable], bool]
-    ) -> Optional[InputValue.T]:
+    ) -> InputValue.T | None:
         try:
             return next(self.iter_vars() | where(predicate))
         except StopIteration:
@@ -354,16 +355,14 @@ class Selection:
     """Represents a GraphQL field selection.
 
     Attributes:
-      fmeta (TypeMeta.FieldMeta): The type definition of the field being selected.
-      alias (str, optional): The alias of the field selection. Defaults to None.
-      arguments (list[Argument]): The arguments, if any, of the field selection.
-        Defaults to [].
-      selection (list[Selection]): The inner field selections, if any.
-        Defaults to [].
+      fmeta: The type definition of the field being selected.
+      alias: The alias of the field selection. Defaults to None.
+      arguments: The arguments, if any, of the field selection. Defaults to [].
+      selection: The inner field selections, if any. Defaults to [].
     """
 
     fmeta: TypeMeta.FieldMeta
-    alias: Optional[str] = None
+    alias: str | None = None
     arguments: list[Argument] = field(default_factory=list)
     selection: list[Selection] = field(default_factory=list)
 
@@ -436,6 +435,7 @@ class Selection:
     # ================================================================
     def iter(self) -> Iterator[Selection]:
         """Returns an iterator over all ``Selections`` of the current selection tree."""
+
         yield self
         for inner in self.selection:
             yield from inner.iter()
@@ -446,6 +446,7 @@ class Selection:
         If ``recurse == True``, then the iterator also includes ``Arguments`` of
         inner ``Selections``.
         """
+
         for arg in self.arguments:
             yield arg
 
@@ -453,17 +454,18 @@ class Selection:
             for inner in self.selection:
                 yield from inner.iter_args()
 
-    def filter(self, predicate: Callable[[Selection], bool]) -> Optional[Selection]:
+    def filter(self, predicate: Callable[[Selection], bool]) -> Selection | None:
         """Returns a new ``Selection`` object containing all attributes of the current
         ``Selection`` if ``predicate(self) == True`` and ``None`` otherwise. The
         function if also applied recursively to inner ``Selections``.
 
         Args:
-            predicate (Callable[[Selection], bool]): _description_
+          predicate: _description_
 
         Returns:
-            Optional[Selection]: _description_
+          _description_
         """
+
         if predicate(self):
             return Selection(
                 fmeta=self.fmeta,
@@ -488,11 +490,11 @@ class Selection:
         inner ``Selections``
 
         Args:
-            predicate (Callable[[Argument], bool]): _description_
-            recurse (bool, optional): _description_. Defaults to True.
+          predicate: _description_
+          recurse: _description_. Defaults to True.
 
         Returns:
-            Selection: _description_
+          _description_
         """
         return Selection(
             fmeta=self.fmeta,
@@ -516,12 +518,12 @@ class Selection:
         ``map_f(s)``
 
         Args:
-            map_f (Callable[[Selection], Selection]): Mapping function to apply
-              to each ``Selection``
+          map_f: Mapping function to apply to each ``Selection``
 
         Returns:
-            Selection: _description_
+          _description_
         """
+
         match priority:
             case "self":
                 new_selection = map_f(self)
@@ -557,19 +559,21 @@ class Selection:
         map_f: Callable[[Argument], Argument | list[Argument]],
         recurse: bool = True,
     ) -> Selection:
-        """Replaces each ``Argument`` ``arg`` in the current ``Selection`` with ``map_f(arg)``
-        and returns a new ``Selection`` object containinf the modified arguments.
+        """Replaces each ``Argument`` ``arg`` in the current ``Selection`` with
+         ``map_f(arg)`` and returns a new ``Selection`` object containing
+         the modified arguments.
 
         If ``recurse == True``, then the function is applied recursively to inner
         ``Selections``.
 
         Args:
-            map_f (Callable[[Argument], Argument | list[Argument]]): _description_
-            recurse (bool, optional): _description_. Defaults to True.
+          map_f: _description_
+          recurse: _description_. Defaults to True.
 
         Returns:
-            Selection: _description_
+          _description_
         """
+
         return Selection(
             fmeta=self.fmeta,
             alias=self.alias,
@@ -584,8 +588,8 @@ class Selection:
         )
 
     def filter_map(
-        self, map_f: Callable[[Selection], Optional[Selection]]
-    ) -> Optional[Selection]:
+        self, map_f: Callable[[Selection], Selection | None]
+    ) -> Selection | None:
         new_selection = map_f(self)
 
         if new_selection is not None:
@@ -603,7 +607,7 @@ class Selection:
 
     def filter_map_args(
         self,
-        map_f: Callable[[Argument], Optional[Argument | list[Argument]]],
+        map_f: Callable[[Argument], Argument | list[Argument | None]],
         recurse: bool = True,
     ) -> Selection:
         return Selection(
@@ -659,7 +663,7 @@ class Selection:
 
         return False
 
-    def find(self, predicate: Callable[[Selection], bool]) -> Optional[Selection]:
+    def find(self, predicate: Callable[[Selection], bool]) -> Selection | None:
         try:
             return next(self.iter() | where(predicate))
         except StopIteration:
@@ -667,7 +671,7 @@ class Selection:
 
     def find_args(
         self, predicate: Callable[[Argument], bool], recurse: bool = True
-    ) -> Optional[Argument]:
+    ) -> Argument | None:
         try:
             return next(self.iter_args(recurse=recurse) | where(predicate))
         except StopIteration:
@@ -695,20 +699,20 @@ class Selection:
         )
         return fold_f(self, parents, inner)
 
-    def contains_list(self: Selection) -> bool:
+    def contains_list(self) -> bool:
         """Returns True i.f.f. the selection :attr:`self` selects a field of type
         list.
 
         Args:
-          self (Selection): The selection to traverse
+          self: The selection to traverse
 
         Returns:
-          bool: True if selection or nested selections selects a list field. False otherwise.
+          True if selection or nested selections selects a list field. False otherwise.
         """
 
         return self.exists(lambda select: select.fmeta.type_.is_list)
 
-    def split(self: Selection) -> list[Selection]:
+    def split(self) -> list[Selection]:
         """Returns a list of selections where each of the selections corresponds
         to a single selection path from the root to a leaf for each leaf selected
         in :attr:`self`.
@@ -724,16 +728,19 @@ class Selection:
         ... ])
         >>> split(select)
         [
-          Selection('foo', inner=[Selection('bar', inner=[Selection('field0', inner=[])])]),
-          Selection('foo', inner=[Selection('bar', inner=[Selection('field1', inner=[])])]),
-          Selection('foo', inner=[Selection('x', inner=[])]),
+          Selection(
+            'foo', inner=[Selection('bar', inner=[Selection('field0', inner=[])])]),
+          Selection(
+            'foo', inner=[Selection('bar', inner=[Selection('field1', inner=[])])]),
+          Selection(
+            'foo', inner=[Selection('x', inner=[])]),
         ]
 
         Args:
-          self (Selection): The selection to split
+          self: The selection to split
 
         Returns:
-          list[Selection]: The split selections
+          The split selections
         """
 
         match self:
@@ -752,20 +759,20 @@ class Selection:
     def extract_data(self: Selection, data: dict | list[dict]) -> list[Any] | Any:
         return extract_data(self.data_path, data)
 
-    def add(self: Selection, new_selections: Selection | list[Selection]) -> Selection:
+    def add(self, new_selections: Selection | list[Selection]) -> Selection:
         """Returns a new selection consisting of a copy of :attr:`self` expanded
         with the selection(s) :attr:`new_selections`. It is assumed that
         :attr:`new_selections` are inner selections of the root selection
         :attr:`self`.
 
         Args:
-          self (Selection): The Selection object to be expanded
-          new_selections (Selection | list[Selection]): A single or multiple
-            Selection object(s) to be added to :attr:`self`
+          self: The Selection object to be expanded
+          new_selections: A single or multiple Selection object(s) to be added to
+            :attr:`self`
 
         Returns:
-          Selection: The resulting new selection, i.e.: :attr:`self`
-            expanded with :attr:`new_selections`
+          The resulting new selection, i.e.: :attr:`self` expanded with
+            :attr:`new_selections`
         """
 
         match new_selections:
@@ -784,22 +791,21 @@ class Selection:
                     ),
                 )
 
-    def remove(self: Selection, to_remove: Selection | list[Selection]) -> Selection:
+    def remove(self, to_remove: Selection | list[Selection]) -> Selection:
         """Returns a new Selection object consisting of a copy of :attr:`self`
         without the selections in :attr:`selections_to_remove`.
 
         Args:
-          to_remove (Selection | list[Selection]): The selection(s) to remove from
-            :attr:`self`
+          to_remove: The selection(s) to remove from :attr:`self`
 
         Returns:
-          Selection: The new trimmed down selection, i.e.: :attr:`self` without
+          The new trimmed down selection, i.e.: :attr:`self` without
             :attr:`selections_to_remove`
         """
 
         def combine(
             select: Selection, selection_to_remove: Selection
-        ) -> Optional[Selection]:
+        ) -> Selection | None:
             if selection_to_remove.selection == []:
                 return None
             else:
@@ -833,10 +839,10 @@ class Selection:
         selections.
 
         Args:
-            recurse (bool, optional): _description_. Defaults to True.
+          recurse: _description_. Defaults to True.
 
         Returns:
-            list[Argument]: _description_
+          _description_
         """
         for arg in self.iter_args(recurse=recurse):
             if type(arg.value) == InputValue.Variable:
@@ -893,10 +899,10 @@ class Selection:
         :attr:`selections` to the extent possible.
 
         Args:
-          selections (list[Selection]): The selections to be merged
+          selections The selections to be merged
 
         Returns:
-          list[Selection]: _description_
+          _description_
         """
 
         def f(selections: list[Selection], other: Selection) -> list[Selection]:
@@ -915,16 +921,16 @@ class Selection:
 
         return reduce(f, selections, [])
 
-    def contains(self: Selection, other: Selection) -> bool:
+    def contains(self, other: Selection) -> bool:
         """Returns True i.f.f. the Selection :attr:`other` is a subtree of the
         Selection :attr:`self` and False otherwise
 
         Args:
-          self (Selection): The selection
-          other (Selection): The subselection
+          self: The selection
+          other: The subselection
 
         Returns:
-          bool: True i.f.f. :attr:`other` is in :attr:`self`
+          True i.f.f. :attr:`other` is in :attr:`self`
         """
 
         if (
@@ -950,26 +956,23 @@ class Selection:
         else:
             return False
 
-    def contains_argument(self: Selection, argname: str, recurse: bool = True) -> bool:
+    def contains_argument(self, argname: str, recurse: bool = True) -> bool:
         """Returns True i.f.f. there is an Argument object in :attr:`self` named
         :attr:`argname`. If :attr:`recurse` is True, then the method also checks the
         nested selections for an argument named :attr:`argname`.
 
         Args:
-          self (Selection): The selection
-          argname (str): The name of the argument
-          recurse (bool, optional): Flag indicating whether or not the method should
-            be run recursively on nested selections. Defaults to True.
+          argname: The name of the argument
+          recurse: Flag indicating whether or not the method should be run recursively
+            on nested selections. Defaults to True.
 
         Returns:
-          bool: True i.f.f. there is an argument named :attr:`argname` in :attr:`self`
+          True i.f.f. there is an argument named :attr:`argname` in :attr:`self`
         """
 
         return self.exists_args(lambda arg: arg.name == argname, recurse=recurse)
 
-    def get_argument(
-        self: Selection, argname: str, recurse: bool = True
-    ) -> Optional[Argument]:
+    def get_argument(self, argname: str, recurse: bool = True) -> Argument | None:
         """Returns an Argument object corresponding to the argument in the Selection
         object :attr:`select` with name :attr:`argname`. If :attr:`select` does not
         contain such an argument and :attr:`recurse` is True, then the function is
@@ -978,24 +981,23 @@ class Selection:
         an exception.
 
         Args:
-          select (Selection): The selection to scan
-          argname (str): The name of the argument to find
-          recurse (bool, optional): Flag indicating whether or not the method should
-            be run recursively on nested selections. Defaults to True.
+          argname: The name of the argument to find
+          recurse: Flag indicating whether or not the method should be run recursively
+            on nested selections. Defaults to True.
 
         Raises:
           KeyError: If no argument named :attr:`argname` exists in the selection
             :attr:`self`.
 
         Returns:
-          Argument: The argument in :attr:`select` with name :attr:`argname` (if any).
+          The argument in :attr:`select` with name :attr:`argname` (if any).
         """
 
         return self.find_args(lambda arg: arg.name == argname, recurse=recurse)
 
     def get_argument_by_variable(
-        self: Selection, varname: str, recurse: bool = True
-    ) -> Optional[Argument]:
+        self, varname: str, recurse: bool = True
+    ) -> Argument | None:
         """Returns an Argument object corresponding to the argument in the Selection
         object :attr:`select` whose value is a variable named :attr:`varname`. If
         :attr:`select` does not contain such an argument and :attr:`recurse` is True,
@@ -1004,18 +1006,17 @@ class Selection:
         the function raises an exception
 
         Args:
-          select (Selection): The selection to scan
-          varname (str): The name of the variable to find
-          recurse (bool, optional): Flag indicating whether or not the function
-            should be run recursively. Defaults to True.
+          varname: The name of the variable to find
+          recurse: Flag indicating whether or not the method should be run recursively.
+            Defaults to True.
 
         Raises:
           KeyError: If no argument with variable value named :attr:`varname` exists
             in the selection :attr:`self`.
 
         Returns:
-          Argument: The argument in :attr:`select` with variable value named
-            :attr:`varname` if it exists
+          The argument in :attr:`select` with variable value named :attr:`varname`
+            if it exists
         """
 
         return self.find_args(
@@ -1025,10 +1026,7 @@ class Selection:
 
     # TODO: Replace substitute_arg calls by map_args call
     def substitute_arg(
-        self: Selection,
-        argname: str,
-        replacement: Argument | list[Argument],
-        recurse: bool = True,
+        self, argname: str, replacement: Argument | list[Argument], recurse: bool = True
     ) -> Selection:
         """Returns a new Selection object containing the same data as :attr:`self`
         with the argument named :attr:`argname` replaced with :attr:`replacement`.
@@ -1037,14 +1035,13 @@ class Selection:
         latter.
 
         Args:
-          self (Selection): _description_
-          argname (str): The name of the argument to substitute.
-          replacement (Argument | list[Argument]): The argument(s) replacement
-          recurse (bool, optional): Flag indicating whether or not the method
-            should be run recursively. Defaults to True.
+          argname: The name of the argument to substitute.
+          replacement: The argument(s) replacement
+          recurse: Flag indicating whether or not the method should be run recursively.
+            Defaults to True.
 
         Returns:
-          Selection: _description_
+          _description_
         """
 
         return self.map_args(
@@ -1072,7 +1069,7 @@ class Selection:
                 ),
             )
 
-    def prune_undefined(self, variables: Iterator[str]) -> Optional[Selection]:
+    def prune_undefined(self, variables: Iterator[str]) -> Selection | None:
         """Return a new ``Selection`` containing the subtree of the current
         ``Selection`` where all argument ``InputValues`` are defined,
         i.e.: each argument's ``InputValue`` is either
@@ -1083,10 +1080,10 @@ class Selection:
             the variable name is contained in ``variables``.
 
         Args:
-            variables (Iterator[str]): An iterator over defined variables
+          variables: An iterator over defined variables
 
         Returns:
-            Selection: A new pruned ``Selection`` object
+          A new pruned ``Selection`` object
         """
 
         return self.filter(
@@ -1095,15 +1092,10 @@ class Selection:
             )
         )
 
-    # TODO: Function to recover an approximate selection from a JSON data object
-    # @staticmethod
-    # def of_json(data: dict) -> Selection:
-    #   pass
-
 
 @dataclass(frozen=True)
 class Query:
-    name: Optional[str] = None
+    name: str | None = None
     selection: list[Selection] = field(default_factory=list)
 
     # Variables as query arguments, not the values of those variables
@@ -1114,7 +1106,7 @@ class Query:
         """Returns a string containing a GraphQL query matching the current query
 
         Returns:
-          str: The string containing the GraphQL query
+          The string containing the GraphQL query
         """
 
         selection_str = "\n".join(
@@ -1157,10 +1149,10 @@ class Query:
         ``predicate(s) == True``.
 
         Args:
-            predicate (Callable[[Selection], bool]): _description_
+          predicate: _description_
 
         Returns:
-            Query: _description_
+          _description_
         """
 
         return Query(
@@ -1173,14 +1165,14 @@ class Query:
         )
 
     def filter_args(self, predicate: Callable[[Argument], bool]) -> Query:
-        """Returns a new ``Query`` object containing all selections arguments ``arg`` that satisfy
-        ``predicate(arg) == True``.
+        """Returns a new ``Query`` object containing all selections arguments ``arg``
+        that satisfy ``predicate(arg) == True``.
 
         Args:
-            predicate (Callable[[Argument], bool]): _description_
+          predicate: _description_
 
         Returns:
-            Query: _description_
+          _description_
         """
 
         return Query(
@@ -1205,14 +1197,14 @@ class Query:
         priority: Literal["self"] | Literal["children"] = "self",
     ) -> Query:
         """Applies the function ``map_f`` to each ``Selection`` in the current
-        ``Query`` and returns a new ``Query`` object containing the resulting ``Selections``.
+         ``Query`` and returns a new ``Query`` object containing the resulting
+         ``Selections``.
 
         Args:
-            map_f (Callable[[Selection], Selection]): Mapping function to apply
-              to each ``Selection``
+          map_f: Mapping function to apply to each ``Selection``
 
         Returns:
-            Query: _description_
+          _description_
         """
 
         return Query(
@@ -1226,13 +1218,14 @@ class Query:
 
     def map_args(self, map_f: Callable[[Argument], Argument]) -> Query:
         """Applies the function ``map_f`` to each ``Argument`` in the current
-        ``Query`` and returns a new ``Query`` object containing the resulting ``Arguments``.
+         ``Query`` and returns a new ``Query`` object containing the resulting
+         ``Arguments``.
 
         Args:
-            map_f (Callable[[Argument], Argument]): _description_
+          map_f: _description_
 
         Returns:
-            Selection: _description_
+          _description_
         """
 
         return Query(
@@ -1252,7 +1245,7 @@ class Query:
             variables=list(self.variables | map(map_f)),
         )
 
-    def filter_map(self, map_f: Callable[[Selection], Optional[Selection]]) -> Query:
+    def filter_map(self, map_f: Callable[[Selection], Selection | None]) -> Query:
         return Query(
             name=self.name,
             selection=list(
@@ -1261,7 +1254,7 @@ class Query:
             variables=self.variables,
         )
 
-    def filter_map_args(self, map_f: Callable[[Argument], Optional[Argument]]) -> Query:
+    def filter_map_args(self, map_f: Callable[[Argument], Argument | None]) -> Query:
         return Query(
             name=self.name,
             selection=list(
@@ -1271,7 +1264,7 @@ class Query:
         )
 
     def filter_map_vardefs(
-        self, map_f: Callable[[VariableDefinition], Optional[VariableDefinition]]
+        self, map_f: Callable[[VariableDefinition], VariableDefinition | None]
     ) -> Query:
         return Query(
             name=self.name,
@@ -1303,13 +1296,13 @@ class Query:
     def exists_vardefs(self, predicate: Callable[[VariableDefinition], bool]) -> bool:
         return any(self.variables | map(predicate))
 
-    def find(self, predicate: Callable[[Selection], bool]) -> Optional[Selection]:
+    def find(self, predicate: Callable[[Selection], bool]) -> Selection | None:
         try:
             return next(self.iter() | where(predicate))
         except StopIteration:
             return None
 
-    def find_args(self, predicate: Callable[[Argument], bool]) -> Optional[Argument]:
+    def find_args(self, predicate: Callable[[Argument], bool]) -> Argument | None:
         try:
             return next(self.iter_args() | where(predicate))
         except StopIteration:
@@ -1317,7 +1310,7 @@ class Query:
 
     def find_vardefs(
         self, predicate: Callable[[VariableDefinition], bool]
-    ) -> Optional[VariableDefinition]:
+    ) -> VariableDefinition | None:
         try:
             return next(self.iter_vardefs() | where(predicate))
         except StopIteration:
@@ -1341,12 +1334,11 @@ class Query:
         the new selections in :attr:`other`
 
         Args:
-          self (Query): The query to which new selection(s) or query are to be added
-          other (Query | Selection | list[Selection]): The new selection(s)
-          or query to be added to the query
+          self: The query to which new selection(s) or query are to be added
+          other: The new selection(s) or query to be added to the query
 
         Returns:
-          Query: A new `Query` objects containing all selections
+          A new `Query` objects containing all selections
         """
 
         match other:
@@ -1388,16 +1380,86 @@ class Query:
 
         Example:
 
-        >>> og_selection = Selection(TypeMeta.FieldMeta('pair', description="", args=[], type=TypeRef.non_null_list("Pair", kind="OBJECT")), None, [], [
-        ...   Selection(TypeMeta.FieldMeta('token0', description="", args=[], type=TypeRef.Named(name="Token", kind="OBJECT")), None, [], [
-        ...     Selection(TypeMeta.FieldMeta('id', description="", args=[], type=TypeRef.Named(name="String", kind="SCALAR")), None, [], []),
-        ...     Selection(TypeMeta.FieldMeta('name', description="", args=[], type=TypeRef.Named(name="String", kind="SCALAR")), None, [], []),
-        ...     Selection(TypeMeta.FieldMeta('symbol', description="", args=[], type=TypeRef.Named(name="String", kind="SCALAR")), None, [], []),
-        ...   ])
-        ... ])
-        >>> selection_to_remove = Selection(TypeMeta.FieldMeta('token0', description="", args=[], type=TypeRef.Named(name="Token", kind="OBJECT")), None, [], [])
+        >>> og_selection = Selection(
+        ...     TypeMeta.FieldMeta(
+        ...         'pair',
+        ...         description="",
+        ...         args=[],
+        ...         type=TypeRef.non_null_list("Pair", kind="OBJECT")
+        ...     ),
+        ...     None,
+        ...     [],
+        ...     [
+        ...         Selection(
+        ...             TypeMeta.FieldMeta(
+        ...                 'token0',
+        ...                 description="",
+        ...                 args=[],
+        ...                 type=TypeRef.Named(name="Token", kind="OBJECT")
+        ...             ),
+        ...             None,
+        ...             [],
+        ...             [
+        ...                 Selection(
+        ...                     TypeMeta.FieldMeta(
+        ...                         'id',
+        ...                         description="",
+        ...                         args=[],
+        ...                         type=TypeRef.Named(name="String", kind="SCALAR")
+        ...                     ),
+        ...                     None,
+        ...                     [],
+        ...                     []
+        ...                 ),
+        ...                 Selection(
+        ...                     TypeMeta.FieldMeta(
+        ...                         'name',
+        ...                         description="",
+        ...                         args=[],
+        ...                         type=TypeRef.Named(name="String", kind="SCALAR")
+        ...                     ),
+        ...                     None,
+        ...                     [],
+        ...                     []
+        ...                 ),
+        ...                 Selection(
+        ...                     TypeMeta.FieldMeta(
+        ...                         'symbol',
+        ...                         description="",
+        ...                         args=[],
+        ...                         type=TypeRef.Named(name="String", kind="SCALAR")
+        ...                     ),
+        ...                     None,
+        ...                     [],
+        ...                     []
+        ...                 ),
+        ...             ]
+        ...         )
+        ...     ]
+        ... )
+        >>> selection_to_remove = Selection(
+        ...     TypeMeta.FieldMeta(
+        ...         'token0',
+        ...         description="",
+        ...         args=[],
+        ...         type=TypeRef.Named(name="Token", kind="OBJECT")
+        ...     ),
+        ...     None,
+        ...     [],
+        ...     []
+        ... )
         >>> og_selection.remove(selection_to_remove)
-        Selection(TypeMeta.FieldMeta('pair', description="", args=[], type=TypeRef.non_null_list("Pair", kind="OBJECT")), None, [], [])
+        Selection(
+            TypeMeta.FieldMeta(
+                'pair',
+                description="",
+                args=[],
+                type=TypeRef.non_null_list("Pair", kind="OBJECT")
+            ),
+            None,
+            [],
+            []
+        )
 
         Args:
           query (Query): The query to which a selection has to be removed
@@ -1411,7 +1473,7 @@ class Query:
 
         def combine(
             select: Selection, selection_to_remove: Selection
-        ) -> Optional[Selection]:
+        ) -> Selection | None:
             if selection_to_remove.selection == []:
                 return None
             else:
@@ -1473,7 +1535,7 @@ class Query:
     def contains_argument(self, argname: str) -> bool:
         return self.exists_args(lambda arg: arg.name == argname)
 
-    def get_argument(self, argname: str) -> Optional[Argument]:
+    def get_argument(self, argname: str) -> Argument | None:
         return self.find_args(lambda arg: arg.name == argname)
 
     # TODO: Replace substitute_arg calls by map_args call
@@ -1499,18 +1561,19 @@ class Query:
     # TODO: Cleanup select
     @staticmethod
     def contains(query: Query, other: Query) -> bool:
-        """Returns True i.f.f. all selections in `other` are contained in `query`. In other words,
-        returns true i.f.f. `other` is a subset of `query`.
+        """Returns True i.f.f. all selections in `other` are contained in `query`.
+        In other words, returns true i.f.f. `other` is a subset of `query`.
 
-        Note: `other` does not need to include "full" selections (i.e.: selections all the way to
-        leaves of the GraphQL schema).
+        Note: `other` does not need to include "full" selections
+        (i.e.: selections all the way to leaves of the GraphQL schema).
 
         Args:
           query (Query): The query that is to be checked
           other (Query): The query that has to be in `query`
 
         Returns:
-          bool: True i.f.f. all selections in `other` are contained in `query`, otherwise False
+          bool: True i.f.f. all selections in `other` are contained in `query`,
+           otherwise False
         """
 
         return all(other.selection | map(partial(Query.contains_selection, query)))
@@ -1653,7 +1716,7 @@ class Document:
             variables=self.variables,
         )
 
-    def filter_map(self, map_f: Callable[[Selection], Optional[Selection]]) -> Document:
+    def filter_map(self, map_f: Callable[[Selection], Selection | None]) -> Document:
         return Document(
             url=self.url,
             query=self.query.filter_map(map_f),
@@ -1709,6 +1772,16 @@ class Document:
 
 
 @dataclass(frozen=True)
+class DocumentResponse:
+    # TODO: update to recursive json dict w/ pydantic 2.0
+    url: str
+    data: dict[str, Any] = field(default_factory=dict)
+
+    def combine(self: Self, other: Self):
+        return replace(self, data=merge(self.data, other.data))
+
+
+@dataclass(frozen=True)
 class DataRequest:
     documents: list[Document] = field(default_factory=list)
 
@@ -1716,9 +1789,9 @@ class DataRequest:
     def graphql(self):
         return "\n".join(list(self.documents | map(lambda doc: doc.graphql)))
 
-    @staticmethod
-    def combine(req: DataRequest, other: DataRequest) -> None:
-        return DataRequest(
+    @classmethod
+    def combine(cls, req: DataRequest, other: DataRequest):
+        return cls(
             documents=union(
                 req.documents,
                 other.documents,
@@ -1727,23 +1800,28 @@ class DataRequest:
             )
         )
 
-    @staticmethod
-    def transform(req: DataRequest, f: Callable[[Document], Document]) -> DataRequest:
-        return DataRequest(documents=list(req.documents | map(f)))
+    @classmethod
+    def transform(cls, req: DataRequest, f: Callable[[Document], Document]):
+        return cls(documents=list(req.documents | map(f)))
 
-    @staticmethod
-    def single_query(url: str, query: Query) -> DataRequest:
-        return DataRequest([Document(url, query)])
+    @classmethod
+    def single_query(cls, url: str, query: Query):
+        return cls([Document(url, query)])
 
-    @staticmethod
-    def single_document(doc: Document) -> DataRequest:
-        return DataRequest([doc])
+    @classmethod
+    def single_document(cls, doc: Document):
+        return cls([doc])
 
-    @staticmethod
-    def add_documents(
-        self: DataRequest, docs: Document | list[Document]
-    ) -> DataRequest:
-        return DataRequest(list([self.documents, docs] | traverse))
+    def add_documents(self, docs: Document | list[Document]):
+        return replace(self, documents=list((self.documents, docs) | traverse))
+
+
+@dataclass(frozen=True)
+class DataResponse:
+    responses: list[DocumentResponse] = field(default_factory=list)
+
+    def add_responses(self, resps: DocumentResponse | list[DocumentResponse]):
+        return replace(self, responses=list((self.responses, resps) | traverse))
 
 
 # ================================================================
@@ -1830,12 +1908,12 @@ def input_value_of_argument(
 
 
 def arguments_of_field_args(
-    schema: SchemaMeta, field: TypeMeta.FieldMeta, args: Optional[dict[str, Any]]
+    schema: SchemaMeta, field: TypeMeta.FieldMeta, args: dict[str, Any] | None
 ) -> list[Argument]:
     if args is None:
         args = {}
 
-    def f(arg_meta: TypeMeta.ArgumentMeta) -> Optional[Argument]:
+    def f(arg_meta: TypeMeta.ArgumentMeta) -> Argument | None:
         if arg_meta.name in args:
             return Argument(
                 arg_meta.name,
@@ -1846,7 +1924,8 @@ def arguments_of_field_args(
                 return None
             else:
                 raise TypeError(
-                    f"arguments_of_field_args: Argument {arg_meta.name} of field {field.name} is required but not provided!"
+                    f"arguments_of_field_args: Argument {arg_meta.name} of field"
+                    f" {field.name} is required but not provided!"
                 )
 
     # TODO: Add warnings if arguments are not used
@@ -1857,5 +1936,6 @@ def arguments_of_field_args(
             return list(filter(lambda arg: arg is not None, args))
         case _:
             raise TypeError(
-                f"arguments_of_field_args: TypeMeta {field.name} is not of type FieldMeta"
+                f"arguments_of_field_args: TypeMeta {field.name}"
+                " is not of type FieldMeta"
             )

@@ -8,7 +8,18 @@ import warnings
 from functools import cache
 from itertools import accumulate as _accumulate
 from itertools import filterfalse
-from typing import Any, Callable, Iterator, Optional, Tuple, TypeVar
+from operator import itemgetter
+from typing import (
+    Any,
+    Callable,
+    Generator,
+    Iterator,
+    ParamSpec,
+    Tuple,
+    TypeVar,
+    cast,
+    overload,
+)
 
 from pipe import Pipe, map
 
@@ -29,13 +40,17 @@ def identity(x):
 
 T = TypeVar("T")
 U = TypeVar("U")
+V = TypeVar("V")
+P = ParamSpec("P")
+
+Container = list[T] | dict[str, T]
 
 
-def fst(tup: Tuple[T, U]) -> T:
+def fst(tup: Tuple[T, Any]) -> T:
     return tup[0]
 
 
-def snd(tup: Tuple[T, U]) -> U:
+def snd(tup: Tuple[Any, T]) -> T:
     return tup[1]
 
 
@@ -81,29 +96,75 @@ def union(
     )
 
 
+@overload
+def merge(data1: list[T], data2: list[T]) -> list[T]:
+    ...
+
+
+@overload
+def merge(data1: dict[str, T], data2: dict[str, T]) -> dict[str, T]:
+    ...
+
+
+def merge(data1: Container, data2: Container) -> Container:
+    """Merges ``data1`` and ``data2`` and returns the combined result.
+
+    ``data1`` and ``data2`` must be of the same type. Either both are
+    ``dict`` or ``list``.
+
+    >>> a = {'a': 1, 'b': {'c': 2, 'd': 3}}
+    >>> b = {'b': {'e': 4}, 'f': 5}
+    >>> merge(a, b)
+    {'a': 1, 'b': {'c': 2, 'd': 3, 'e': 4}, 'f': 5}
+
+    Args:
+      data1 (list[T] | dict[str, T]): First data blob
+      data2 (list[T] | dict[str, T]): Second data blob
+
+    Returns:
+        list[T] | dict[str, T]: Combined data blob
+    """
+
+    match data1, data2:
+        case list(l1), list(l2):
+            return union(l1, l2, itemgetter("id"), combine=merge)
+
+        case dict(d1), dict(d2):
+            data = d1.copy()
+
+            for key in d1:
+                if key in d2:
+                    data[key] = merge(d1[key], d2[key])
+
+            for key in d2:
+                if key not in data:
+                    data[key] = d2[key]
+
+            return data
+
+        case (dict(), _) | (_, dict()) | (list(), _) | (_, list()):
+            raise TypeError(
+                f"merge: incompatible data types!"
+                f"type(data1): {type(data1)} != type(data2): {type(data2)}"
+            )
+
+        case val1, _:
+            return val1
+
+
 # ================================================================
 # Misc
 # ================================================================
-def filter_none(items: list[Optional[T]]) -> list[T]:
+def filter_none(items: list[T | None]) -> list[T]:
     return list(filter(None, items))
 
 
 @Pipe
-def filter_map(items: Iterator[T], mapping: Callable[[T], Optional[T]]) -> Iterator[T]:
+def filter_map(items: Iterator[T], mapping: Callable[[T], T | None]) -> Iterator[T]:
     for item in items:
         new_item = mapping(item)
         if new_item is not None:
             yield new_item
-
-
-def loop_generator(items: list):
-    while True:
-        for item in items:
-            yield item
-
-
-def repeat(value: T, n: int) -> list[T]:
-    return [value for _ in range(n)]
 
 
 # ================================================================
@@ -126,7 +187,8 @@ def extract_data(
                         return None
                     case _:
                         raise Exception(
-                            f"extract_data: unexpected state! path = {keys}, data = {data}"
+                            f"extract_data: unexpected state!"
+                            f" path = {keys}, data = {data}"
                         )
 
     match data:
@@ -145,15 +207,17 @@ def extract_data(
 
 def flatten_dict(data: dict[str, Any], keys: list[str] = []) -> dict:
     """Takes a dictionary containing key-value pairs where all values are of type
-    other than `list` and flattens it such that all key-value pairs in nested dictionaries
-    are now at depth 1.
+    other than `list` and flattens it such that all key-value pairs in nested
+    dictionaries are now at depth 1.
 
     Args:
-      data (dict): Dictionary containing non-list values
-      keys (list[str], optional): Keys of `data` if `data` is a nested `dict` (`len(keys)` == depth of `data`). Defaults to [].
+      data Dictionary containing non-list values
+      keys: Keys of `data` if `data` is a nested `dict`
+        (`len(keys)` == depth of `data`).  Defaults to [].
 
     Returns:
-      dict: Flat dictionary containing all key-value pairs in `data` and its nested dictionaries
+      dict: Flat dictionary containing all key-value pairs in `data` and its nested
+        dictionaries
     """
     flat_dict: dict[str, Any] = {}
     for key, value in data.items():
@@ -166,7 +230,7 @@ def flatten_dict(data: dict[str, Any], keys: list[str] = []) -> dict:
     return flat_dict
 
 
-def contains_list(data: dict | list | str | int | float | bool) -> bool:
+def contains_list(data: dict[str, Any] | list[Any] | str | int | float | bool) -> bool:
     """Returns `True` if `data` contains a value of type `list` in its nested data
     and `False` otherwise
 
@@ -188,18 +252,30 @@ def contains_list(data: dict | list | str | int | float | bool) -> bool:
             return False
 
 
-# def columns_of_json(data: dict, keys: list[str] = []) -> list[str]:
-#   columns: list[str] = []
-#   for key, value in data.items():
-#     match value:
-#       case dict():
-#         columns.append(columns_of_json(value, [*keys, key]))
-#       case list():
-#         columns.append(reduce(union, value | map(partial(columns_of_json, keys=[*keys, key])) | map(lambda x: list(x | traverse)), []))
-#       case value:
-#         columns.append('_'.join([*keys, key]))
+def coroutine_generator(
+    func: Callable[..., Generator[T | None, U, V]]
+) -> Callable[..., Generator[T, U, V]]:
+    """This defines a coroutine styled generator.
 
-#   return columns
+    All this does is *start* the generator via a `next` call allowing you to use `.send`
+     immediately instead of needing to use `gen.send(None)` or `next` first.
+
+    Inspired from: http://www.dabeaz.com/coroutines/Coroutines.pdf (p. 27)
+
+    Essentially, the logic is as follows:
+    >>> def start(*args, **kwargs):
+    ...     gen = func(*args, **kwargs)
+    ...     next(gen)
+    ...     return gen
+    """
+
+    def start(*args: P.args, **kwargs: P.kwargs) -> Generator[T, U, V]:
+        gen = func(*args, **kwargs)
+        next(gen)
+        return cast(Generator[T, U, V], gen)
+
+    return start
+
 
 # ================================================================
 # User Agent / Headers

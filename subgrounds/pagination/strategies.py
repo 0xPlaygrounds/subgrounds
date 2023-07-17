@@ -69,11 +69,10 @@ Depending on the strategy, the variable values computed at step 3 will change.
 
 from __future__ import annotations
 
-from ast import Tuple
 from dataclasses import dataclass, field
 from functools import partial
 from itertools import count
-from typing import Any, Callable, Iterator, Literal, Optional
+from typing import Any, Callable, Iterator, Literal, Optional, Protocol
 
 from pipe import map, traverse
 
@@ -83,20 +82,63 @@ from subgrounds.pagination.preprocess import (
     normalize,
     prune_doc,
 )
-from subgrounds.pagination.utils import PAGE_SIZE
 from subgrounds.query import Document
 from subgrounds.schema import SchemaMeta
 from subgrounds.utils import extract_data
 
+PAGE_SIZE = 900
+
 
 class StopPagination(Exception):
-    def __init__(self, *args: object) -> None:
-        super().__init__(*args)
+    """Raise within :class:`PaginationStategy` when pagination is completed, usually
+    within :func:`subgrounds.pagination.pagination.PaginationStrategy.step`.
+
+    Causes :func:`subgrounds.pagination.pagination.paginate` to be stopped.
+    """
 
 
 class SkipPagination(Exception):
-    def __init__(self, *args: object) -> None:
-        super().__init__(*args)
+    """Raise within :class:`PaginationStategy` should be skipped, usually within
+    :func:`subgrounds.pagination.pagination.PaginationStrategy.__init___`.
+
+    Causes :func:`subgrounds.pagination.pagination.paginate` to be skipped.
+    """
+
+
+class PaginationStrategy(Protocol):
+    def __init__(self, schema: SchemaMeta, document: Document) -> None:
+        """Initializes the pagination strategy. If there is no need for pagination given
+        the provided :class:`Document` ``document``, then the constructor should raise a
+        :class:`SkipPagination` exception.
+
+        Args:
+            schema: The schema of the API against which ``document`` will be executed
+            document: The query document
+        """
+        ...
+
+    def step(
+        self, page_data: dict[str, Any] | None = None
+    ) -> tuple[Document, dict[str, Any]]:
+        """Returns the new query document and its variables which will be executed to
+        get the next page of data.
+
+        If this is the first query made as part of the pagination strategy, then
+          ``page_data`` will be ``None``.
+
+        If pagination should be interupted (e.g.: if enough entities have been queried),
+        then this method should raise a :class:`StopPagination` exception.
+
+        Args:
+            page_data: The previous query's response data. If this is the first query
+              (i.e.: the first page of data), then it will be `None`. Defaults to None.
+
+        Returns:
+            tuple: A tuple `(doc, vars)` where `doc` is the query document that will be
+              executed to fetch the next page of data and `vars` are the variables for
+              that document.
+        """
+        ...
 
 
 @dataclass
@@ -126,13 +168,16 @@ class LegacyStrategyArgGenerator:
         def is_leaf(self):
             return len(self.inner) == 0
 
-        def update(self, data: dict) -> None:
-            """Moves ``self`` cursor forward according to previous response data ``data``
+        def update(self, data: dict[str, Any]) -> None:
+            """Moves `self` cursor forward according to previous response data `data`
+
             Args:
-              data (dict): Previous response data
+              data: Previous response data
+
             Raises:
               StopIteration: _description_
             """
+
             # Current node step
             index_field_data = list(
                 extract_data(
@@ -167,11 +212,12 @@ class LegacyStrategyArgGenerator:
             ):
                 raise StopPagination
 
-        def step(self, data: dict) -> None:
+        def step(self, data: dict[str, Any]) -> None:
             """Updates either ``self`` cursor or inner state machine depending on
             whether the inner state machine has reached its limit
+
             Args:
-              data (dict): _description_
+              data: _description_
             """
             if self.is_leaf:
                 self.update(data)
@@ -197,11 +243,14 @@ class LegacyStrategyArgGenerator:
             else:
                 return 1
 
-        def args(self) -> dict:
-            """Returns the pagination arguments for the current state of the state machine
+        def args(self) -> dict[str, Any]:
+            """Returns the pagination arguments for the current state of the
+             state machine
+
             Returns:
-                dict: _description_
+              _description_
             """
+
             args = {}
             args[f"first{self.page_node.node_idx}"] = self.first_arg_value()
 
@@ -220,6 +269,7 @@ class LegacyStrategyArgGenerator:
 
         def reset(self):
             """Reset state machine"""
+
             self.inner_idx = 0
             self.filter_value = self.page_node.filter_value
             self.queried_entities = 0
@@ -261,36 +311,38 @@ class LegacyStrategy:
         self.normalized_doc = normalize(schema, document, pagination_nodes)
 
     def step(
-        self, page_data: Optional[dict[str, Any]] = None
+        self, page_data: dict[str, Any] | None = None
     ) -> tuple[Document, dict[str, Any]]:
         args = self.arg_generator.step(page_data)
         trimmed_doc = prune_doc(self.normalized_doc, args)
-        return (trimmed_doc, args)
+        return trimmed_doc, args
 
 
 @dataclass
 class ShallowStrategyArgGenerator:
     @dataclass
     class Cursor:
-        # TODO: Add GreedyStrategy doc
         """Class used to generate the pagination variables for a given tree of
         ``PaginationNode`` objects.
 
         Attributes:
           page_node: The ``PaginationNode`` object which this cursor is iterating
-            through.
-          inner: The cursors for nested ``PaginationNodes``, if any.
+            through
+          inner: The cursors for nested ``PaginationNodes``, if any
           inner_idx: The index of the inner ``PaginationNode`` through which this cursor
-            iterating.
-          filter_value: The previous page's index value used to query the next data page.
+            iterating
+          filter_value: The previous page's index value used to query the next data page
             Depends on ``page_node.filter_field``, e.g.: if ``page_node.filter_field``
             is ``timestamp_gt``, then ``filter_value`` will be the highest timestamp
             the entities returned in the previous data page.
-          queried_entities: Counter keeping track of the total number of queried entities.
-          stop: Flag indicating whether or not to stop the cursor.
-          page_count: Counter keeping track of the total number data pages queried.
-          keys: Set keeping track of the keys of all queried entities to avoid duplicates.
+          queried_entities: Counter for the total number of queried entities
+          stop: Flag indicating whether or not to stop the cursor
+          page_count: Counter keeping track of the total number data pages queried
+          keys: Set of keys of all queried entities to avoid duplicates
+
+        # TODO: Add GreedyStrategy doc
         """
+
         page_node: PaginationNode
 
         inner: list[ShallowStrategyArgGenerator.Cursor]
@@ -341,7 +393,7 @@ class ShallowStrategyArgGenerator:
                 ShallowStrategyArgGenerator.Cursor,
             ],
             priority: Literal["self"] | Literal["children"] = "self",
-            counter: Optional(count[int]) = None,
+            counter: count[int] | None = None,
         ) -> ShallowStrategyArgGenerator.Cursor:
             if counter is None:
                 counter = count()
@@ -485,8 +537,34 @@ class ShallowStrategy:
         self.normalized_doc = normalize(schema, document, pagination_nodes)
 
     def step(
-        self, page_data: Optional[dict[str, Any]] = None
-    ) -> Tuple[Document, dict[str, Any]]:
+        self, page_data: dict[str, Any] | None = None
+    ) -> tuple[Document, dict[str, Any]]:
         args = self.arg_generator.step(page_data)
         trimmed_doc = prune_doc(self.normalized_doc, args)
         return (trimmed_doc, args)
+
+
+class SkipStrategy:
+    """This strategy always raises a :class:`~subgrounds.pagination.SkipPagination`
+      when constructed or if *somehow* `step` is called.
+
+    This is the default if `None` is passed to the strategy (default for non-subgraphs).
+    """
+
+    def __init__(self, schema: SchemaMeta, document: Document) -> None:
+        raise SkipPagination
+
+    def step(
+        self, page_data: Optional[dict[str, Any]] = None
+    ) -> tuple[Document, dict[str, Any]]:
+        raise SkipPagination
+
+
+def normalize_strategy(
+    strategy: type[PaginationStrategy] | None = LegacyStrategy,
+    is_subgraph: bool = True,
+):
+    if strategy is not None and is_subgraph:
+        return strategy
+
+    return SkipStrategy

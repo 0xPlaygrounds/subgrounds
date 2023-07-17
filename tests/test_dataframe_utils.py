@@ -1,9 +1,6 @@
-import unittest
 from functools import reduce
-from typing import Any
 
 import pandas as pd
-import pytest
 from pandas.testing import assert_frame_equal
 from pipe import map
 
@@ -16,7 +13,6 @@ from subgrounds.query import Query
 from subgrounds.schema import TypeMeta, TypeRef
 from subgrounds.subgraph import FieldPath, SyntheticField
 from subgrounds.subgraph.subgraph import Subgraph
-from subgrounds.subgrounds import Subgrounds
 
 
 def test_columns_of_selections_1(klima_bridged_carbon_subgraph: Subgraph):

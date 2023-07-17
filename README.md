@@ -24,7 +24,7 @@ An intuitive python library for interfacing with Subgraphs.
 ## Resources
 - [**Subgrounds Docs**](http://docs.playgrounds.network/): User guide and API documentation
 - [**Examples**](https://github.com/0xPlaygrounds/subgrounds/tree/main/examples): A list of examples showcasing Subgrounds integration with Dash and Plotly
-- [**Tutorials**](https://docs.playgrounds.network/subgrounds/tutorials/): Subgrounds video workshops and tutorials
+- [**Videos**](https://docs.playgrounds.network/subgrounds/videos/): Video workshops on Subgrounds
 - [**Community Projects**](http://docs.playgrounds.network/subgrounds/examples/): An ever growing list of projects created by our community members
 
 ## Installation

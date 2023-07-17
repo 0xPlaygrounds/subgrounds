@@ -207,7 +207,9 @@ class Subgrounds(SubgroundsBase):
         fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)
         req = self.mk_request(fpaths)
         responses = self.execute_iter(req, pagination_strategy)
-        yield from (resp.data for resp in responses)
+
+        for resp in responses:
+            yield resp.data
 
     def query_df(
         self,
@@ -284,6 +286,7 @@ class Subgrounds(SubgroundsBase):
 
         fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)
         json_data = self.query_json(fpaths, pagination_strategy=pagination_strategy)
+
         return df_of_json(json_data, fpaths, columns, concat)
 
     def query_df_iter(
@@ -306,9 +309,7 @@ class Subgrounds(SubgroundsBase):
         """
 
         fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)
-        for page in self.query_json_iter(
-            fpaths, pagination_strategy=pagination_strategy
-        ):
+        for page in self.query_json_iter(fpaths, pagination_strategy):
             yield df_of_json(page, fpaths, None, False)
 
     def query(
@@ -364,17 +365,18 @@ class Subgrounds(SubgroundsBase):
 
         def f(fpath: FieldPath) -> dict[str, Any]:
             data = fpath._extract_data(blob)
+
             if type(data) == list and len(data) == 1 and unwrap:
                 return data[0]
-            else:
-                return data
+
+            return data
 
         data = tuple(fpaths | map(f))
 
         if len(data) == 1:
             return data[0]
-        else:
-            return data
+
+        return data
 
     def query_iter(
         self,
@@ -399,10 +401,11 @@ class Subgrounds(SubgroundsBase):
 
         def f(fpath: FieldPath, blob: dict[str, Any]) -> dict[str, Any]:
             data = fpath._extract_data(blob)
+
             if type(data) == list and len(data) == 1 and unwrap:
                 return data[0]
-            else:
-                return data
+
+            return data
 
         fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)
         for page in self.query_json_iter(fpaths, pagination_strategy):

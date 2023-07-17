@@ -36,13 +36,12 @@ class AsyncSubgrounds(SubgroundsBase):
 
         return httpx.AsyncClient(http2=HTTP2_SUPPORT, timeout=self.timeout)
 
-    async def load(
-        self,
-        url: str,
-        save_schema: bool = False,
-        cache_dir: str = "schemas/",
-        is_subgraph: bool = True,
-    ):
+    async def load(self, url: str, save_schema: bool = False, is_subgraph: bool = True):
+        """Performs introspection on the provided GraphQL API ``url`` to get the
+        schema, stores the schema if ``save_schema`` is ``True`` and returns a
+        generated class representing the GraphQL endpoint with all its entities.
+        """
+
         try:
             loader = self._load(url, save_schema, is_subgraph)
             url, query = next(loader)  # if this fails, schema is loaded from cache
@@ -54,9 +53,7 @@ class AsyncSubgrounds(SubgroundsBase):
 
         assert False
 
-    async def load_subgraph(
-        self, url: str, save_schema: bool = False, cache_dir: str = "schemas/"
-    ) -> Subgraph:
+    async def load_subgraph(self, url: str, save_schema: bool = False) -> Subgraph:
         """Performs introspection on the provided GraphQL API ``url`` to get the
         schema, stores the schema if ``save_schema`` is ``True`` and returns a
         generated class representing the subgraph with all its entities.
@@ -72,11 +69,9 @@ class AsyncSubgrounds(SubgroundsBase):
           Subgraph: A generated class representing the subgraph and its entities
         """
 
-        return await self.load(url, save_schema, cache_dir, True)
+        return await self.load(url, save_schema, True)
 
-    async def load_api(
-        self, url: str, save_schema: bool = False, cache_dir: str = "schemas/"
-    ) -> Subgraph:
+    async def load_api(self, url: str, save_schema: bool = False) -> Subgraph:
         """Performs introspection on the provided GraphQL API ``url`` to get the
          schema, stores the schema if ``save_schema`` is ``True`` and returns a
          generated class representing the GraphQL endpoint with all its entities.
@@ -90,7 +85,7 @@ class AsyncSubgrounds(SubgroundsBase):
           A generated class representing the subgraph and its entities
         """
 
-        return await self.load(url, save_schema, cache_dir, False)
+        return await self.load(url, save_schema, False)
 
     async def execute(
         self,
@@ -143,6 +138,7 @@ class AsyncSubgrounds(SubgroundsBase):
         fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)
         req = self.mk_request(fpaths)
         data = await self.execute(req, pagination_strategy)
+
         return [doc.data for doc in data.responses]
 
     async def query_df(
@@ -169,9 +165,8 @@ class AsyncSubgrounds(SubgroundsBase):
         """
 
         fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)
-        json_data = await self.query_json(
-            fpaths, pagination_strategy=pagination_strategy
-        )
+        json_data = await self.query_json(fpaths, pagination_strategy)
+
         return df_of_json(json_data, fpaths, columns, concat)
 
     async def query(
@@ -200,17 +195,18 @@ class AsyncSubgrounds(SubgroundsBase):
 
         def f(fpath: FieldPath) -> dict[str, Any]:
             data = fpath._extract_data(blob)
+
             if type(data) == list and len(data) == 1 and unwrap:
                 return data[0]
-            else:
-                return data
+
+            return data
 
         data = tuple(fpaths | map(f))
 
         if len(data) == 1:
             return data[0]
-        else:
-            return data
+
+        return data
 
     async def _fetch(self, url: str, blob: dict[str, Any]) -> dict[str, Any]:
         resp = await self._client.post(

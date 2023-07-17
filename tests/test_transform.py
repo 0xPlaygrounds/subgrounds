@@ -506,3 +506,10 @@ def test_localsyntheticfield_toplevel_roundtrip(
     data = sg.execute(req)
 
     assert data == expected
+    object_f(subgraph).synthfield = synthfield_f(subgraph)
+
+    req = sg.mk_request(fpaths_f(subgraph))
+
+    data = sg.execute(req)
+
+    assert data == expected

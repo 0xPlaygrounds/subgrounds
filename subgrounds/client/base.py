@@ -213,7 +213,7 @@ class SubgroundsBase(ABC):
         #   define the pagination pipeline
         #   setup the starting doc req and the response we'll be building iteratively
         #   until pagination is complete:
-        #       
+        #
         for doc in data_req.documents:
             paginator = paginate(self.subgraphs[doc.url]._schema, doc, strategy)
 

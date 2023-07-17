@@ -19,7 +19,7 @@ We also use a `poetry` plugin called `poethepoet` to aid in managing our frequen
 $ poetry self add 'poethepoet[poetry_plugin]'
 ```
 
-<details>
+<details class="admonition hint dropdown toggle-hidden" style="padding: 0.75em">
 <summary>Alternative to using <code>poe</code></summary>
 <br>
 
@@ -52,13 +52,11 @@ We use [black](https://github.com/psf/black) and [ruff](https://github.com/charl
 - Black provides us an opinionated set of style conventions which helps keep the code consistent.
 - Ruff is a bleeding edge `flake8` replacement which helps us lint our code efficiently and effectively.
 
-This library also leverages python typing via the pyright project. We leverage the type-safety via the official [Python Vscode Extension](https://marketplace.visualstudio.com/items?itemName=ms-python.python).
+This library also leverages python typing via the pyright project. We leverage the type-safety via the official [Python VSCode Extension](https://marketplace.visualstudio.com/items?itemName=ms-python.python).
 
 All PRs should be type-checked and adhere to the `black` and `ruff` style conventions.
 
-> Note: We recently moved towards using tools like `black` to help us maintain our codebase. However, our codebase is *still* adapting so there might be several rough edges (hense why we don't enforce linting in our CI yet). If you would like to help us improve these edges, feel free to make a PR!
-
 ```bash
-$ poe format  # doesn't run `ruff check --fix` yet
+$ poe format
 $ poe check
 ```

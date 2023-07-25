@@ -76,15 +76,16 @@ from typing import Any, Callable, Iterator, Literal, Optional, Protocol
 
 from pipe import map, traverse
 
-from subgrounds.pagination.preprocess import (
+from subgrounds.query import Document
+from subgrounds.schema import SchemaMeta
+from subgrounds.utils import extract_data
+
+from .preprocess import (
     PaginationNode,
     generate_pagination_nodes,
     normalize,
     prune_doc,
 )
-from subgrounds.query import Document
-from subgrounds.schema import SchemaMeta
-from subgrounds.utils import extract_data
 
 PAGE_SIZE = 900
 

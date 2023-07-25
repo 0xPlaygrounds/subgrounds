@@ -2,7 +2,7 @@ from typing import Any, Callable
 
 import pytest
 
-from subgrounds import Subgrounds
+from subgrounds import Subgrounds, Subgraph, FieldPath, SyntheticField
 from subgrounds.query import (
     DataRequest,
     DataResponse,
@@ -12,8 +12,7 @@ from subgrounds.query import (
     Selection,
 )
 from subgrounds.schema import TypeMeta, TypeRef
-from subgrounds.subgraph import Object, Subgraph
-from subgrounds.subgraph.fieldpath import FieldPath, SyntheticField
+from subgrounds.subgraph import Object
 from subgrounds.transform import DocumentTransform, LocalSyntheticField, TypeTransform
 
 

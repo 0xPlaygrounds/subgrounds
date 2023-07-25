@@ -10,17 +10,9 @@ The `utils` module contains some generic functions that are useful in the contex
   pagination.
 """
 
-from subgrounds.pagination.pagination import (
-    PaginationError,
-    PaginationStrategy,
-    paginate,
-)
-from subgrounds.pagination.preprocess import (
-    PaginationNode,
-    generate_pagination_nodes,
-    prune_doc,
-)
-from subgrounds.pagination.strategies import (
+from .pagination import PaginationError, PaginationStrategy, paginate
+from .preprocess import PaginationNode, generate_pagination_nodes, prune_doc
+from .strategies import (
     LegacyStrategy,
     ShallowStrategy,
     SkipStrategy,

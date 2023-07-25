@@ -17,13 +17,12 @@ import httpx
 import pandas as pd
 from pipe import map, traverse
 
-from subgrounds.dataframe_utils import df_of_json
-from subgrounds.errors import GraphQLError, ServerError
-from subgrounds.pagination import LegacyStrategy, PaginationStrategy
-from subgrounds.query import DataRequest, DataResponse, Document, DocumentResponse
-from subgrounds.subgraph import FieldPath, Subgraph
-from subgrounds.utils import default_header
-
+from ..dataframe_utils import df_of_json
+from ..errors import GraphQLError, ServerError
+from ..pagination import LegacyStrategy, PaginationStrategy
+from ..query import DataRequest, DataResponse, Document, DocumentResponse
+from ..subgraph import FieldPath, Subgraph
+from ..utils import default_header
 from .base import SubgroundsBase
 
 logger = logging.getLogger("subgrounds")
@@ -157,6 +156,7 @@ class Subgrounds(SubgroundsBase):
                 data = self._fetch(
                     doc.url, {"query": doc.graphql, "variables": doc.variables}
                 )
+
                 yield cast(
                     DocumentResponse,
                     executor.send(DocumentResponse(url=doc.url, data=data)),

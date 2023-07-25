@@ -14,13 +14,12 @@ import httpx
 import pandas as pd
 from pipe import map, traverse
 
-from subgrounds.errors import GraphQLError, ServerError
-from subgrounds.utils import default_header
-
 from ..dataframe_utils import df_of_json
+from ..errors import GraphQLError, ServerError
 from ..pagination import LegacyStrategy, PaginationStrategy
 from ..query import DataRequest, DataResponse, DocumentResponse
 from ..subgraph import FieldPath, Subgraph
+from ..utils import default_header
 from .base import SubgroundsBase
 
 logger = logging.getLogger("subgrounds")
@@ -125,8 +124,8 @@ class AsyncSubgrounds(SubgroundsBase):
         """See :func:`~subgrounds.Subgrounds.query_json`.
 
         Args:
-          fpaths: One or more :class:`FieldPath` objects
-            that should be included in the request.
+          fpaths: One or more :class:`FieldPath` objects that should be included in
+            the request.
           pagination_strategy: A Class implementing the :class:`PaginationStrategy`
             ``Protocol``. If ``None``, then automatic pagination is disabled.
             Defaults to :class:`LegacyStrategy`.
@@ -152,16 +151,13 @@ class AsyncSubgrounds(SubgroundsBase):
 
         Args:
           fpaths: One or more `FieldPath` objects that should be included in the request
-          columns: The column labels. Defaults to None.
+          columns: The column labels.
           merge: Whether or not to merge resulting dataframes.
-          pagination_strategy: A Class implementing the :class:`PaginationStrategy`
+          pagination_strategy: A class implementing the :class:`PaginationStrategy`
             ``Protocol``. If ``None``, then automatic pagination is disabled.
-            Defaults to :class:`LegacyStrategy`.
 
         Returns:
           A :class:`pandas.DataFrame` containing the reponse data.
-
-
         """
 
         fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)

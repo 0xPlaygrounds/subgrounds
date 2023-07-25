@@ -257,6 +257,12 @@ class SubgroundsBase(ABC):
          expecting multiple documents or pages of documents will be inaccurate.
         """
 
+        if len(req.documents) > 1:
+            raise NotImplementedError(
+                "`execute_iter` cannot currently handle multiple documents\n"
+                "Try splitting your query into multiple queries."
+            )
+
         document_transforms = {
             url: subgraph._transforms for url, subgraph in self.subgraphs.items()
         }

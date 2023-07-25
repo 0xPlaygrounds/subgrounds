@@ -60,6 +60,27 @@ def make_datarequest1(sg: Subgrounds, subgraph: Subgraph) -> DataRequest:
     )
 
 
+def make_datarequest2(sg: Subgrounds, subgraph: Subgraph) -> DataRequest:
+    swaps = subgraph.Query.swaps  # type: ignore
+    pairs = subgraph.Query.pairs  # type: ignore
+
+    req1 = sg.mk_request(
+        [
+            swaps.amount0In,
+            swaps.amount0Out,
+            swaps.amount1In,
+            swaps.amount1Out,
+            swaps.id,
+            swaps.timestamp,
+        ]
+    )
+    req2 = sg.mk_request(
+        [pairs.id, pairs.reserveUSD],
+    )
+
+    return req1.add_documents(req2.documents)
+
+
 def make_fetchresponse0(*args, **kwargs) -> dict[str, Any]:
     return {"swaps": [{"id": hex(random.getrandbits(32))} | BASE_DATA_RAW]}
 
@@ -71,6 +92,17 @@ def make_fetchresponse1(*args, **kwargs) -> dict[str, Any]:
             for _ in range(PAGE_SIZE)
         ]
     }
+
+
+def make_fetchresponse2(*args, **kwargs) -> dict[str, Any]:
+    # I'm sorry about this
+    match args[2]["query"].split("\n")[1].strip().split("(")[0]:
+        case "swaps":
+            return {"swaps": [{"id": hex(random.getrandbits(32))} | BASE_DATA_RAW]}
+        case "pairs":
+            return {"pairs": [{"id": hex(random.getrandbits(32)), "reserveUSD": 10}]}
+        case _:
+            assert False
 
 
 def make_docexpected0():
@@ -96,6 +128,21 @@ def make_docexpected1():
                     ]
                 },
             )
+        ]
+    )
+
+
+def make_docexpected2():
+    return DataResponse(
+        responses=[
+            DocumentResponse(
+                url="www.abc.xyz/graphql",
+                data={"swaps": [{"id": hex(random.getrandbits(32))} | BASE_DATA]},
+            ),
+            DocumentResponse(
+                url="www.abc.xyz/graphql",
+                data={"pairs": [{"id": hex(random.getrandbits(32)), "reserveUSD": 10}]},
+            ),
         ]
     )
 
@@ -128,6 +175,19 @@ def make_iter_docexpected1():
     )
 
 
+def make_iter_docexpected2():
+    yield DocumentResponse(
+        url="www.abc.xyz/graphql",
+        data={"xa11d4bcf61e1567a": [{"id": hex(random.getrandbits(32))} | BASE_DATA]},
+    ),
+    yield DocumentResponse(
+        url="www.abc.xyz/graphql",
+        data={
+            "xa11d4bcf61e1567a": [{"id": hex(random.getrandbits(32)), "reserveUSD": 10}]
+        },
+    ),
+
+
 @pytest.mark.parametrize(
     ["response_f", "transforms", "datarequest_f", "expected_f"],
     [
@@ -152,6 +212,17 @@ def make_iter_docexpected1():
             ],
             make_datarequest1,
             make_docexpected1,
+        ),
+        (
+            make_fetchresponse2,
+            [
+                TypeTransform(
+                    TypeRef.Named(name="BigDecimal", kind="SCALAR"),
+                    lambda bigdecimal: float(bigdecimal),
+                )
+            ],
+            make_datarequest2,
+            make_docexpected2,
         ),
     ],
 )
@@ -264,6 +335,17 @@ async def test_async_execute_roundtrip(
             make_datarequest1,
             make_iter_docexpected1,
         ),
+        # (
+        #     make_fetchresponse2,
+        #     [
+        #         TypeTransform(
+        #             TypeRef.Named(name="BigDecimal", kind="SCALAR"),
+        #             lambda bigdecimal: float(bigdecimal),
+        #         )
+        #     ],
+        #     make_datarequest2,
+        #     make_iter_docexpected2,
+        # ),
     ],
 )
 def test_execute_iter_roundtrip(

@@ -50,7 +50,7 @@ def paginate(
             except StopPagination:
                 break
             except Exception as exn:
-                raise PaginationError(exn.args[0], strategy)
+                raise PaginationError(exn.args[0], strategy) from exn
 
     except SkipPagination:
         _ = yield doc  # consistency

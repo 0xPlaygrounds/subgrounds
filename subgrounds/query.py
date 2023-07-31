@@ -783,6 +783,7 @@ class Selection:
                 return Selection(
                     fmeta=self.fmeta,
                     alias=self.alias,
+                    arguments=self.arguments,
                     selection=union(
                         self.selection,
                         new_selections,

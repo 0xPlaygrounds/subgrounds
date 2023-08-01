@@ -240,7 +240,7 @@ def test_graphql_compilation(test_input: Query, expected: str):
                     type=TypeRef.non_null_list("Swap", kind="OBJECT"),
                 ),
                 None,
-                [],
+                [Argument("first", InputValue.Int(100))],
                 [
                     Selection(
                         TypeMeta.FieldMeta(
@@ -274,7 +274,7 @@ def test_graphql_compilation(test_input: Query, expected: str):
                     type=TypeRef.non_null_list("Swap", kind="OBJECT"),
                 ),
                 None,
-                [],
+                [Argument("first", InputValue.Int(100))],
                 [
                     Selection(
                         TypeMeta.FieldMeta(

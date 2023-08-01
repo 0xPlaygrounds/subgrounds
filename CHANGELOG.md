@@ -2,6 +2,16 @@
 
 <!--next-version-placeholder-->
 
+## v1.6.1 (2023-08-01)
+
+### Fix
+
+* `add` method of `Selection` class ([#39](https://github.com/0xPlaygrounds/subgrounds/issues/39)) ([`5c18dec`](https://github.com/0xPlaygrounds/subgrounds/commit/5c18dec14fb78176238d3bda2c0e6a3016de0b4e))
+
+### Documentation
+
+* Update README links ([`f271706`](https://github.com/0xPlaygrounds/subgrounds/commit/f271706fee42c90ab99840bac65952217a5aaf1a))
+
 ## v1.6.0 (2023-05-25)
 ### Feature
 * Add helpers for accessing the playgrounds gateway ([#21](https://github.com/0xPlaygrounds/subgrounds/issues/21)) ([`e44aee6`](https://github.com/0xPlaygrounds/subgrounds/commit/e44aee65649bff192321cfd82436b65da236d870))

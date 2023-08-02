@@ -2124,20 +2124,46 @@ def test_synthetic_field_path_3(subgraph: Subgraph):
 
 def test_filter_1(subgraph: Subgraph):
     expected = Filter(
-        TypeMeta.FieldMeta(
-            name="reserveUSD",
-            description="",
-            args=[],
-            type=TypeRef.Named(name="BigDecimal", kind="SCALAR"),
-        ),
+        [
+            TypeMeta.FieldMeta(
+                name="reserveUSD",
+                description="",
+                args=[],
+                type=TypeRef.Named(name="BigDecimal", kind="SCALAR"),
+            )
+        ],
         Filter.Operator.GT,
         100,
     )
 
-    filter_ = subgraph.Pair.reserveUSD > 100
+    actual = subgraph.Pair.reserveUSD > 100
 
     with fieldpath_test_mode():
-        assert filter_ == expected
+        assert actual == expected
+
+
+def test_filter_2(subgraph: Subgraph):
+    expected = Filter(
+        [
+            TypeMeta.FieldMeta(
+                name="token0",
+                args=[],
+                type=TypeRef.Named(name="Token", kind="OBJECT"),
+            ),
+            TypeMeta.FieldMeta(
+                name="symbol",
+                args=[],
+                type=TypeRef.Named(name="String", kind="SCALAR"),
+            ),
+        ],
+        Filter.Operator.EQ,
+        "CRV",
+    )
+
+    actual = subgraph.Pair.token0.symbol == "CRV"
+
+    with fieldpath_test_mode():
+        assert actual == expected
 
 
 def test_field_path_args_1(subgraph: Subgraph):

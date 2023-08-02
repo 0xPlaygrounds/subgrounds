@@ -60,6 +60,17 @@ class Filter:
 
     @classmethod
     def to_dict(cls, filters: list[Filter]) -> dict[str, Any]:
+        """Converts a series of filters into a single dict.
+
+        Each filter represents a single key, value pair where the key is generated based
+          on the operation (via :func:`~subgrounds.subgraph.filter.Filter.leaf_name`).
+          For nested filters, this base dict is further stacked under sub-objects:
+
+        ```py
+        {"outer_": {"outer2_": {"inner_op": "value"}}}
+        ```
+        """
+
         return reduce(
             merge,
             (

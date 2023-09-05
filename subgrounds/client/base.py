@@ -1,7 +1,9 @@
 """ `SubgroundsBase`
 
-This module implements the base API that developers can use to build custom clients for
- allowing for intricate customization of subgrounds feature set.
+This module implements the base API that developers can use to build custom clients to
+ allow for intricate customization of the subgrounds feature set.
+
+ {{ lab_bdg }} The building of Custom Clients is an experimental feature.
 """
 
 import json
@@ -14,6 +16,7 @@ from functools import reduce
 from importlib import resources
 from pathlib import Path
 from typing import Annotated, Any, Type, cast
+from typing_extensions import Self
 
 from pipe import groupby, map, traverse
 
@@ -62,7 +65,7 @@ class SubgroundsBase(ABC):
         self.schema_cache = Path(self.schema_cache)
 
     @classmethod
-    def from_pg_key(cls, key: str, **kwargs: Any):
+    def from_pg_key(cls, key: str, **kwargs: Any) -> Self:
         """Create a Subgrounds* instance using a playgrounds key directly.
 
         This sets the `headers` field internally to be used with all queries made out.
@@ -131,8 +134,8 @@ class SubgroundsBase(ABC):
 
     mk_request = make_request
 
-    def fetch_schema(self, url: str):
-        """Grabs schema from filesystem based the subgraph_slug of the url"""
+    def fetch_schema(self, url: str) -> None | dict[str, Any]:
+        """Reads schema from filesystem based on subgraph_slug of the url"""
 
         self.schema_cache.mkdir(parents=True, exist_ok=True)
         schema_path = self.schema_cache / self._subgraph_slug(url)
@@ -141,7 +144,7 @@ class SubgroundsBase(ABC):
             return json.loads(schema.read_text())
 
     def cache_schema(self, url: str, data: dict[str, Any]):
-        """Dumps schema into filesystem based the subgraph_slug of the url"""
+        """Writes schema into filesystem based on subgraph_slug of the url"""
 
         self.schema_cache.mkdir(parents=True, exist_ok=True)
         schema_path = self.schema_cache / self._subgraph_slug(url)
@@ -211,9 +214,8 @@ class SubgroundsBase(ABC):
 
         # for each top-level document (generally 1 per subgraph URL):
         #   define the pagination pipeline
-        #   setup the starting doc req and the response we'll be building iteratively
-        #   until pagination is complete:
-        #
+        #   setup the starting doc request and the response we'll be building
+        #   iteratively until pagination is complete
         for doc in data_req.documents:
             paginator = paginate(self.subgraphs[doc.url]._schema, doc, strategy)
 

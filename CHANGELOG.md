@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.7.0 (2023-09-05)
+
+### Feature
+
+* Async support for subgrounds (+ more) ([#36](https://github.com/0xPlaygrounds/subgrounds/issues/36)) ([`929a882`](https://github.com/0xPlaygrounds/subgrounds/commit/929a88221ac571b1a45b5877e62d6d4cb2d1a91e))
+
 ## v1.6.1 (2023-08-01)
 
 ### Fix

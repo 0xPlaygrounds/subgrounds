@@ -18,7 +18,7 @@ from subgrounds.query import (
 from subgrounds.schema import TypeMeta, TypeRef
 from subgrounds.utils import flatten
 
-from .abcs import DocumentTransform, RequestTransform
+from .base import DocumentTransform, RequestTransform
 from .utils import select_data
 
 if TYPE_CHECKING:

@@ -13,21 +13,18 @@ keywords = ["graph", "subgrounds", "graphql", "subgraph"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-requests = "^2.27.1"
 pandas = "^1.4.2"
 pipe = "^2.0"
 pydantic = "^1.10.2"
 dash = { version = "^2.3.1", optional = true }
 plotly = { version = "^5.14.1", optional = true }
-pyodide-http = { version = "^0.2.1", optional = true }
-gql = "^3.4.0"
-aiohttp = "^3.8.4"
+httpx = { extras = ["http2"], version = "^0.24.1" }
+pytest-asyncio = "^0.21.0"
 
 [tool.poetry.extras]
 dash = ["dash"]
 plotly = ["plotly"]
-pyodide = ["pyodide-http"]
-all = ["dash", "plotly", "pyodide-http"]
+all = ["dash", "plotly"]
 
 # https://python-poetry.org/docs/managing-dependencies/#dependency-groups
 [tool.poetry.group.dev.dependencies]
@@ -35,12 +32,10 @@ black = "^22.3.0"
 deepdiff = "^6.2.1"                 # used for debugging data structures
 ipykernel = "^6.13.0"
 mypy = "^0.950"
-nose2 = "^0.11.0"
 pytest = "^7.1.2"
 pytest-mock = "^3.8.2"
 python-semantic-release = "^7.33.1"
 ruff = "^0.0.253"
-pytest-insta = "^0.2.0"
 
 [tool.poe.tasks]
 format = "black subgrounds examples tests"
@@ -66,6 +61,9 @@ build_command = "poetry build"
 "tests/*" = ["E501"]
 "subgrounds/plotly_wrappers" = ["F405", "F403"]
 "subgrounds/dash_wrappers" = ["F405", "F403"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

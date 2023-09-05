@@ -6,11 +6,12 @@ from typing import TYPE_CHECKING, Any
 from pipe import where
 
 from subgrounds.schema import SchemaMeta, TypeMeta, TypeRef
-from subgrounds.subgraph.fieldpath import FieldPath, SyntheticField
 from subgrounds.utils import identity
 
+from .fieldpath import FieldPath, SyntheticField
+
 if TYPE_CHECKING:
-    from subgrounds.subgraph.subgraph import Subgraph
+    from .subgraph import Subgraph
 
 
 @dataclass

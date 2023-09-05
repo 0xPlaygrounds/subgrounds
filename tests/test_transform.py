@@ -2,6 +2,7 @@ from typing import Any, Callable
 
 import pytest
 
+from subgrounds import Subgrounds, Subgraph, FieldPath, SyntheticField
 from subgrounds.query import (
     DataRequest,
     DataResponse,
@@ -11,9 +12,7 @@ from subgrounds.query import (
     Selection,
 )
 from subgrounds.schema import TypeMeta, TypeRef
-from subgrounds.subgraph import Object, Subgraph
-from subgrounds.subgraph.fieldpath import FieldPath, SyntheticField
-from subgrounds.subgrounds import Subgrounds
+from subgrounds.subgraph import Object
 from subgrounds.transform import DocumentTransform, LocalSyntheticField, TypeTransform
 
 
@@ -124,21 +123,18 @@ def datarequest(subgraph: Subgraph):
 
 @pytest.fixture
 def response():
-    return DocumentResponse(
-        url="www.abc.xyz/graphql",
-        data={
-            "swaps": [
-                {
-                    "amount0In": "0.25",
-                    "amount0Out": "0.0",
-                    "amount1In": "0.0",
-                    "amount1Out": "89820.904371079570860909",
-                    "id": "0xf457e61e2aa310c8a7f01570bf96f24323fc317925c42f2a33d2061e1944df4d-0",
-                    "timestamp": "1638554699",
-                }
-            ]
-        },
-    )
+    return {
+        "swaps": [
+            {
+                "amount0In": "0.25",
+                "amount0Out": "0.0",
+                "amount1In": "0.0",
+                "amount1Out": "89820.904371079570860909",
+                "id": "0xf457e61e2aa310c8a7f01570bf96f24323fc317925c42f2a33d2061e1944df4d-0",
+                "timestamp": "1638554699",
+            }
+        ]
+    }
 
 
 @pytest.mark.parametrize(
@@ -176,12 +172,12 @@ def response():
 def test_typetransform_roundtrip(
     mocker,
     datarequest: DataRequest,
-    response: DocumentResponse,
+    response: dict[str, Any],
     subgraph: Subgraph,
     transforms: list[DocumentTransform],
     expected: list[dict[str, Any]],
 ) -> None:
-    mocker.patch("subgrounds.client.query", return_value=response)
+    mocker.patch.object(Subgrounds, "_fetch", return_value=response)
 
     subgraph._transforms = transforms
     sg = Subgrounds(global_transforms=[], subgraphs={subgraph._url: subgraph})
@@ -196,7 +192,7 @@ def test_localsyntheticfield_literal_roundtrip1(
     response: list[dict[str, Any]],
     subgraph: Subgraph,
 ):
-    mocker.patch("subgrounds.client.query", return_value=response)
+    mocker.patch.object(Subgrounds, "_fetch", return_value=response)
 
     expected = DataResponse(
         responses=[
@@ -433,21 +429,18 @@ def test_localsyntheticfield_literal_roundtrip1(
     ["response", "expected", "synthfield_f", "object_f", "fpaths_f"],
     [
         (
-            DocumentResponse(
-                url="www.abc.xyz/graphql",
-                data={
-                    "swaps": [
-                        {
-                            "amount0In": "0.25",
-                            "amount0Out": "0.0",
-                            "amount1In": "0.0",
-                            "amount1Out": "89820.904371079570860909",
-                            "id": "0xf457e61e2aa310c8a7f01570bf96f24323fc317925c42f2a33d2061e1944df4d-0",
-                            "timestamp": "1638554699",
-                        }
-                    ]
-                },
-            ),
+            {
+                "swaps": [
+                    {
+                        "amount0In": "0.25",
+                        "amount0Out": "0.0",
+                        "amount1In": "0.0",
+                        "amount1Out": "89820.904371079570860909",
+                        "id": "0xf457e61e2aa310c8a7f01570bf96f24323fc317925c42f2a33d2061e1944df4d-0",
+                        "timestamp": "1638554699",
+                    }
+                ]
+            },
             DataResponse(
                 responses=[
                     DocumentResponse(
@@ -474,9 +467,7 @@ def test_localsyntheticfield_literal_roundtrip1(
             lambda subgraph: [subgraph.Query.swaps.synthfield],
         ),
         (
-            DocumentResponse(
-                url="www.abc.xyz/graphql", data={"xa6436bbcebab2a86": None}
-            ),
+            {"xa6436bbcebab2a86": None},
             DataResponse(
                 responses=[
                     DocumentResponse(
@@ -496,14 +487,14 @@ def test_localsyntheticfield_literal_roundtrip1(
 )
 def test_localsyntheticfield_toplevel_roundtrip(
     mocker,
-    response: list[dict[str, Any]],
+    response: dict[str, Any],
     expected: list[dict[str, Any]],
     synthfield_f: Callable[[Subgraph], SyntheticField],
     object_f: Callable[[Subgraph], Object],
     fpaths_f: Callable[[Subgraph], list[FieldPath]],
     subgraph: Subgraph,
 ):
-    mocker.patch("subgrounds.client.query", return_value=response)
+    mocker.patch.object(Subgrounds, "_fetch", return_value=response)
 
     sg = Subgrounds(global_transforms=[], subgraphs={subgraph._url: subgraph})
 

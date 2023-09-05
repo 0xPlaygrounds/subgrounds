@@ -3,24 +3,16 @@
 The `pagination` module contains the pagination algorithms (both regular and iterative)
   that make use of `PaginationStrategies`.
 
-The `preprocess` and `strategties` modules implement the currently supported
+The `preprocess` and `strategies` modules implement the currently supported
   `PaginationStrategies`: `LegacyStrategy` and `ShallowStrategy`.
 
 The `utils` module contains some generic functions that are useful in the context of
   pagination.
 """
 
-from subgrounds.pagination.pagination import (
-    PaginationError,
-    PaginationStrategy,
-    paginate,
-)
-from subgrounds.pagination.preprocess import (
-    PaginationNode,
-    generate_pagination_nodes,
-    prune_doc,
-)
-from subgrounds.pagination.strategies import (
+from .pagination import PaginationError, PaginationStrategy, paginate
+from .preprocess import PaginationNode, generate_pagination_nodes, prune_doc
+from .strategies import (
     LegacyStrategy,
     ShallowStrategy,
     SkipStrategy,

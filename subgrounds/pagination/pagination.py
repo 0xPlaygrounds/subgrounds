@@ -25,8 +25,10 @@ class PaginationError(RuntimeError):
 def paginate(
     schema: SchemaMeta, doc: Document, pagination_strategy: type[PaginationStrategy]
 ) -> PaginateGenerator:
-    """Executes the request document `doc` based on the GraphQL schema `schema` and
-    returns the response as a JSON dictionary.
+    """Evaluates a :class:`PaginationStrategy` against a document based upon a schema.
+
+    Produces a stream of :class:`Document`s until pagination is completed. Documents are
+     executed outside the this function and data is transfered via the generator scheme.
 
     Args:
       schema (SchemaMeta): The GraphQL schema on which the request document is based
@@ -48,7 +50,7 @@ def paginate(
             except StopPagination:
                 break
             except Exception as exn:
-                raise PaginationError(exn.args[0], strategy)
+                raise PaginationError(exn.args[0], strategy) from exn
 
     except SkipPagination:
         _ = yield doc  # consistency

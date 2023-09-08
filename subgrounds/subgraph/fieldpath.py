@@ -14,11 +14,12 @@ from typing_extensions import Self  # 3.10 support
 
 from subgrounds.query import Query, Selection, arguments_of_field_args
 from subgrounds.schema import SchemaMeta, TypeMeta, TypeRef
-from subgrounds.subgraph.filter import Filter
 from subgrounds.utils import extract_data
 
+from .filter import Filter
+
 if TYPE_CHECKING:
-    from subgrounds.subgraph.subgraph import Subgraph
+    from .subgraph import Subgraph
 
 logger = logging.getLogger("subgrounds")
 warnings.simplefilter("default")
@@ -784,11 +785,10 @@ class SyntheticField(FieldOperatorMixin):
 
         .. code-block:: python
 
-            >>> from subgrounds.subgrounds import Subgrounds
-            >>> from subgrounds.subgraph import SyntheticField
+            >>> from subgrounds import Subgrounds, SyntheticField
             >>> sg = Subgrounds()
             >>> univ3 = sg.load_subgraph(
-            ...     'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3'
+            ...     "https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3"
             ... )
 
             # Create constant SyntheticFields
@@ -877,11 +877,10 @@ class SyntheticField(FieldOperatorMixin):
 
         .. code-block:: python
 
-            >>> from subgrounds.subgrounds import Subgrounds
-            >>> from subgrounds.subgraph import SyntheticField
+            >>> from subgrounds import Subgrounds, SyntheticField
             >>> sg = Subgrounds()
             >>> univ3 = sg.load_subgraph(
-            ...     'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3'
+            ...     "https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3"
             ... )
 
             # Create datetime SyntheticField
@@ -940,8 +939,7 @@ class SyntheticField(FieldOperatorMixin):
 
         .. code-block:: python
 
-            >>> from subgrounds.subgrounds import Subgrounds
-            >>> from subgrounds.subgraph import SyntheticField
+            >>> from subgrounds import Subgrounds, SyntheticField
             >>> sg = Subgrounds()
             >>> univ3 = sg.load_subgraph(
             ...     'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3'
@@ -985,8 +983,6 @@ class SyntheticField(FieldOperatorMixin):
             7  0xc63b0708e2f7e69cb8a1df0e1389a98c35a76d52       UNKNOWN
             8  0x4585fe77225b41b697c938b018e2ac67ac5a20c0       UNKNOWN
             9  0x4e68ccd3e89f51c3074ca5072bbac773960dfa36       UNKNOWN
-
-
         """
 
         return SyntheticField(

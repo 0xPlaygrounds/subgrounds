@@ -22,10 +22,10 @@ An intuitive python library for interfacing with Subgraphs.
 <!-- end elevator-pitch -->
 
 ## Resources
-- [**Subgrounds Docs**](http://docs.playgrounds.network/): User guide and API documentation
-- [**Examples**](https://github.com/0xPlaygrounds/subgrounds/tree/main/examples): A list of examples showcasing Subgrounds integration with Dash and Plotly
-- [**Tutorials**](https://docs.playgrounds.network/subgrounds/tutorials/): Subgrounds video workshops and tutorials
-- [**Community Projects**](http://docs.playgrounds.network/subgrounds/examples/): An ever growing list of projects created by our community members
+- [**Docs**](http://docs.playgrounds.network/): User guide and API documentation
+- [**Snippets**](https://github.com/0xPlaygrounds/subgrounds/tree/main/examples): A list of examples showcasing Subgrounds integration with Dash and Plotly
+- [**Examples**](http://docs.playgrounds.network/subgrounds/examples/): An ever growing list of projects created by our community members and team
+- [**Videos**](https://docs.playgrounds.network/subgrounds/videos/): Video workshops on Subgrounds
 
 ## Installation
 > Subgrounds **requires** atleast Python 3.10+

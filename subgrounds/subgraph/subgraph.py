@@ -15,13 +15,14 @@ from dataclasses import dataclass, field
 from pipe import map
 
 from subgrounds.schema import SchemaMeta, TypeMeta, TypeRef
-from subgrounds.subgraph.fieldpath import FieldPath, SyntheticField
-from subgrounds.subgraph.object import Object
 from subgrounds.transform import (
     DEFAULT_SUBGRAPH_TRANSFORMS,
     DocumentTransform,
     LocalSyntheticField,
 )
+
+from .fieldpath import FieldPath, SyntheticField
+from .object import Object
 
 logger = logging.getLogger("subgrounds")
 warnings.simplefilter("default")

@@ -1,7 +1,7 @@
+from subgrounds import Subgrounds
 from subgrounds.query import Argument, DataRequest, InputValue, Query, Selection
 from subgrounds.schema import SchemaMeta, TypeMeta, TypeRef
 from subgrounds.subgraph import FieldPath, Filter, Object, Subgraph, SyntheticField
-from subgrounds.subgrounds import Subgrounds
 from subgrounds.utils import identity
 from tests.conftest import fieldpath_test_mode
 

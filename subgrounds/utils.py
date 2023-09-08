@@ -167,6 +167,18 @@ def filter_map(items: Iterator[T], mapping: Callable[[T], T | None]) -> Iterator
             yield new_item
 
 
+class Sentinel:
+    """This class purely used for 'Sentinel' type values such as default arguments
+    to functions (where `None` is a significant value) or as a default return (such as
+    str.find, where `-1` is returned if a substring isn't found)."""
+
+    def __repr__(self) -> str:
+        return "Sentinel"
+
+
+MISSING = Sentinel()
+
+
 # ================================================================
 # Dictionary related utility functions
 # ================================================================

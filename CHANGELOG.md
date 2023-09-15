@@ -7,6 +7,16 @@
 ### Feature
 
 * Async support for subgrounds (+ more) ([#36](https://github.com/0xPlaygrounds/subgrounds/issues/36)) ([`929a882`](https://github.com/0xPlaygrounds/subgrounds/commit/929a88221ac571b1a45b5877e62d6d4cb2d1a91e))
+* Ability to create custom clients via `SubgroundsBase`
+
+### Changes
+- The entirety of how subgrounds coordinates the production, transformation, and pagination of requests has been completely reworked from the ground up.
+  - Instead of a recursive call stack, transformation and pagination is lazily computed.
+  - Then, a client (implementing `SubgroundsBase`), *drives* the actual processing of requests/responses until completion.
+- Subgrounds models the [sans-io](https://sans-io.readthedocs.io/) approach to handling requests
+  - This means subgrounds is untangled from actually making IO
+  - This has enabled custom clients, allowing anyone to customize subgrounds interface.
+- Various rewrites, reworks, and improvements to documentation.
 
 ## v1.6.1 (2023-08-01)
 

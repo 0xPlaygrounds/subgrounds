@@ -1,7 +1,7 @@
 from polars_client import SubgroundsPolars
 from subgrounds.subgraph import FieldPath, Subgraph
 
-# from polars_utils.py import *
+from polars_utils import *
 
 import polars as pl
 
@@ -13,7 +13,7 @@ snx = sg.load_subgraph(
     url=snx_endpoint,
 )
 
-trades_json: list[dict] = sg.query_json(
+trades_json = sg.query_json(
     [
         # set the first parameter to a larger size to query more rows.
         snx.Query.futuresTrades(
@@ -30,26 +30,24 @@ trades_df = pl.from_dicts(
     trades_json[0][list(trades_json[0].keys())[0]], infer_schema_length=None
 )
 
-print(trades_df.shape)
-print(trades_df.head(5))
-
-# 9/17/23 TODO - figure out correct import structure for fmt_dict_cols and fmt_arr_cols
-# fmted_df = fmt_dict_cols(trades_df)
+fmted_df = fmt_dict_cols(trades_df)
 
 # # polars calculations to convert big ints. All synthetix big ints are represented with 10**18 decimals.
-# fmted_df = fmted_df.with_columns(
-#     [
-#         (pl.col("margin") / 10**18),
-#         (pl.col("size") / 10**18),
-#         (pl.col("price") / 10**18),
-#         (pl.col("positionSize") / 10**18),
-#         (pl.col("realizedPnl") / 10**18),
-#         (pl.col("netFunding") / 10**18),
-#         (pl.col("feesPaidToSynthetix") / 10**18),
-#         # convert timestamp to datetime
-#         pl.from_epoch("timestamp").alias("datetime"),
-#     ]
-# )
+fmted_df = fmted_df.with_columns(
+    [
+        (pl.col("margin") / 10**18),
+        (pl.col("size") / 10**18),
+        (pl.col("price") / 10**18),
+        (pl.col("positionSize") / 10**18),
+        (pl.col("realizedPnl") / 10**18),
+        (pl.col("netFunding") / 10**18),
+        (pl.col("feesPaidToSynthetix") / 10**18),
+        # convert timestamp to datetime
+        pl.from_epoch("timestamp").alias("datetime"),
+    ]
+)
 
+print(fmted_df.shape)
+print(fmted_df.head(5))
 
 print("done")

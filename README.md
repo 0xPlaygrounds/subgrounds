@@ -13,7 +13,7 @@
 [![Github Codepsaces](https://img.shields.io/badge/Github-Codespaces-24292f.svg?logo=Github)](https://codespaces.new/0xPlaygrounds/subgrounds-template?quickstart=1)
 
 <!-- start elevator-pitch -->
-An intuitive python library for interfacing with Subgraphs.
+An intuitive Python library for interfacing with subgraphs and GraphQL.
 
 ## Features
 - **Simple**: Leverage a Pythonic API to easily build queries and transformations without the need for raw GraphQL manipulation.

@@ -2166,6 +2166,12 @@ def test_filter_2(subgraph: Subgraph):
         assert actual == expected
 
 
+def test_filter_to_dict(filter: Filter):
+    expected = {'token0_': {'symbol': 'CRV'}}
+
+    assert Filter.to_dict([filter]) == expected
+
+
 def test_field_path_args_1(subgraph: Subgraph):
     expected = FieldPath(
         subgraph,

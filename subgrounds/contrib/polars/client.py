@@ -1,33 +1,23 @@
-import functools
-import json
-import logging
 import warnings
-from collections.abc import Iterator
-from contextlib import suppress
 from functools import cached_property
-from typing import Any, Type, cast
 from json import JSONDecodeError
+from typing import Any, Type
 
 import httpx
 from pipe import map, traverse
 
-from subgrounds.dataframe_utils import df_of_json
+from subgrounds.client import SubgroundsBase
 from subgrounds.errors import GraphQLError, ServerError
 from subgrounds.pagination import LegacyStrategy, PaginationStrategy
-from subgrounds.query import DataRequest, DataResponse, Document, DocumentResponse
+from subgrounds.query import DataRequest, DataResponse, DocumentResponse
 from subgrounds.subgraph import FieldPath, Subgraph
 from subgrounds.utils import default_header
-from subgrounds.client import SubgroundsBase
-
-logger = logging.getLogger("subgrounds")
-warnings.simplefilter("default")
 
 HTTP2_SUPPORT = True
 
+class PolarsSubgrounds(SubgroundsBase):
+    """TODO: Write comment"""
 
-class SubgroundsPolars(SubgroundsBase):
-    # https://github.com/0xPlaygrounds/subgrounds/blob/feat/async/subgrounds/client/sync.py#L48
-    # ? what is cached property decorator? 8/28/23
     @cached_property
     def _client(self):
         """Cached client"""
@@ -147,3 +137,10 @@ class SubgroundsPolars(SubgroundsBase):
         req = self.mk_request(fpaths)
         data = self.execute(req, pagination_strategy)
         return [doc.data for doc in data.responses]
+
+    def query(
+        self,
+        fpaths: FieldPath | list[FieldPath],
+        pagination_strategy: Type[PaginationStrategy] | None = LegacyStrategy,
+    ):
+        """TODO: Fill in a polars return here."""

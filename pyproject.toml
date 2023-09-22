@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "subgrounds"
-version = "1.7.0"
+version = "1.7.1"
 description = "A Pythonic data access layer for applications querying data from The Graph Network."
 authors = [
     "cvauclair <cvauclair@playgrounds.network>",

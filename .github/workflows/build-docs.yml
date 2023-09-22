@@ -1,6 +1,7 @@
 name: Trigger Docs Rebuild
 
 on:
+  workflow_call:
   push:
     branches: [ main ]
     paths:

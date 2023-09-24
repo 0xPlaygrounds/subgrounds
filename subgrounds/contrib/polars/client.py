@@ -1,3 +1,4 @@
+import polars as pl
 import warnings
 from functools import cached_property
 from json import JSONDecodeError
@@ -7,6 +8,7 @@ import httpx
 from pipe import map, traverse
 
 from subgrounds.client import SubgroundsBase
+from subgrounds.contrib.polars import utils
 from subgrounds.errors import GraphQLError, ServerError
 from subgrounds.pagination import LegacyStrategy, PaginationStrategy
 from subgrounds.query import DataRequest, DataResponse, DocumentResponse
@@ -14,6 +16,7 @@ from subgrounds.subgraph import FieldPath, Subgraph
 from subgrounds.utils import default_header
 
 HTTP2_SUPPORT = True
+
 
 class PolarsSubgrounds(SubgroundsBase):
     """TODO: Write comment"""
@@ -138,9 +141,24 @@ class PolarsSubgrounds(SubgroundsBase):
         data = self.execute(req, pagination_strategy)
         return [doc.data for doc in data.responses]
 
-    def query(
+    def query_df(
         self,
         fpaths: FieldPath | list[FieldPath],
         pagination_strategy: Type[PaginationStrategy] | None = LegacyStrategy,
-    ):
-        """TODO: Fill in a polars return here."""
+    ) -> pl.DataFrame:
+        """
+        `query_df()` queries and converts raw graphql data to a polars dataframe.
+        """
+
+        # Query raw graphql data
+        fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)
+        graphql_data = self.query_json(fpaths, pagination_strategy=pagination_strategy)
+
+        # Get the first key of the first json object. This is the key that contains the data.
+        json_trades_key = list(graphql_data[0].keys())[0]
+
+        graphql_df = pl.from_dicts(
+            graphql_data[0][json_trades_key], infer_schema_length=None
+        )
+
+        return utils.fmt_dict_cols(graphql_df)

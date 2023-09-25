@@ -10,8 +10,8 @@ import warnings
 from typing import Annotated, Literal
 
 from pipe import map, where
-from pydantic import BaseModel as PydanticBaseModel
-from pydantic import Field, root_validator
+from pydantic.v1 import BaseModel as PydanticBaseModel
+from pydantic.v1 import Field, root_validator
 
 from .errors import SchemaError
 

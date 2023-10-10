@@ -13,7 +13,7 @@ keywords = ["graph", "subgrounds", "graphql", "subgraph"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-pandas = "^1.4.2"
+pandas = ">=1.4.2, ^2.1"
 pipe = "^2.0"
 pydantic = "^1.10.2"
 dash = { version = "^2.3.1", optional = true }

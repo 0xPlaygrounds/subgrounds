@@ -13,9 +13,9 @@ keywords = ["graph", "subgrounds", "graphql", "subgraph"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-pandas = "^1.4.2"
+pandas = ">=1.4.2, ^2.1"
 pipe = "^2.0"
-pydantic = "^2"
+pydantic = "^2.0"
 dash = { version = "^2.3.1", optional = true }
 plotly = { version = "^5.14.1", optional = true }
 httpx = { extras = ["http2"], version = "^0.24.1" }

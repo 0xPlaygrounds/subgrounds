@@ -15,7 +15,7 @@ keywords = ["graph", "subgrounds", "graphql", "subgraph"]
 python = "^3.10"
 pandas = ">=1.4.2, ^2.1"
 pipe = "^2.0"
-pydantic = "^1.10.2"
+pydantic = "^2.0"
 dash = { version = "^2.3.1", optional = true }
 plotly = { version = "^5.14.1", optional = true }
 httpx = { extras = ["http2"], version = "^0.24.1" }

@@ -2310,4 +2310,4 @@ polars = ["polars", "pyarrow"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "91cce6ad8c7d7f7abe76d404b86f6aa4263bf65fad1973067d89971ff6b22907"
+content-hash = "21fc81a15dd3662c4004c2bc8ac16b58bc59b25edfa36b749000c3179c9f7aac"

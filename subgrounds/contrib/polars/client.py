@@ -161,4 +161,4 @@ class PolarsSubgrounds(SubgroundsBase):
             graphql_data[0][json_trades_key], infer_schema_length=None
         )
 
-        return utils.fmt_dict_cols(graphql_df)
+        return utils.format_dictionary_columns(graphql_df)

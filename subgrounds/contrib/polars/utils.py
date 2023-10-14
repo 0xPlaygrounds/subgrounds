@@ -1,44 +1,73 @@
 import polars as pl
 
 
-############################
-# Polars Support Functions - Convert GraphQL Response to Polars DataFrame
-############################
-
-
-def fmt_dict_cols(df: pl.DataFrame) -> pl.DataFrame:
+def format_dictionary_columns(df: pl.DataFrame) -> pl.DataFrame:
     """
-    formats dictionary cols, which are 'structs' in a polars df, into separate columns and renames accordingly.
+    Unnest dictionary values into their own columns, renaming them appropriately.
+
+    Args:
+        df (pl.DataFrame): Input DataFrame containing dictionary columns.
+
+    Returns:
+        pl.DataFrame: DataFrame with dictionary values unnested into separate columns.
+
+    Example:
+        >>> data = {
+        ...     "dict_col": [{"A": 1, "B": 2}, {"A": 3, "B": 4}],
+        ...     "arr_col": [[1, 2, 3], [4, 5, 6]],
+        ... }
+        >>> df = pl.DataFrame(data)
+        >>> result = fmt_dict_cols(df)
+        >>> print(result)
+        after test: shape: (2, 3)
+        ...
+        (output example here)
+
     """
     for column in df.columns:
         if isinstance(df[column][0], dict):
             col_names = df[column][0].keys()
-            # rename struct columns
+            # Rename struct columns
             struct_df = df.select(
                 pl.col(column).struct.rename_fields(
                     [f"{column}_{c}" for c in col_names]
                 )
             )
             struct_df = struct_df.unnest(column)
-            # add struct_df columns to df and
-            df = df.with_columns(struct_df)
-            # drop the df column
-            df = df.drop(column)
-
+            # Add struct_df columns to df and drop the original column
+            df = df.with_columns(struct_df).drop(column)
     return df
 
 
-def fmt_arr_cols(df: pl.DataFrame) -> pl.DataFrame:
+def format_array_columns(df: pl.DataFrame) -> pl.DataFrame:
     """
-    formats lists, which are arrays in a polars df, into separate columns and renames accordingly.
-    Since there isn't a direct way to convert array -> new columns, we convert the array to a struct and then
-    unnest the struct into new columns.
+    Unnest array values into their own columns, renaming them appropriately.
+
+    Args:
+        df (pl.DataFrame): Input DataFrame containing array columns.
+
+    Returns:
+        pl.DataFrame: DataFrame with array values unnested into separate columns.
+
+    Example:
+        >>> data = {
+        ...     "dict_col": [{"A": 1, "B": 2}, {"A": 3, "B": 4}],
+        ...     "arr_col": [[1, 2, 3], [4, 5, 6]],
+        ... }
+        >>> df = pl.DataFrame(data)
+        >>> result = fmt_arr_cols(df)
+        >>> print(result)
+        after test: shape: (2, 4)
+        ...
+        (output example here)
+
     """
+
     # use this logic if column is a list (rows show up as pl.Series)
     for column in df.columns:
         if isinstance(df[column][0], pl.Series):
             # convert struct to array
-            struct_df = df.select([pl.col(column).arr.to_struct()])
+            struct_df = df.select([pl.col(column).list.to_struct()])
             # rename struct fields
             struct_df = struct_df.select(
                 pl.col(column).struct.rename_fields(
@@ -48,8 +77,5 @@ def fmt_arr_cols(df: pl.DataFrame) -> pl.DataFrame:
             # unnest struct fields into their own columns
             struct_df = struct_df.unnest(column)
             # add struct_df columns to df and
-            df = df.with_columns(struct_df)
-            # drop the df column
-            df = df.drop(column)
-
+            df = df.with_columns(struct_df).drop(column)
     return df

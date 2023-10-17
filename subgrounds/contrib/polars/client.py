@@ -147,18 +147,32 @@ class PolarsSubgrounds(SubgroundsBase):
         pagination_strategy: Type[PaginationStrategy] | None = LegacyStrategy,
     ) -> pl.DataFrame:
         """
-        `query_df()` queries and converts raw graphql data to a polars dataframe.
+        Queries and converts raw GraphQL data to a Polars DataFrame.
+
+        Args:
+            fpaths (FieldPath or list[FieldPath]): One or more FieldPath objects that
+            should be included in the request.
+            pagination_strategy (Type[PaginationStrategy] or None, optional):
+            A class implementing the PaginationStrategy Protocol. If None, then automatic
+            pagination is disabled. Defaults to LegacyStrategy.
+
+        Returns:
+            pl.DataFrame: A Polars DataFrame containing the queried data.
         """
 
-        # Query raw graphql data
+        # Query raw GraphQL data
         fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)
         graphql_data = self.query_json(fpaths, pagination_strategy=pagination_strategy)
 
-        # Get the first key of the first json object. This is the key that contains the data.
-        json_trades_key = list(graphql_data[0].keys())[0]
+        # Get the first key of the first JSON object. This is the key that contains the data.
+        json_data_key = list(graphql_data[0].keys())[0]
 
+        # Convert the JSON data to a Polars DataFrame
         graphql_df = pl.from_dicts(
-            graphql_data[0][json_trades_key], infer_schema_length=None
+            graphql_data[0][json_data_key], infer_schema_length=None
         )
 
-        return utils.format_dictionary_columns(graphql_df)
+        # Apply the formatting to the Polars DataFrame if necessary
+        # graphql_df = utils.format_dictionary_columns(graphql_df)
+
+        return graphql_df

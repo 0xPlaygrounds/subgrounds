@@ -1,3 +1,4 @@
+import os
 import polars as pl
 import warnings
 from functools import cached_property
@@ -145,6 +146,7 @@ class PolarsSubgrounds(SubgroundsBase):
         self,
         fpaths: FieldPath | list[FieldPath],
         pagination_strategy: Type[PaginationStrategy] | None = LegacyStrategy,
+        parquet_name: str = None,
     ) -> pl.DataFrame:
         """
         Queries and converts raw GraphQL data to a Polars DataFrame.
@@ -167,12 +169,24 @@ class PolarsSubgrounds(SubgroundsBase):
         # Get the first key of the first JSON object. This is the key that contains the data.
         json_data_key = list(graphql_data[0].keys())[0]
 
+        print("debug statement")
+        print(graphql_data[0][json_data_key])
         # Convert the JSON data to a Polars DataFrame
         graphql_df = pl.from_dicts(
             graphql_data[0][json_data_key], infer_schema_length=None
         )
 
-        # Apply the formatting to the Polars DataFrame if necessary
-        # graphql_df = utils.format_dictionary_columns(graphql_df)
+        # Apply the formatting to the Polars DataFrame  - can I apply this pre-emptively?
+        graphql_df = utils.format_dictionary_columns(graphql_df)
+        graphql_df = utils.format_array_columns(graphql_df)
+
+        match parquet_name:
+            case None:
+                pass
+            case _:
+                # check if folder exists
+                os.makedirs("data/", exist_ok=True)
+                # write to parquet
+                graphql_df.write_parquet(f"data/{parquet_name}.parquet")
 
         return graphql_df

@@ -79,3 +79,15 @@ def format_array_columns(df: pl.DataFrame) -> pl.DataFrame:
             # add struct_df columns to df and
             df = df.with_columns(struct_df).drop(column)
     return df
+
+
+def force_numeric(json_data: list[str]) -> list[str]:
+    # scan all keys. If one of the keys is timestamp or blockNumber, then leave alone. For any other key that has int values, convert to float
+    # print(json_data)
+
+    for entry in json_data:
+        for key, value in entry.items():
+            if key != "timestamp" and key != "blockNumber" and isinstance(value, int):
+                entry[key] = float(value)
+
+    return json_data

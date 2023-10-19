@@ -157,7 +157,7 @@ class PolarsSubgrounds(SubgroundsBase):
             pagination_strategy (Type[PaginationStrategy] or None, optional):
             A class implementing the PaginationStrategy Protocol. If None, then automatic
             pagination is disabled. Defaults to LegacyStrategy.
-
+            parquet_name (str, optional): The name of the parquet file to write to.
         Returns:
             pl.DataFrame: A Polars DataFrame containing the queried data.
         """
@@ -169,8 +169,6 @@ class PolarsSubgrounds(SubgroundsBase):
         # Get the first key of the first JSON object. This is the key that contains the data.
         json_data_key = list(graphql_data[0].keys())[0]
 
-        print("debug statement")
-        print(graphql_data[0][json_data_key])
         # Convert the JSON data to a Polars DataFrame
         graphql_df = pl.from_dicts(
             graphql_data[0][json_data_key], infer_schema_length=None

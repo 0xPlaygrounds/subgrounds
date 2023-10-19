@@ -25,6 +25,6 @@ df = sg.query_df(
         curve_swaps.tokenOut._select("id"),
     ],
     parquet_name="curve_swaps",
-)  # amountIn and amountOut cols will give int overflow errors. How to deal with this? Maybe just filter. If it isn't timestamp or blockNumber column, then convert to float.
+)
 
 print(df)

@@ -15,6 +15,7 @@ from subgrounds.pagination import LegacyStrategy, PaginationStrategy
 from subgrounds.query import DataRequest, DataResponse, DocumentResponse
 from subgrounds.subgraph import FieldPath, Subgraph
 from subgrounds.utils import default_header
+from subgrounds.contrib.polars.utils import force_numeric
 
 HTTP2_SUPPORT = True
 
@@ -168,11 +169,14 @@ class PolarsSubgrounds(SubgroundsBase):
 
         # Get the first key of the first JSON object. This is the key that contains the data.
         json_data_key = list(graphql_data[0].keys())[0]
+        numeric_data = force_numeric(graphql_data[0][json_data_key])
 
         # Convert the JSON data to a Polars DataFrame
-        graphql_df = pl.from_dicts(
-            graphql_data[0][json_data_key], infer_schema_length=None
-        )
+        # graphql_df = pl.from_dicts(
+        #     graphql_data[0][json_data_key], infer_schema_length=None
+        # )
+
+        graphql_df = pl.from_dicts(numeric_data, infer_schema_length=None)
 
         # Apply the formatting to the Polars DataFrame  - can I apply this pre-emptively?
         graphql_df = utils.format_dictionary_columns(graphql_df)

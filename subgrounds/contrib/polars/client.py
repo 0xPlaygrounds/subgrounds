@@ -1,21 +1,19 @@
-import os
-import polars as pl
-import warnings
 from functools import cached_property
 from json import JSONDecodeError
 from typing import Any, Type
 
 import httpx
+import polars as pl
 from pipe import map, traverse
 
 from subgrounds.client import SubgroundsBase
-from subgrounds.contrib.polars import utils
 from subgrounds.errors import GraphQLError, ServerError
 from subgrounds.pagination import LegacyStrategy, PaginationStrategy
 from subgrounds.query import DataRequest, DataResponse, DocumentResponse
 from subgrounds.subgraph import FieldPath, Subgraph
 from subgrounds.utils import default_header
-from subgrounds.contrib.polars.utils import force_numeric
+
+from .utils import force_numeric, format_array_columns, format_dictionary_columns
 
 HTTP2_SUPPORT = True
 
@@ -33,12 +31,8 @@ class PolarsSubgrounds(SubgroundsBase):
         self,
         url: str,
         save_schema: bool = False,
-        cache_dir: str | None = None,
         is_subgraph: bool = True,
     ) -> Subgraph:
-        if cache_dir is not None:
-            warnings.warn("This will be depreciated", DeprecationWarning)
-
         try:
             loader = self._load(url, save_schema, is_subgraph)
             url, query = next(loader)  # if this fails, schema is loaded from cache
@@ -130,7 +124,7 @@ class PolarsSubgrounds(SubgroundsBase):
         Args:
           fpaths: One or more :class:`FieldPath` objects
             that should be included in the request.
-          pagination_strategy: A Class implementing the :class:`PaginationStrategy`
+          pagination_strategy: A class implementing the :class:`PaginationStrategy`
             ``Protocol``. If ``None``, then automatic pagination is disabled.
             Defaults to :class:`LegacyStrategy`.
 
@@ -147,48 +141,35 @@ class PolarsSubgrounds(SubgroundsBase):
         self,
         fpaths: FieldPath | list[FieldPath],
         pagination_strategy: Type[PaginationStrategy] | None = LegacyStrategy,
-        parquet_name: str = None,
     ) -> pl.DataFrame:
         """
         Queries and converts raw GraphQL data to a Polars DataFrame.
 
         Args:
-            fpaths (FieldPath or list[FieldPath]): One or more FieldPath objects that
+          fpaths: One or more FieldPath objects that
             should be included in the request.
-            pagination_strategy (Type[PaginationStrategy] or None, optional):
-            A class implementing the PaginationStrategy Protocol. If None, then automatic
-            pagination is disabled. Defaults to LegacyStrategy.
-            parquet_name (str, optional): The name of the parquet file to write to.
+          pagination_strategy: A class implementing the :class:`PaginationStrategy`
+            ``Protocol``. If ``None``, then automatic pagination is disabled.
+            Defaults to :class:`LegacyStrategy`.
+          parquet_name: The name of the parquet file to write to.
+
         Returns:
-            pl.DataFrame: A Polars DataFrame containing the queried data.
+          pl.DataFrame: A Polars DataFrame containing the queried data.
         """
 
         # Query raw GraphQL data
         fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)
         graphql_data = self.query_json(fpaths, pagination_strategy=pagination_strategy)
 
-        # Get the first key of the first JSON object. This is the key that contains the data.
+        # Get the first key of the first JSON object.
+        # This is the key that contains the data.
         json_data_key = list(graphql_data[0].keys())[0]
         numeric_data = force_numeric(graphql_data[0][json_data_key])
 
-        # Convert the JSON data to a Polars DataFrame
-        # graphql_df = pl.from_dicts(
-        #     graphql_data[0][json_data_key], infer_schema_length=None
-        # )
-
         graphql_df = pl.from_dicts(numeric_data, infer_schema_length=None)
 
-        # Apply the formatting to the Polars DataFrame  - can I apply this pre-emptively?
-        graphql_df = utils.format_dictionary_columns(graphql_df)
-        graphql_df = utils.format_array_columns(graphql_df)
-
-        match parquet_name:
-            case None:
-                pass
-            case _:
-                # check if folder exists
-                os.makedirs("data/", exist_ok=True)
-                # write to parquet
-                graphql_df.write_parquet(f"data/{parquet_name}.parquet")
+        # Apply the formatting to the Polars DataFrame
+        graphql_df = format_dictionary_columns(graphql_df)
+        graphql_df = format_array_columns(graphql_df)
 
         return graphql_df

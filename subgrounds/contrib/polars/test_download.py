@@ -1,6 +1,5 @@
 from subgrounds.contrib.polars.client import PolarsSubgrounds
 
-
 sg = PolarsSubgrounds()
 
 subgraph = sg.load_subgraph(
@@ -24,7 +23,6 @@ df = sg.query_df(
         curve_swaps.tokenIn._select("id"),
         curve_swaps.tokenOut._select("id"),
     ],
-    parquet_name="curve_swaps",
 )
 
 print(df)

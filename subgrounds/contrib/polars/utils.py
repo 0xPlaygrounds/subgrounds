@@ -24,8 +24,9 @@ def format_dictionary_columns(df: pl.DataFrame) -> pl.DataFrame:
         (output example here)
 
     """
+
     for column in df.columns:
-        if isinstance(df[column][0], dict):
+        if len(df[column]) > 0 and isinstance(df[column][0], dict):
             col_names = df[column][0].keys()
             # Rename struct columns
             struct_df = df.select(
@@ -36,6 +37,7 @@ def format_dictionary_columns(df: pl.DataFrame) -> pl.DataFrame:
             struct_df = struct_df.unnest(column)
             # Add struct_df columns to df and drop the original column
             df = df.with_columns(struct_df).drop(column)
+
     return df
 
 
@@ -65,7 +67,7 @@ def format_array_columns(df: pl.DataFrame) -> pl.DataFrame:
 
     # use this logic if column is a list (rows show up as pl.Series)
     for column in df.columns:
-        if isinstance(df[column][0], pl.Series):
+        if len(df[column]) > 0 and isinstance(df[column][0], pl.Series):
             # convert struct to array
             struct_df = df.select([pl.col(column).list.to_struct()])
             # rename struct fields
@@ -78,6 +80,7 @@ def format_array_columns(df: pl.DataFrame) -> pl.DataFrame:
             struct_df = struct_df.unnest(column)
             # add struct_df columns to df and
             df = df.with_columns(struct_df).drop(column)
+
     return df
 
 

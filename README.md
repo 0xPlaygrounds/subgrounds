@@ -44,7 +44,7 @@ Subgrounds also comes bundled with extra modules that may require extra librarie
 >>> sg = Subgrounds()
 
 >>> # Load
->>> aave_v2 = sg.load_subgraph('https://api.thegraph.com/subgraphs/name/messari/aave-v2-ethereum')
+>>> aave_v2 = sg.load_subgraph("https://api.thegraph.com/subgraphs/name/messari/aave-v2-ethereum")
 
 >>> # Construct the query
 >>> latest = aave_v2.Query.markets(

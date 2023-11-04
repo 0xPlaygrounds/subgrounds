@@ -56,7 +56,7 @@ Subgrounds also comes bundled with extra modules that may require extra librarie
 >>> # Return query to a dataframe
 >>> sg.query_df([
 ...     latest_markets.name,
-...     latest.totalValueLockedUSD,
+...     latest_markets.totalValueLockedUSD,
 ... ])
                   markets_name  markets_totalValueLockedUSD
 0  Aave interest bearing STETH                 1.522178e+09

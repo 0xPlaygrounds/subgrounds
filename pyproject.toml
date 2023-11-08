@@ -20,7 +20,7 @@ dash = { version = "^2.3.1", optional = true }
 plotly = { version = "^5.14.1", optional = true }
 httpx = { extras = ["http2"], version = "^0.24.1" }
 pytest-asyncio = "^0.21.0"
-polars = { version = ">=0.19.3", optional = true }
+polars = "^0.19.12"
 pyarrow = { version = "^13.0.0", optional = true }
 
 [tool.poetry.extras]

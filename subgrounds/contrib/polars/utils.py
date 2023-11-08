@@ -1,9 +1,33 @@
+from typing import Any
+
 import polars as pl
 
 
-def format_dictionary_columns(df: pl.DataFrame) -> pl.DataFrame:
+def df_of_json(data: dict[str, Any]) -> pl.DataFrame:
+    """Creates a ``pl.DataFrame`` from a JSON `data`.
+
+    Args:
+        json_data: Response data
+    
+    Returns:
+        A ``pl.DataFrame`` formatted from the response data.
     """
-    Unnest dictionary values into their own columns, renaming them appropriately.
+
+    # TODO: refactor
+    # Get the first key of the first JSON object.
+    # This is the key that contains the data.
+    json_data_key = list(data.keys())[0]
+    numeric_data = force_numeric(data[json_data_key])
+
+    graphql_df = pl.from_dicts(numeric_data, infer_schema_length=None)
+
+    # Apply the formatting to the Polars DataFrame
+    graphql_df = format_array_columns(graphql_df)
+    return format_dictionary_columns(graphql_df)
+
+
+def format_dictionary_columns(df: pl.DataFrame) -> pl.DataFrame:
+    """Unnest dictionary values into their own columns, renaming them appropriately.
 
     Args:
         df (pl.DataFrame): Input DataFrame containing dictionary columns.
@@ -42,8 +66,7 @@ def format_dictionary_columns(df: pl.DataFrame) -> pl.DataFrame:
 
 
 def format_array_columns(df: pl.DataFrame) -> pl.DataFrame:
-    """
-    Unnest array values into their own columns, renaming them appropriately.
+    """Unnest array values into their own columns, renaming them appropriately.
 
     Args:
         df (pl.DataFrame): Input DataFrame containing array columns.

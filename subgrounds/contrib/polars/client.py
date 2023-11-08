@@ -7,13 +7,12 @@ import polars as pl
 from pipe import map, traverse
 
 from subgrounds.client import SubgroundsBase
+from subgrounds.contrib.polars.utils import df_of_json
 from subgrounds.errors import GraphQLError, ServerError
 from subgrounds.pagination import LegacyStrategy, PaginationStrategy
 from subgrounds.query import DataRequest, DataResponse, DocumentResponse
 from subgrounds.subgraph import FieldPath, Subgraph
 from subgrounds.utils import default_header
-
-from .utils import force_numeric, format_array_columns, format_dictionary_columns
 
 HTTP2_SUPPORT = True
 
@@ -159,17 +158,10 @@ class PolarsSubgrounds(SubgroundsBase):
 
         # Query raw GraphQL data
         fpaths = list([fpaths] | traverse | map(FieldPath._auto_select) | traverse)
-        graphql_data = self.query_json(fpaths, pagination_strategy=pagination_strategy)
 
-        # Get the first key of the first JSON object.
-        # This is the key that contains the data.
-        json_data_key = list(graphql_data[0].keys())[0]
-        numeric_data = force_numeric(graphql_data[0][json_data_key])
+        # TODO: check fpaths for only one entity
 
-        graphql_df = pl.from_dicts(numeric_data, infer_schema_length=None)
-
-        # Apply the formatting to the Polars DataFrame
-        graphql_df = format_dictionary_columns(graphql_df)
-        graphql_df = format_array_columns(graphql_df)
-
-        return graphql_df
+        json_data = self.query_json(fpaths, pagination_strategy=pagination_strategy)
+        data = json_data[0]
+        
+        return df_of_json(data)

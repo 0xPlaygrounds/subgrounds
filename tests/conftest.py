@@ -503,6 +503,11 @@ def subgraph(schema):
 
 
 @pytest.fixture
+def filter(subgraph):
+    return subgraph.Pair.token0.symbol == "CRV"
+
+
+@pytest.fixture
 def subgraph_diff_url(schema):
     return Subgraph("www.foo.xyz/graphql", schema)
 

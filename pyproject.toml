@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "subgrounds"
-version = "1.7.0"
+version = "1.8.0"
 description = "A Pythonic data access layer for applications querying data from The Graph Network."
 authors = [
     "cvauclair <cvauclair@playgrounds.network>",
@@ -13,9 +13,9 @@ keywords = ["graph", "subgrounds", "graphql", "subgraph"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-pandas = "^1.4.2"
+pandas = ">=1.4.2, ^2.1"
 pipe = "^2.0"
-pydantic = "^1.10.2"
+pydantic = "^2.0"
 dash = { version = "^2.3.1", optional = true }
 plotly = { version = "^5.14.1", optional = true }
 httpx = { extras = ["http2"], version = "^0.24.1" }

@@ -13,7 +13,7 @@
 [![Github Codepsaces](https://img.shields.io/badge/Github-Codespaces-24292f.svg?logo=Github)](https://codespaces.new/0xPlaygrounds/subgrounds-template?quickstart=1)
 
 <!-- start elevator-pitch -->
-An intuitive python library for interfacing with Subgraphs.
+An intuitive Python library for interfacing with subgraphs and GraphQL.
 
 ## Features
 - **Simple**: Leverage a Pythonic API to easily build queries and transformations without the need for raw GraphQL manipulation.
@@ -44,20 +44,20 @@ Subgrounds also comes bundled with extra modules that may require extra librarie
 >>> sg = Subgrounds()
 
 >>> # Load
->>> aave_v2 = sg.load_subgraph('https://api.thegraph.com/subgraphs/name/messari/aave-v2-ethereum')
+>>> aave_v2 = sg.load_subgraph("https://api.thegraph.com/subgraphs/name/messari/aave-v2-ethereum")
 
 >>> # Construct the query
->>> latest = aave_v2.Query.markets(
-  orderBy=aave_v2.Market.totalValueLockedUSD,
-  orderDirection='desc',
-  first=5,
-)
+>>> latest_markets = aave_v2.Query.markets(
+...     orderBy=aave_v2.Market.totalValueLockedUSD,
+...     orderDirection='desc',
+...     first=5,
+... )
 
 >>> # Return query to a dataframe
 >>> sg.query_df([
-  latest.name,
-  latest.totalValueLockedUSD,
-])
+...     latest_markets.name,
+...     latest_markets.totalValueLockedUSD,
+... ])
                   markets_name  markets_totalValueLockedUSD
 0  Aave interest bearing STETH                 1.522178e+09
 1   Aave interest bearing WETH                 1.221299e+09

@@ -2,6 +2,23 @@
 
 <!--next-version-placeholder-->
 
+## v1.8.0 (2023-10-10)
+
+### Feature
+
+* Pydantic upgrade to v2, maintaining V1 API internally ([#45](https://github.com/0xPlaygrounds/subgrounds/issues/45)) ([`25570ae`](https://github.com/0xPlaygrounds/subgrounds/commit/25570ae1f4d293f46312f195d5344473ad63e8fa))
+* Pandas upgrade to v2 ([#44](https://github.com/0xPlaygrounds/subgrounds/issues/44)) ([`5d1670b`](https://github.com/0xPlaygrounds/subgrounds/commit/5d1670bc1077c0f81fc2426e512118006f07f81b))
+
+## v1.7.1 (2023-09-22)
+
+### Fix
+
+* Nested filters ([#40](https://github.com/0xPlaygrounds/subgrounds/issues/40)) ([`3f3f575`](https://github.com/0xPlaygrounds/subgrounds/commit/3f3f5753bf5dba9ac39664156b76f81697055a23))
+
+### Documentation
+
+* Update CHANGELOG.md ([`7ef0876`](https://github.com/0xPlaygrounds/subgrounds/commit/7ef08764cd27478ab9797f2823a823cbbe095ec2))
+
 ## v1.7.0 (2023-09-05)
 
 ### Feature

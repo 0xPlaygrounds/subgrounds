@@ -2,6 +2,18 @@
 
 <!--next-version-placeholder-->
 
+## v1.8.1 (2023-11-10)
+
+### Fix
+
+* Critical fix that amends `__exit__` and `__aexit__` ([#49](https://github.com/0xPlaygrounds/subgrounds/issues/49)) ([`b60e3a9`](https://github.com/0xPlaygrounds/subgrounds/commit/b60e3a9fb09a78384c9783b0ba677b98b3879216))
+
+### Documentation
+
+* Finally formatting changes to README.md ([`5820110`](https://github.com/0xPlaygrounds/subgrounds/commit/58201108f42d70d53bab9b88b2fabe6f2a2e1657))
+* More formatting changes to README.md ([`71a66a8`](https://github.com/0xPlaygrounds/subgrounds/commit/71a66a81974e4632b4102fe4b5584c6d9136497b))
+* Format code-block in README.md ([`0db2207`](https://github.com/0xPlaygrounds/subgrounds/commit/0db22079329f40254ce51aa0d615f730cc4099f4))
+
 ## v1.8.0 (2023-10-10)
 
 ### Feature

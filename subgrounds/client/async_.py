@@ -231,4 +231,3 @@ class AsyncSubgrounds(SubgroundsBase):
 
     async def __aexit__(self, *args):
         await self._client.__aexit__(*args)
-        return self

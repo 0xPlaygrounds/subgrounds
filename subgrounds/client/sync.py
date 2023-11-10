@@ -449,4 +449,3 @@ class Subgrounds(SubgroundsBase):
 
     def __exit__(self, *args):
         self._client.__exit__(*args)
-        return self

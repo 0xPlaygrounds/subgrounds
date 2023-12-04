@@ -16,9 +16,9 @@ from functools import reduce
 from importlib import resources
 from pathlib import Path
 from typing import Annotated, Any, Type, cast
-from typing_extensions import Self
 
 from pipe import groupby, map, traverse
+from typing_extensions import Self
 
 from ..errors import SubgroundsError
 from ..pagination import (
@@ -149,10 +149,8 @@ class SubgroundsBase(ABC):
         self.schema_cache.mkdir(parents=True, exist_ok=True)
         schema_path = self.schema_cache / self._subgraph_slug(url)
 
-        if (schema := schema_path.with_suffix(".json")).exists():
-            schema.write_text(json.dumps(data))
-        else:
-            raise ValueError(f"Schema at {schema} doesn't exist.")
+        schema = schema_path.with_suffix(".json")
+        schema.write_text(json.dumps(data))
 
     def _load(
         self, url: str, save_schema: bool = False, is_subgraph: bool = True

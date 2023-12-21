@@ -44,32 +44,32 @@ Subgrounds also comes bundled with extra modules that may require extra librarie
 >>> sg = Subgrounds()
 
 >>> # Load
->>> aave_v2 = sg.load_subgraph("https://api.thegraph.com/subgraphs/name/messari/aave-v2-ethereum")
+>>> aave_v3 = sg.load_subgraph("https://api.thegraph.com/subgraphs/name/messari/aave-v3-ethereum")
 
 >>> # Construct the query
->>> latest_markets = aave_v2.Query.markets(
-...     orderBy=aave_v2.Market.totalValueLockedUSD,
+>>> largest_markets = aave_v3.Query.markets(
+...     orderBy=aave_v3.Market.totalValueLockedUSD,
 ...     orderDirection='desc',
 ...     first=5,
 ... )
 
 >>> # Return query to a dataframe
 >>> sg.query_df([
-...     latest_markets.name,
-...     latest_markets.totalValueLockedUSD,
+...     largest_markets.name,
+...     largest_markets.totalValueLockedUSD,
 ... ])
-                  markets_name  markets_totalValueLockedUSD
-0  Aave interest bearing STETH                 1.522178e+09
-1   Aave interest bearing WETH                 1.221299e+09
-2   Aave interest bearing USDC                 8.140547e+08
-3   Aave interest bearing WBTC                 6.615692e+08
-4   Aave interest bearing USDT                 3.734017e+08
+          markets_name  markets_totalValueLockedUSD
+0 Aave Ethereum wstETH                 1.915090e+09
+1   Aave Ethereum WETH                 1.047417e+09
+2   Aave Ethereum WBTC                 6.049655e+08
+3   Aave Ethereum USDC                 4.482461e+08
+4   Aave Ethereum USDT                 4.280103e+08
 ```
 <!-- end simple-example -->
 
 
 ## About Us
-Playgrounds Analytics is a data solutions company providing serverless on-chain data infrastructures and services for data teams, analysts, and engineers. Checkout us out [here](https://playgrounds.network/) to learn more!
+Playgrounds Analytics is a data solutions company providing serverless onchain data infrastructures and services for data teams, analysts, and engineers. Check us out [here](https://playgrounds.network/) to learn more!
 
 
 ## Acknowledgments
